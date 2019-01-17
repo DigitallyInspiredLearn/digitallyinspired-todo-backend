@@ -2,6 +2,7 @@ package com.list.todo.controllers;
 
 import com.list.todo.entity.User;
 import com.list.todo.services.UserService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
