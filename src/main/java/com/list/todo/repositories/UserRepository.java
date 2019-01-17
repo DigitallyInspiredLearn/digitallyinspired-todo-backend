@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.list.todo.entity.User;
 
+import javax.validation.constraints.Email;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>{
+    User findByEMail(@Email String eMail);
 }

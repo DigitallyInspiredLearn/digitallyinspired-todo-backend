@@ -36,8 +36,7 @@ public class Project {
     public Project() {
     }
 
-    public Project(Long id, String projectName, Long userOwnerId) {
-    	this.id = id;
+    public Project(String projectName, Long userOwnerId) {
 		this.projectName = projectName;
 		this.userOwnerId = userOwnerId;
 		/*this.startDate = startDate;

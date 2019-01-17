@@ -1,6 +1,6 @@
 package com.list.todo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -22,7 +22,7 @@ public class User {
     @Email
     private String eMail;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -34,12 +34,12 @@ public class User {
     public User() {
     }
 
-    public User(Long userId, String name, String surname, @Email String eMail, String password) {
-        this.userId = userId;
+    public User(String name, String surname, @Email String eMail, String password, Set<Project> projects) {
     	this.name = name;
         this.surname = surname;
         this.eMail = eMail;
         this.password = password;
+        this.projects = projects;
     }
 
     public Long getUserId() {
