@@ -18,12 +18,16 @@ import com.list.todo.services.UserService;
 @RestController
 public class ProjectController {
 
-	@Autowired
-	private ProjectService projectService;
+	private final ProjectService projectService;
 	
+	private final UserService userService;
+
 	@Autowired
-	private UserService userService;
-	
+	public ProjectController(ProjectService projectService, UserService userService) {
+		this.projectService = projectService;
+		this.userService = userService;
+	}
+
 	@RequestMapping("/users/{userId}/projects")
 	public List<Project> getAllProjectsByUser(@PathVariable Long userId) {
 		return projectService.findAllProjectsByUser(userId);

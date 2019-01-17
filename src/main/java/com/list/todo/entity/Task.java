@@ -27,8 +27,7 @@ public class Task {
 	public Task() {
 	}
 
-	public Task(Long id, String body, Boolean isComplete) {
-		this.id = id;
+	public Task(String body, Boolean isComplete) {
 		this.body = body;
 		this.isComplete = isComplete;
 	}

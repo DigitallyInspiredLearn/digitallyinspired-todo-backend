@@ -1,6 +1,8 @@
 package com.list.todo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -10,6 +12,8 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 public class User {
+
+    public static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,12 +38,12 @@ public class User {
     public User() {
     }
 
-    public User(Long userId, String name, String surname, @Email String eMail, String password) {
-        this.userId = userId;
+    public User(String name, String surname, @Email String eMail, String password, Set<Project> projects) {
     	this.name = name;
         this.surname = surname;
         this.eMail = eMail;
-        this.password = password;
+        setPassword(password);
+        this.projects = projects;
     }
 
     public Long getUserId() {
@@ -79,7 +83,7 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = PASSWORD_ENCODER.encode(password);
     }
 
     public Set<Project> getProjects() {

@@ -11,9 +11,13 @@ import com.list.todo.repositories.TaskRepository;
 @Service
 public class TaskService {
 
+	private final TaskRepository taskRepository;
+
 	@Autowired
-	private TaskRepository taskRepository;
-	
+	public TaskService(TaskRepository taskRepository) {
+		this.taskRepository = taskRepository;
+	}
+
 	public List<Task> getAllTasksOnProject(Long projectId) {
 		return taskRepository.findTasksByProjectId(projectId);
 	}

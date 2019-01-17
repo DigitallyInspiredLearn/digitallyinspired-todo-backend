@@ -17,12 +17,16 @@ import com.list.todo.services.TaskService;
 @RestController
 public class TasksController {
 
-	@Autowired
-	private TaskService taskService;
+	private final TaskService taskService;
 	
+	private final ProjectService projectService;
+
 	@Autowired
-	private ProjectService projectService;
-	
+	public TasksController(TaskService taskService, ProjectService projectService) {
+		this.taskService = taskService;
+		this.projectService = projectService;
+	}
+
 	@RequestMapping("/users/{userId}/projects/{projectId}/tasks")
 	public List<Task> getAllTasksOnProject(@PathVariable Long projectId) {
 		return taskService.getAllTasksOnProject(projectId);

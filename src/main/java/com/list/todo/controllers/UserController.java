@@ -1,45 +1,86 @@
 package com.list.todo.controllers;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.list.todo.entity.User;
 import com.list.todo.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 @RestController
 public class UserController {
 	
+	private final UserService userService;
+
 	@Autowired
-	private UserService userService;
-	
-	@RequestMapping("/users")
-	public List<User> getAllUsers() {
-		return userService.getAllUsers();
+	public UserController(UserService userService) {
+		this.userService = userService;
 	}
 
-	@RequestMapping("/users/{id}")
-	public User getUser(@PathVariable Long id) {
-		return userService.getUserById(id);
+	@GetMapping("/users")
+	public ResponseEntity<List<User>> getAllUsers() {
+		List<User> users = userService.getAllUsers();
+		if (users.isEmpty()){
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<>(users, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/users/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<User> getUser(@PathVariable Long id) {
+		User user = userService.getUserById(id);
+		if (user == null){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/users")
-	public void addUser(@RequestBody User user) {
+	@PostMapping(value = "/users")
+	public ResponseEntity<Void> addUser(@RequestBody User user, UriComponentsBuilder ucBuilder) {
+		if (userService.isUserExist(user)){
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		}
+
 		userService.saveUser(user);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(ucBuilder.path("/users/{id}").buildAndExpand(user.getUserId()).toUri());
+		return new ResponseEntity<>(headers, HttpStatus.CREATED);
 	}
 	
-	@RequestMapping(method = RequestMethod.PUT, value = "/users/{id}")
-	public void updateUser(@RequestBody User user) {
-		userService.updateUser(user);
+	@PutMapping(value = "/users/{id}")
+	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+		User currentUser = userService.getUserById(id);
+
+		if (currentUser == null){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		currentUser.setName(user.getName());
+		currentUser.setSurname(user.getSurname());
+		currentUser.seteMail(user.geteMail());
+		currentUser.setPassword(user.getPassword());
+		currentUser.setProjects(user.getProjects());
+
+		userService.updateUser(currentUser);
+
+		return new ResponseEntity<>(currentUser, HttpStatus.OK);
 	}
 	
-	@RequestMapping(method = RequestMethod.DELETE, value = "/users/{id}")
-	public void deleteUser(@PathVariable Long id) {
-		userService.deleteUser(id);
+	@DeleteMapping(value = "/users/{id}")
+	public ResponseEntity<User> deleteUser(@PathVariable Long id) {
+		User user = userService.getUserById(id);
+
+		if (user == null){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		userService.getUserById(id);
+
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
