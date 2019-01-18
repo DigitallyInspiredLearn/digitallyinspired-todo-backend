@@ -2,7 +2,6 @@ package com.list.todo.controllers;
 
 import com.list.todo.entity.User;
 import com.list.todo.services.UserService;
-import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
 	
 	private final UserService userService;
@@ -23,7 +23,7 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@GetMapping("/users")
+	@GetMapping
 	public ResponseEntity<List<User>> getAllUsers() {
 		List<User> users = userService.getAllUsers();
 		if (users.isEmpty()){
@@ -32,7 +32,7 @@ public class UserController {
 		return new ResponseEntity<>(users, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/users/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	@GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<User> getUser(@PathVariable Long id) {
 		User user = userService.getUserById(id);
 		if (user == null){
@@ -41,7 +41,7 @@ public class UserController {
 		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 	
-	@PostMapping(value = "/users")
+	@PostMapping
 	public ResponseEntity<Void> addUser(@RequestBody User user, UriComponentsBuilder ucBuilder) {
 		if (userService.isUserExist(user)){
 			return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -54,7 +54,7 @@ public class UserController {
 		return new ResponseEntity<>(headers, HttpStatus.CREATED);
 	}
 	
-	@PutMapping(value = "/users/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
 		User currentUser = userService.getUserById(id);
 
@@ -64,7 +64,7 @@ public class UserController {
 
 		currentUser.setName(user.getName());
 		currentUser.setSurname(user.getSurname());
-		currentUser.seteMail(user.geteMail());
+		currentUser.setEmail(user.getEmail());
 		currentUser.setPassword(user.getPassword());
 		currentUser.setProjects(user.getProjects());
 
@@ -73,14 +73,14 @@ public class UserController {
 		return new ResponseEntity<>(currentUser, HttpStatus.OK);
 	}
 	
-	@DeleteMapping(value = "/users/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<User> deleteUser(@PathVariable Long id) {
 		User user = userService.getUserById(id);
 
 		if (user == null){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		userService.getUserById(id);
+		userService.deleteUser(id);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}

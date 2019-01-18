@@ -9,7 +9,10 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.Data;
+
 @Entity
+@Data
 public class Task {
 	
 	@Id
@@ -23,45 +26,5 @@ public class Task {
 	@JoinColumn(name = "project_id")
 	@JsonIgnore
 	private Project project;
-	
-	public Task() {
-	}
-
-	public Task(String body, Boolean isComplete) {
-		this.body = body;
-		this.isComplete = isComplete;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getBody() {
-		return body;
-	}
-
-	public void setBody(String body) {
-		this.body = body;
-	}
-
-	public Boolean getIsComplete() {
-		return isComplete;
-	}
-
-	public void setIsComplete(Boolean isComplete) {
-		this.isComplete = isComplete;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
 	
 }

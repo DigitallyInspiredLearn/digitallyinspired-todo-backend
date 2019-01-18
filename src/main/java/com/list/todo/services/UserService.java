@@ -27,8 +27,6 @@ public class UserService implements UserDetailsService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-
-
     public List<User> getAllUsers(){
         return userRepository.findAll();
     }
@@ -61,13 +59,13 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String eMail) throws UsernameNotFoundException {
-        User user = userRepository.findByEMail(eMail);
+        User user = userRepository.findByEmail(eMail);
 
         if (user == null){
             throw new UsernameNotFoundException("User not found");
         }
         List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("user"));
 
-        return new org.springframework.security.core.userdetails.User(user.geteMail(), user.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 }
