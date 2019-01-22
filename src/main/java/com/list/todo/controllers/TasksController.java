@@ -12,25 +12,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.list.todo.entity.Project;
+import com.list.todo.entity.TodoList;
 import com.list.todo.entity.Task;
-import com.list.todo.services.ProjectService;
+import com.list.todo.services.TodoListService;
 import com.list.todo.services.TaskService;
 
 @RestController
-@RequestMapping("/users/{userId}/projects/{projectId}/tasks")
+@RequestMapping("/api/todolists/{todoListId}/tasks")
 public class TasksController {
 
 	private final TaskService taskService;
 	
 	@Autowired
-	public TasksController(TaskService taskService, ProjectService projectService) {
+	public TasksController(TaskService taskService, TodoListService todoListService) {
 		this.taskService = taskService;
 	}
 
 	@GetMapping
-	public List<Task> getAllTasksOnProject(@PathVariable Long projectId) {
-		return taskService.getAllTasksOnProject(projectId);
+	public List<Task> getAllTasksOnTodoList(@PathVariable Long todoListId) {
+		return taskService.getAllTasksOnTodoList(todoListId);
 	}
 
 	@GetMapping("/{id}")
@@ -39,20 +39,20 @@ public class TasksController {
 	}
 	
 	@PostMapping
-	public void addTask(@RequestBody Task task, @PathVariable Long projectId) {
-		Project project = new Project();
-		project.setId(projectId);
-		task.setProject(project);
+	public void addTask(@RequestBody Task task, @PathVariable Long todoListId) {
+		TodoList todoList = new TodoList();
+		todoList.setId(todoListId);
+		task.setTodoList(todoList);
 		
 		taskService.addTask(task);
 	}
 	
 	@PutMapping("/{id}")
-	public void updateTask(@RequestBody Task task, @PathVariable Long id, @PathVariable Long projectId) {
-		Project project = new Project();
-		project.setId(projectId);
+	public void updateTask(@RequestBody Task task, @PathVariable Long id, @PathVariable Long todoListId) {
+		TodoList todoList = new TodoList();
+		todoList.setId(todoListId);
 		task.setId(id);
-		task.setProject(project);
+		task.setTodoList(todoList);
 		
 		taskService.updateTask(task);
 	}

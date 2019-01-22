@@ -1,37 +1,62 @@
 package com.list.todo.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-import lombok.Data;
-
+import org.hibernate.annotations.NaturalId;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Data @NoArgsConstructor
+@RequiredArgsConstructor
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long userId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String name;
+	@NotBlank
+	@NonNull
+	@Size(max = 40)
+	private String name;
 
-    private String surname;
+	@NotBlank
+	@NonNull
+	@Size(max = 15)
+	private String username;
 
-    @Email
-    private String email;
+	@NaturalId
+	@NotBlank
+	@NonNull
+	@Size(max = 40)
+	@Email
+	private String email;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String password;
+	@NotBlank
+	@NonNull
+	@Size(max = 100)
+	private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "user_project",
-            joinColumns = {@JoinColumn(name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "projectId")})
-    private Set<Project> projects = new HashSet<>();
-    
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), 
+		inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "user_todolist", joinColumns = { @JoinColumn(name = "user_id") }, 
+		inverseJoinColumns = {@JoinColumn(name = "todolist_id") })
+	private Set<TodoList> todoLists = new HashSet<>();
+
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", name=" + name + ", username=" + username + ", email=" + email + ", password="
+				+ password + ", roles=" + roles + ", todoLists=" + todoLists + "]";
+	}
+
+	
 }

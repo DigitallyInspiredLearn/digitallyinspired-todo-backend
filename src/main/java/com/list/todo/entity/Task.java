@@ -23,8 +23,8 @@ public class Task {
 	private Boolean isComplete;
 	
 	@ManyToOne
-	@JoinColumn(name = "project_id")
+	@JoinColumn(name = "todolist_id")
 	@JsonIgnore
-	private Project project;
+	private TodoList todoList;
 	
 }

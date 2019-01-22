@@ -18,8 +18,8 @@ public class TaskService {
 		this.taskRepository = taskRepository;
 	}
 
-	public List<Task> getAllTasksOnProject(Long projectId) {
-		return taskRepository.findTasksByProjectId(projectId);
+	public List<Task> getAllTasksOnTodoList(Long todoListId) {
+		return taskRepository.findTasksByTodoListId(todoListId);
 	}
 
 	public Task getTask(Long id) {
