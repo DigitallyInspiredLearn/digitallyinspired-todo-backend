@@ -9,5 +9,5 @@ import com.list.todo.entity.Task;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-	public List<Task> findTasksByTodoListId(Long projectId);
+	public List<Task> findTasksByTodoListId(Long todoListId);
 }

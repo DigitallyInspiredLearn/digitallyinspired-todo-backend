@@ -1,6 +1,7 @@
 package com.list.todo.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,8 @@ public class TaskService {
 	}
 
 	public Task getTask(Long id) {
-		return taskRepository.findById(id).get();
+		Optional<Task> task = taskRepository.findById(id);
+		return task.isPresent() ? task.get() : null;
 	}
 
 	public void addTask(Task task) {

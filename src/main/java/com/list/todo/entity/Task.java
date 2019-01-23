@@ -1,30 +1,21 @@
 package com.list.todo.entity;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.validation.constraints.NotNull;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Data
-public class Task {
+@Data @EqualsAndHashCode(callSuper=true) 
+public class Task extends BaseEntity {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
-	
+	@NotNull
 	private String body;
+	
+	@NotNull
 	private Boolean isComplete;
 	
-	@ManyToOne
-	@JoinColumn(name = "todolist_id")
-	@JsonIgnore
-	private TodoList todoList;
-	
+	@NotNull
+	private Long todoListId;
 }

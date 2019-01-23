@@ -3,6 +3,7 @@ package com.list.todo.services;
 import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.TodoListRepository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,8 @@ public class TodoListService {
     }
     
     public TodoList getTodoList(Long id){
-        return repository.findById(id).get();
+    	Optional<TodoList> todoList = repository.findById(id);
+        return todoList.isPresent() ? todoList.get() : null;
     }
 
     public void addTodoList(TodoList todoList){
