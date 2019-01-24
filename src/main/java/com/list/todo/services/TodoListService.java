@@ -2,22 +2,17 @@ package com.list.todo.services;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.TodoListRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 @Service
+@AllArgsConstructor
 public class TodoListService {
 	
     private final TodoListRepository repository;
-
-    @Autowired
-    public TodoListService(TodoListRepository repository) {
-        this.repository = repository;
-    }
 
     public Set<TodoList> getAllTodoListsByUser(Long userId){
         return repository.findTodoListsByUserOwnerId(userId);
@@ -25,7 +20,7 @@ public class TodoListService {
     
     public TodoList getTodoList(Long id){
     	Optional<TodoList> todoList = repository.findById(id);
-        return todoList.isPresent() ? todoList.get() : null;
+        return todoList.orElse(null);
     }
 
     public void addTodoList(TodoList todoList){
@@ -36,7 +31,7 @@ public class TodoListService {
     	repository.save(todoList);
     }
     
-    public void deleteTodoList(Long id) {
-    	repository.deleteById(id);
+    public void deleteTodoList(TodoList todoList) {
+    	repository.delete(todoList);
     }
 }

@@ -1,143 +1,102 @@
 package com.list.todo.controllers;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.list.todo.entity.Task;
+import com.list.todo.entity.TodoList;
+import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.TaskService;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
-import com.list.todo.entity.Task;
-import com.list.todo.entity.TodoList;
-import com.list.todo.security.CurrentUser;
-import com.list.todo.security.UserPrincipal;
-import com.list.todo.services.TaskService;
-import com.list.todo.services.TodoListService;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/todolists/{todoListId}/tasks")
+@RequestMapping("/api/tasks")
+@AllArgsConstructor
+@PreAuthorize("hasRole('ROLE_USER')")
 public class TasksController {
 
 	private final TaskService taskService;
-	private final TodoListService todoListService;
-	
-	@Autowired
-	public TasksController(TaskService taskService, TodoListService todoListService) {
-		this.taskService = taskService;
-		this.todoListService = todoListService;
-	}
 
 	@GetMapping
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<List<Task>> getAllTasksOnTodoList(@PathVariable Long todoListId,
-															@CurrentUser UserPrincipal currentUser) {
-		TodoList currentTodoList = todoListService.getTodoList(todoListId);
+	public ResponseEntity<List<Task>> getAllTasksOnTodoList(@RequestParam("todoListId") TodoList currentTodoList,
+															@AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<List<Task>> responseEntity;
 
 		if (currentTodoList == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			List<Task> tasks = taskService.getAllTasksOnTodoList(currentTodoList);
+			responseEntity = new ResponseEntity<>(tasks, HttpStatus.OK);
 		}
-		if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-		List<Task> tasks = taskService.getAllTasksOnTodoList(todoListId);
-		return new ResponseEntity<>(tasks, HttpStatus.OK);
+		return responseEntity;
 	}
 
-	@GetMapping("/{id}")
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<Task> getTask(@PathVariable Long id,
-										@PathVariable Long todoListId,
-										@CurrentUser UserPrincipal currentUser) {
-		TodoList currentTodoList = todoListService.getTodoList(todoListId);
-		Task task = taskService.getTask(id);
-
-		if (currentTodoList == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		if (task == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-
-		return new ResponseEntity<>(task, HttpStatus.OK);
-	}
-	
 	@PostMapping	
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<Void> addTask(@RequestBody Task task,
-										@PathVariable Long todoListId,
-										@CurrentUser UserPrincipal currentUser) {
-		TodoList currentTodoList = todoListService.getTodoList(todoListId);
-		
-		if (currentTodoList == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		
-		task.setTodoListId(todoListId);
-		task.setIsComplete(false);
-		
-		taskService.addTask(task);
+	public ResponseEntity<Task> addTask(@RequestBody Task task,
+										@RequestParam("todoListId") TodoList currentTodoList,
+										@AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Task> responseEntity;
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			task.setIsComplete(false);
+
+			task.setTodoList(currentTodoList);
+			taskService.addTask(task);
+
+			responseEntity = new ResponseEntity<>(task, HttpStatus.OK);
+		}
+		return responseEntity;
 	}
 	
 	@PutMapping("/{id}")
-	@PreAuthorize("hasRole('ROLE_USER')")
 	public ResponseEntity<Task> updateTask(@RequestBody Task task,
-										   @PathVariable Long id,
-										   @PathVariable Long todoListId,
-										   @CurrentUser UserPrincipal currentUser) {
-		TodoList currentTodoList = todoListService.getTodoList(todoListId);
-		TodoList editTodoList = todoListService.getTodoList(task.getTodoListId());		
+										   @PathVariable("id") Task currentTask,
+										   @AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Task> responseEntity;
 
-		if (currentTodoList == null || editTodoList == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())
-				|| (!editTodoList.getUserOwnerId().equals(currentUser.getId()))) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		
-		Task currentTask = taskService.getTask(id);
-		currentTask.setBody(task.getBody());
-		currentTask.setIsComplete(task.getIsComplete());
-		currentTask.setTodoListId(task.getTodoListId());
-		
-		taskService.updateTask(currentTask);
+		TodoList currentTodoList = currentTask.getTodoList();
 
-		return new ResponseEntity<>(currentTask, HttpStatus.OK);
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			BeanUtils.copyProperties(task, currentTask, "id");
+
+            currentTask.setTodoList(currentTodoList);
+
+			taskService.updateTask(currentTask);
+
+			responseEntity = new ResponseEntity<>(currentTask, HttpStatus.OK);
+		}
+		return responseEntity;
 	}
 	
 	@DeleteMapping("/{id}")
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<Void> deleteTask(@PathVariable Long id,
-										   @PathVariable Long todoListId,
-										   @CurrentUser UserPrincipal currentUser) {
-		TodoList currentTodoList = todoListService.getTodoList(todoListId);
+	public ResponseEntity<Void> deleteTask(@PathVariable("id") Task task,
+										   @AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Void> responseEntity;
+		TodoList currentTodoList = task.getTodoList();
 
 		if (currentTodoList == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			taskService.deleteTask(task);
+			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
-		if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-		taskService.deleteTask(id);
-
-		return new ResponseEntity<>(HttpStatus.OK);
+		return responseEntity;
 	}
 }

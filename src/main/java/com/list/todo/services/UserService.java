@@ -1,7 +1,8 @@
 package com.list.todo.services;
 
-import java.util.List;
-
+import com.list.todo.entity.User;
+import com.list.todo.repositories.UserRepository;
+import com.list.todo.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,9 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.list.todo.entity.User;
-import com.list.todo.repositories.UserRepository;
-import com.list.todo.security.UserPrincipal;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -49,27 +48,6 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
     	userRepository.deleteById(id);
     }
-
-    public boolean isUserExist(User user){
-        for (User u : getAllUsers()){
-            if (u.equals(user)){
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /*    @Override
-    public UserDetails loadUserByUsername(String eMail) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(eMail);
-
-        if (user == null){
-            throw new UsernameNotFoundException("User not found");
-        }
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("user"));
-
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
-    }*/
     
     @Override
     @Transactional

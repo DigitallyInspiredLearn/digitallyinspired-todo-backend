@@ -1,16 +1,17 @@
 package com.list.todo.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "todoList")
-@Data @EqualsAndHashCode(callSuper=true)
+@Data @EqualsAndHashCode(callSuper=true, exclude = "tasks")
 public class TodoList extends BaseEntity {
 	
 	@NotNull
@@ -19,5 +20,8 @@ public class TodoList extends BaseEntity {
 
     @NotNull
     private Long userOwnerId;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
+    private Set<Task> tasks = new HashSet<>();
     
 }

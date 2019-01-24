@@ -1,66 +1,53 @@
 package com.list.todo.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.list.todo.entity.User;
+import com.list.todo.payload.UserSummary;
+import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.UserService;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.list.todo.entity.User;
-import com.list.todo.payload.UserSummary;
-import com.list.todo.security.CurrentUser;
-import com.list.todo.security.UserPrincipal;
-import com.list.todo.services.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@AllArgsConstructor
+@PreAuthorize("hasRole('ROLE_USER')")
 public class UserController {
 	
 	private final UserService userService;
 
-	@Autowired
-	public UserController(UserService userService) {
-		this.userService = userService;
-	}
-
 	@GetMapping("/me")
-	@PreAuthorize("hasRole('ROLE_USER')")
-    public UserSummary getCurrentUser(@CurrentUser UserPrincipal currentUser) {
+    public UserSummary getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
 		User user = userService.getUserById(currentUser.getId());
 
 		return new UserSummary(user.getId(), user.getUsername(), user.getName());
     }
 	
 	@PutMapping("/editProfile")
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<User> updateUser(@CurrentUser UserPrincipal currentUser, @RequestBody User user) {
+	public ResponseEntity<User> updateUser(@AuthenticationPrincipal UserPrincipal currentUser,
+										   @RequestBody User user) {
 		User currUser = userService.getUserById(currentUser.getId());
+		ResponseEntity<User> responseEntity;
 
 		if (currUser == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else {
+			BeanUtils.copyProperties(user, currUser, "id", "roles");
+			userService.updateUser(currUser);
+			responseEntity = new ResponseEntity<>(currUser, HttpStatus.OK);
 		}
-
-		currUser.setName(user.getName());
-		currUser.setUsername(user.getUsername());
-		currUser.setEmail(user.getEmail());
-		currUser.setPassword(user.getPassword());
-
-		userService.updateUser(currUser);
-
-		return new ResponseEntity<>(currUser, HttpStatus.OK);
+		return responseEntity;
 	}
 	
 	@DeleteMapping("/deleteProfile")
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<User> deleteUser(@CurrentUser UserPrincipal currentUser) {
+	public ResponseEntity<User> deleteUser(@AuthenticationPrincipal UserPrincipal currentUser) {
 
 		userService.deleteUser(currentUser.getId());
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
