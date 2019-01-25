@@ -1,85 +1,52 @@
 package com.list.todo.controllers;
 
 import com.list.todo.entity.User;
+import com.list.todo.payload.UserSummary;
+import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.List;
 
 @RestController
+@RequestMapping("/api/users")
+@AllArgsConstructor
+@PreAuthorize("hasRole('ROLE_USER')")
 public class UserController {
 	
 	private final UserService userService;
 
-	@Autowired
-	public UserController(UserService userService) {
-		this.userService = userService;
-	}
+	@GetMapping("/me")
+    public UserSummary getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
+		User user = userService.getUserById(currentUser.getId());
 
-	@GetMapping("/users")
-	public ResponseEntity<List<User>> getAllUsers() {
-		List<User> users = userService.getAllUsers();
-		if (users.isEmpty()){
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<>(users, HttpStatus.OK);
-	}
+		return new UserSummary(user.getId(), user.getUsername(), user.getName());
+    }
+	
+	@PutMapping("/editProfile")
+	public ResponseEntity<User> updateUser(@AuthenticationPrincipal UserPrincipal currentUser,
+										   @RequestBody User user) {
+		User currUser = userService.getUserById(currentUser.getId());
+		ResponseEntity<User> responseEntity;
 
-	@GetMapping(value = "/users/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<User> getUser(@PathVariable Long id) {
-		User user = userService.getUserById(id);
-		if (user == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		if (currUser == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else {
+			BeanUtils.copyProperties(user, currUser, "id", "roles");
+			userService.updateUser(currUser);
+			responseEntity = new ResponseEntity<>(currUser, HttpStatus.OK);
 		}
-		return new ResponseEntity<>(user, HttpStatus.OK);
+		return responseEntity;
 	}
 	
-	@PostMapping(value = "/users")
-	public ResponseEntity<Void> addUser(@RequestBody User user, UriComponentsBuilder ucBuilder) {
-		if (userService.isUserExist(user)){
-			return new ResponseEntity<>(HttpStatus.CONFLICT);
-		}
+	@DeleteMapping("/deleteProfile")
+	public ResponseEntity<User> deleteUser(@AuthenticationPrincipal UserPrincipal currentUser) {
 
-		userService.saveUser(user);
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(ucBuilder.path("/users/{id}").buildAndExpand(user.getUserId()).toUri());
-		return new ResponseEntity<>(headers, HttpStatus.CREATED);
-	}
-	
-	@PutMapping(value = "/users/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-		User currentUser = userService.getUserById(id);
-
-		if (currentUser == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-
-		currentUser.setName(user.getName());
-		currentUser.setSurname(user.getSurname());
-		currentUser.seteMail(user.geteMail());
-		currentUser.setPassword(user.getPassword());
-		currentUser.setProjects(user.getProjects());
-
-		userService.updateUser(currentUser);
-
-		return new ResponseEntity<>(currentUser, HttpStatus.OK);
-	}
-	
-	@DeleteMapping(value = "/users/{id}")
-	public ResponseEntity<User> deleteUser(@PathVariable Long id) {
-		User user = userService.getUserById(id);
-
-		if (user == null){
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		userService.getUserById(id);
+		userService.deleteUser(currentUser.getId());
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}

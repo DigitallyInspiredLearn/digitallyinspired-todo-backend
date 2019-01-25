@@ -1,61 +1,102 @@
 package com.list.todo.controllers;
 
+import com.list.todo.entity.Task;
+import com.list.todo.entity.TodoList;
+import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.TaskService;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.list.todo.entity.Project;
-import com.list.todo.entity.Task;
-import com.list.todo.services.ProjectService;
-import com.list.todo.services.TaskService;
-
 @RestController
+@RequestMapping("/api/tasks")
+@AllArgsConstructor
+@PreAuthorize("hasRole('ROLE_USER')")
 public class TasksController {
 
 	private final TaskService taskService;
-	
-	private final ProjectService projectService;
 
-	@Autowired
-	public TasksController(TaskService taskService, ProjectService projectService) {
-		this.taskService = taskService;
-		this.projectService = projectService;
+	@GetMapping
+	public ResponseEntity<List<Task>> getAllTasksOnTodoList(@RequestParam("todoListId") TodoList currentTodoList,
+															@AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<List<Task>> responseEntity;
+
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			List<Task> tasks = taskService.getAllTasksOnTodoList(currentTodoList);
+			responseEntity = new ResponseEntity<>(tasks, HttpStatus.OK);
+		}
+		return responseEntity;
 	}
 
-	@RequestMapping("/users/{userId}/projects/{projectId}/tasks")
-	public List<Task> getAllTasksOnProject(@PathVariable Long projectId) {
-		return taskService.getAllTasksOnProject(projectId);
-	}
+	@PostMapping	
+	public ResponseEntity<Task> addTask(@RequestBody Task task,
+										@RequestParam("todoListId") TodoList currentTodoList,
+										@AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Task> responseEntity;
 
-	@RequestMapping("/users/{userId}/projects/{projectId}/tasks/{id}")
-	public Task getTask(@PathVariable Long id) {
-		return taskService.getTask(id);
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			task.setIsComplete(false);
+
+			task.setTodoList(currentTodoList);
+			taskService.addTask(task);
+
+			responseEntity = new ResponseEntity<>(task, HttpStatus.OK);
+		}
+		return responseEntity;
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/users/{userId}/projects/{projectId}/tasks")
-	public void addTask(@RequestBody Task task, @PathVariable Long projectId) {
-		Project project = new Project();
-		project.setId(projectId);
-		task.setProject(project);
-		
-		taskService.addTask(task);
+	@PutMapping("/{id}")
+	public ResponseEntity<Task> updateTask(@RequestBody Task task,
+										   @PathVariable("id") Task currentTask,
+										   @AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Task> responseEntity;
+
+		TodoList currentTodoList = currentTask.getTodoList();
+
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			BeanUtils.copyProperties(task, currentTask, "id");
+
+            currentTask.setTodoList(currentTodoList);
+
+			taskService.updateTask(currentTask);
+
+			responseEntity = new ResponseEntity<>(currentTask, HttpStatus.OK);
+		}
+		return responseEntity;
 	}
 	
-	@RequestMapping(method = RequestMethod.PUT, value = "/users/{userId}/projects/{projectId}/tasks/{id}")
-	public void updateTask(@RequestBody Task task, @PathVariable Long projectId) {
-		Project project = new Project();
-		project.setId(projectId);
-		task.setProject(project);
-		taskService.updateTask(task);
-	}
-	
-	@RequestMapping(method = RequestMethod.DELETE, value = "/users/{userId}/projects/{projectId}/tasks/{id}")
-	public void deleteTask(@PathVariable Long id) {
-		taskService.deleteTask(id);
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteTask(@PathVariable("id") Task task,
+										   @AuthenticationPrincipal UserPrincipal currentUser) {
+		ResponseEntity<Void> responseEntity;
+		TodoList currentTodoList = task.getTodoList();
+
+		if (currentTodoList == null){
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			taskService.deleteTask(task);
+			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		return responseEntity;
 	}
 }

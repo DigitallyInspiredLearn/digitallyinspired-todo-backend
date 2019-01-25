@@ -1,29 +1,27 @@
 package com.list.todo.services;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.list.todo.entity.Task;
+import com.list.todo.entity.TodoList;
+import com.list.todo.repositories.TaskRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.list.todo.entity.Task;
-import com.list.todo.repositories.TaskRepository;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class TaskService {
 
 	private final TaskRepository taskRepository;
 
-	@Autowired
-	public TaskService(TaskRepository taskRepository) {
-		this.taskRepository = taskRepository;
-	}
-
-	public List<Task> getAllTasksOnProject(Long projectId) {
-		return taskRepository.findTasksByProjectId(projectId);
+	public List<Task> getAllTasksOnTodoList(TodoList todoList) {
+		return taskRepository.findTasksByTodoListId(todoList.getId());
 	}
 
 	public Task getTask(Long id) {
-		return taskRepository.findById(id).get();
+		Optional<Task> task = taskRepository.findById(id);
+		return task.orElse(null);
 	}
 
 	public void addTask(Task task) {
@@ -34,8 +32,8 @@ public class TaskService {
 		taskRepository.save(task);
 	}
 
-	public void deleteTask(Long id) {
-		taskRepository.deleteById(id);
+	public void deleteTask(Task task) {
+		taskRepository.delete(task);
 	}
 
 }

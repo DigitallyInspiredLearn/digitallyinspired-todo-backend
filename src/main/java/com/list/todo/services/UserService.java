@@ -2,34 +2,33 @@ package com.list.todo.services;
 
 import com.list.todo.entity.User;
 import com.list.todo.repositories.UserRepository;
+import com.list.todo.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
-    
+	
 	private final UserRepository userRepository;
-
+	
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    public UserService(UserRepository repository, @Lazy BCryptPasswordEncoder bCryptPasswordEncoder) {
+	@Autowired
+    public UserService (UserRepository repository, @Lazy BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = repository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
-
-
-
-    public List<User> getAllUsers(){
+	
+	
+	public List<User> getAllUsers(){
         return userRepository.findAll();
     }
 
@@ -49,25 +48,27 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
     	userRepository.deleteById(id);
     }
+    
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String usernameOrEmail)
+            throws UsernameNotFoundException {
+        // Let people login with either username or email
+        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> 
+                        new UsernameNotFoundException("User not found with username or email : " + usernameOrEmail)
+        );
 
-    public boolean isUserExist(User user){
-        for (User u : getAllUsers()){
-            if (u.equals(user)){
-                return true;
-            }
-        }
-        return false;
+        return UserPrincipal.create(user);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String eMail) throws UsernameNotFoundException {
-        User user = userRepository.findByEMail(eMail);
+    // This method is used by JWTAuthenticationFilter
+    @Transactional
+    public UserDetails loadUserById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(
+            () -> new UsernameNotFoundException("User not found with id : " + id)
+        );
 
-        if (user == null){
-            throw new UsernameNotFoundException("User not found");
-        }
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("user"));
-
-        return new org.springframework.security.core.userdetails.User(user.geteMail(), user.getPassword(), authorities);
+        return UserPrincipal.create(user);
     }
 }
