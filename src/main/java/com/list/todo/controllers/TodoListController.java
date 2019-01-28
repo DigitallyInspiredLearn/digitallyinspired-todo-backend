@@ -4,6 +4,7 @@ import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
 import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.FollowerService;
 import com.list.todo.services.ShareService;
 import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
@@ -26,6 +27,7 @@ public class TodoListController {
 	private final TodoListService todoListService;
 	private final UserService userService;
 	private final ShareService shareService;
+	private final FollowerService followerService;
 	
 	@GetMapping("/my")
 	public ResponseEntity<List<TodoList>> getTodoListsByUser(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -67,6 +69,8 @@ public class TodoListController {
 
 		todoListService.addTodoList(todoList);
 
+		followerService.notifyFollowersAboutAddTodoList(currentUser, todoList);
+
 		return new ResponseEntity<>(todoList, HttpStatus.OK);
 	}
 	
@@ -92,6 +96,8 @@ public class TodoListController {
 
 			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, todoList);
 
+			followerService.notifyFollowersAboutSharingTodoList(currentUser, todoList, sharedUser);
+
 			responseEntity = new ResponseEntity<>(HttpStatus.OK);
 		}
 		return responseEntity;
@@ -109,7 +115,10 @@ public class TodoListController {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
 			BeanUtils.copyProperties(todoList, currentTodoList, "id", "userOwnerId");
+
 			todoListService.updateTodoList(currentTodoList);
+			followerService.notifyFollowersAboutUpdatingTodoList(currentUser, todoList);
+
 			responseEntity = new ResponseEntity<>(currentTodoList, HttpStatus.OK);
 		}
 
@@ -127,6 +136,8 @@ public class TodoListController {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
 			todoListService.deleteTodoList(todoList);
+			followerService.notifyFollowersAboutDeletingTodoList(currentUser, todoList);
+
 			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
 

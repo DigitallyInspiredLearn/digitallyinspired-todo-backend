@@ -89,8 +89,8 @@ public class UserController {
 	@PostMapping("/followUser")
 	public ResponseEntity<Void> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
 										   @RequestParam("username") String username) {
-
-		followerService.followUser(new Follower(currentUser.getId(), userService.getUserByUsername(username)));
+		User currUser = userService.getUserById(currentUser.getId());
+		followerService.followUser(new Follower(userService.getUserByUsername(username).getId(), currUser));
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
