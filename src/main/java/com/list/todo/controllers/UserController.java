@@ -48,7 +48,7 @@ public class UserController {
 
 		List<User> users = userService.getUsersByPartOfUsername(username);
 		
-		return new ResponseEntity<List<User>>(users, HttpStatus.OK);
+		return new ResponseEntity<>(users, HttpStatus.OK);
 	}
 	
 	@GetMapping("/userStats")
@@ -62,7 +62,7 @@ public class UserController {
 		List<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
 		userStats.setSharedTodoLists(sharedTodoLists);
 
-		return new ResponseEntity<UserStats>(userStats, HttpStatus.OK);
+		return new ResponseEntity<>(userStats, HttpStatus.OK);
 	}
 	
 	@PutMapping("/editProfile")
