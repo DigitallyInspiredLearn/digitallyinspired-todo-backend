@@ -17,12 +17,12 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class Follower extends BaseEntity {
 
+
     @NotNull
-    private Long followerUserId;
+    private Long followedUserId;
 
     @ManyToOne
-    @JoinColumn(name = "followeduser_id")
+    @JoinColumn(name = "followeruser_id")
     @NotNull
-    private User followedUser;
-
+    private User follower;
 }
