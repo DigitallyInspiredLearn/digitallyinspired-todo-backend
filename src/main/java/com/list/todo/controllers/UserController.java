@@ -2,18 +2,14 @@ package com.list.todo.controllers;
 
 import java.util.List;
 
+import com.list.todo.entity.Follower;
+import com.list.todo.services.FollowerService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
@@ -35,6 +31,7 @@ public class UserController {
 	private final UserService userService;
 	private final TodoListService todoListService;
 	private final ShareService shareService;
+	private final FollowerService followerService;
 
 	@GetMapping("/me")
     public UserSummary getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -87,5 +84,22 @@ public class UserController {
 		userService.deleteUser(currentUser.getId());
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+
+	@PostMapping("/followUser")
+	public ResponseEntity<Void> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
+										   @RequestParam("username") String username) {
+
+		followerService.followUser(new Follower(currentUser.getId(), userService.getUserByUsername(username)));
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/followers")
+	public ResponseEntity<List<User>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
+
+		List<User> followers = followerService.getFollowersByUserId(currentUser.getId());
+
+		return new ResponseEntity<>(followers, HttpStatus.OK);
 	}
 }
