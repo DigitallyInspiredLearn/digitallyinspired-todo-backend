@@ -32,10 +32,11 @@ public class UserController {
 	private final FollowerService followerService;
 
 	@GetMapping("/me")
-    public UserSummary getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<UserSummary> getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
 		User user = userService.getUserById(currentUser.getId());
-
-		return new UserSummary(user.getUsername(), user.getName(), user.getEmail());
+		UserSummary userSummary = new UserSummary(user.getUsername(), user.getName(), user.getEmail());
+		
+		return new ResponseEntity<UserSummary>(userSummary, HttpStatus.OK);
     }
 	
 	@GetMapping("/search")

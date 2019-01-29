@@ -1,4 +1,4 @@
-package com.list.todo;
+package com.list.todo.services;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,11 +7,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class TodoListApplicationTests {
+public class UserServiceTest {
 
 	@Test
-	public void contextLoads() {
+	public void addUser() {
+		
 	}
-
 }
-
