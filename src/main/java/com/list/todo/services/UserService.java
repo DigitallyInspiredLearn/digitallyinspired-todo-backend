@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -34,6 +35,16 @@ public class UserService implements UserDetailsService {
 
     public User getUserById(Long userId){
         return userRepository.findById(userId).get();
+    }
+    
+    public List<User> getUsersByPartOfUsername(String partOfUsername){
+        List<User> users = userRepository.findByUsernameLike(partOfUsername + "%");
+    	return users;
+    }
+    
+    public User getUserByUsername(String username){
+        Optional<User> user = userRepository.findByUsername(username);
+    	return user.orElse(null);
     }
 
     public void saveUser(User user){

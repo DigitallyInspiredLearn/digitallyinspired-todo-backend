@@ -5,8 +5,8 @@ import com.list.todo.repositories.TodoListRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -14,7 +14,7 @@ public class TodoListService {
 	
     private final TodoListRepository repository;
 
-    public Set<TodoList> getAllTodoListsByUser(Long userId){
+    public List<TodoList> getTodoListsByUser(Long userId){
         return repository.findTodoListsByUserOwnerId(userId);
     }
     
