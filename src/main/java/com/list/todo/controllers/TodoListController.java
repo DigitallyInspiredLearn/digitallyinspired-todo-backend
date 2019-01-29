@@ -64,11 +64,9 @@ public class TodoListController {
 	public ResponseEntity<TodoList> addTodoList(@RequestBody TodoList todoList,
 												@AuthenticationPrincipal UserPrincipal currentUser) {
 		Long userId = currentUser.getId();
-
 		todoList.setUserOwnerId(userId);
 
 		todoListService.addTodoList(todoList);
-
 		followerService.notifyFollowersAboutAddTodoList(currentUser, todoList);
 
 		return new ResponseEntity<>(todoList, HttpStatus.OK);
@@ -77,26 +75,22 @@ public class TodoListController {
 	@PostMapping("/{todoListId}/share")
 	public ResponseEntity<Void> shareTodoListToUser(@AuthenticationPrincipal UserPrincipal currentUser,
 													@RequestParam("username") String sharedUsername,
-													@PathVariable("todoListId") TodoList todoList) {
+													@PathVariable("todoListId") TodoList sharedTodoList) {
 		ResponseEntity<Void> responseEntity;
 
 		User sharedUser = userService.getUserByUsername(sharedUsername);
 		
-		if(sharedUser == null || todoList == null) {
+		if(sharedUser == null || sharedTodoList == null) {
 			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}  else if (!todoList.getUserOwnerId().equals(currentUser.getId()) || 
+		}  else if (!sharedTodoList.getUserOwnerId().equals(currentUser.getId()) || 
 				currentUser.getUsername().equals(sharedUsername)) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			Share share = new Share();
-			share.setSharedUserId(sharedUser.getId());
-			share.setSharedTodoList(todoList);
+			Share share = new Share(sharedUser.getId(), sharedTodoList);
 			
 			shareService.addShare(share);
-
-			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, todoList);
-
-			followerService.notifyFollowersAboutSharingTodoList(currentUser, todoList, sharedUser);
+			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, sharedTodoList);
+			followerService.notifyFollowersAboutSharingTodoList(currentUser, sharedTodoList, sharedUser);
 
 			responseEntity = new ResponseEntity<>(HttpStatus.OK);
 		}
