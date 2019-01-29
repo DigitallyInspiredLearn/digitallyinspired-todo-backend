@@ -3,6 +3,7 @@ package com.list.todo.services;
 import com.list.todo.entity.Follower;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,18 @@ public class FollowerService {
     public List<User> getFollowersByUserId(Long userId) {
         List<Follower> followers = followerRepository.findByFollowedUserId(userId);
         List<User> followedUsers = new ArrayList<>();
-        followers
-                .forEach(follower -> followedUsers.add(follower.getFollower()));
+        followers.forEach(follower -> followedUsers.add(follower.getFollower()));
+
+        return followedUsers;
+    }
+
+    public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
+        List<Follower> followers = followerRepository.findByFollowedUserId(userId);
+        List<UserSummary> followedUsers = new ArrayList<>();
+        followers.forEach(follower -> followedUsers.add(new UserSummary(
+                        follower.getFollower().getUsername(),
+                        follower.getFollower().getName(),
+                        follower.getFollower().getEmail())));
 
         return followedUsers;
     }
