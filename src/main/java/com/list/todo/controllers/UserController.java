@@ -1,9 +1,16 @@
 package com.list.todo.controllers;
 
-import java.util.List;
-
 import com.list.todo.entity.Follower;
+import com.list.todo.entity.TodoList;
+import com.list.todo.entity.User;
+import com.list.todo.payload.UserStats;
+import com.list.todo.payload.UserSummary;
+import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
+import com.list.todo.services.ShareService;
+import com.list.todo.services.TodoListService;
+import com.list.todo.services.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,16 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.list.todo.entity.TodoList;
-import com.list.todo.entity.User;
-import com.list.todo.payload.UserStats;
-import com.list.todo.payload.UserSummary;
-import com.list.todo.security.UserPrincipal;
-import com.list.todo.services.ShareService;
-import com.list.todo.services.TodoListService;
-import com.list.todo.services.UserService;
-
-import lombok.AllArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -37,7 +35,7 @@ public class UserController {
     public UserSummary getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
 		User user = userService.getUserById(currentUser.getId());
 
-		return new UserSummary(user.getId(), user.getUsername(), user.getName());
+		return new UserSummary(user.getUsername(), user.getName(), user.getEmail());
     }
 	
 	@GetMapping("/search")
@@ -96,10 +94,9 @@ public class UserController {
 	}
 
 	@GetMapping("/followers")
-	public ResponseEntity<List<User>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<List<UserSummary>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
+		List<UserSummary> userSummaries = followerService.getFollowersUserSummariesByUserId(currentUser.getId());
 
-		List<User> followers = followerService.getFollowersByUserId(currentUser.getId());
-
-		return new ResponseEntity<>(followers, HttpStatus.OK);
+		return new ResponseEntity<>(userSummaries, HttpStatus.OK);
 	}
 }
