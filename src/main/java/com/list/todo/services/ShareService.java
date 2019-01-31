@@ -1,17 +1,15 @@
 package com.list.todo.services;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.list.todo.entity.User;
-import com.list.todo.security.UserPrincipal;
-import org.springframework.stereotype.Service;
-
 import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.User;
 import com.list.todo.repositories.ShareRepository;
-
+import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -40,7 +38,7 @@ public class ShareService {
 
 		String message = String.format(
 				"Hi, %s!\n" +
-						"User %s shared with you TodoList: %s. " +
+						"User %s shared with you TodoList: \"%s\". " +
 						"Follow the link to view: %s",
 				sharedUser.getName(),
 				senderUser.getName(),
