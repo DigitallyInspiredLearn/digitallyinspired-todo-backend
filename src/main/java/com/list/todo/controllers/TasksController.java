@@ -24,12 +24,12 @@ public class TasksController {
 
 	@GetMapping
 	public ResponseEntity<List<Task>> getAllTasksOnTodoList(@RequestParam("todoListId") TodoList currentTodoList,
-															@AuthenticationPrincipal UserPrincipal currentUser) {
+			@AuthenticationPrincipal UserPrincipal currentUser) {
 		ResponseEntity<List<Task>> responseEntity;
 
-		if (currentTodoList == null){
+		if (currentTodoList == null) {
 			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
+		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
 			List<Task> tasks = taskService.getAllTasksOnTodoList(currentTodoList);
@@ -38,13 +38,12 @@ public class TasksController {
 		return responseEntity;
 	}
 
-	@PostMapping	
-	public ResponseEntity<Task> addTask(@RequestBody Task task,
-										@RequestParam("todoListId") TodoList currentTodoList,
-										@AuthenticationPrincipal UserPrincipal currentUser) {
+	@PostMapping
+	public ResponseEntity<Task> addTask(@RequestBody Task task, @RequestParam("todoListId") TodoList currentTodoList,
+			@AuthenticationPrincipal UserPrincipal currentUser) {
 		ResponseEntity<Task> responseEntity;
 
-		if (currentTodoList == null){
+		if (currentTodoList == null) {
 			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -58,44 +57,55 @@ public class TasksController {
 		}
 		return responseEntity;
 	}
-	
+
 	@PutMapping("/{id}")
-	public ResponseEntity<Task> updateTask(@RequestBody Task task,
-										   @PathVariable("id") Task currentTask,
-										   @AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<Task> updateTask(@RequestBody Task task, @PathVariable("id") Task currentTask,
+			@AuthenticationPrincipal UserPrincipal currentUser) {
 		ResponseEntity<Task> responseEntity;
+		TodoList currentTodoList;
 
-		TodoList currentTodoList = currentTask.getTodoList();
+		if (currentTask != null) {
+			
+			currentTodoList = currentTask.getTodoList();
 
-		if (currentTodoList == null){
-			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
-			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			if (currentTodoList == null) {
+				responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+				responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} else {
+				BeanUtils.copyProperties(task, currentTask, "id");
+				currentTask.setTodoList(currentTodoList);
+				taskService.updateTask(currentTask);
+				responseEntity = new ResponseEntity<>(currentTask, HttpStatus.OK);
+			}
 		} else {
-			BeanUtils.copyProperties(task, currentTask, "id");
 
-            currentTask.setTodoList(currentTodoList);
-
-			taskService.updateTask(currentTask);
-
-			responseEntity = new ResponseEntity<>(currentTask, HttpStatus.OK);
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		return responseEntity;
 	}
-	
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteTask(@PathVariable("id") Task task,
-										   @AuthenticationPrincipal UserPrincipal currentUser) {
+			@AuthenticationPrincipal UserPrincipal currentUser) {
 		ResponseEntity<Void> responseEntity;
-		TodoList currentTodoList = task.getTodoList();
+		TodoList currentTodoList;
+	
+		if (task != null) {
+			
+			currentTodoList = task.getTodoList();
 
-		if (currentTodoList == null){
-			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
-			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			if (currentTodoList == null) {
+				responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+				responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} else {
+				taskService.deleteTask(task);
+				responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
 		} else {
-			taskService.deleteTask(task);
-			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		return responseEntity;
 	}

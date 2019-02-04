@@ -64,13 +64,13 @@ public class UserController {
 	@PutMapping("/editProfile")
 	public ResponseEntity<User> updateUser(@AuthenticationPrincipal UserPrincipal currentUser,
 										   @RequestBody User user) {
-		User currUser = userService.getUserById(currentUser.getId());
 		ResponseEntity<User> responseEntity;
+		User currUser = userService.getUserById(currentUser.getId());
 
 		if (currUser == null){
 			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} else {
-			BeanUtils.copyProperties(user, currUser, "id", "roles");
+			BeanUtils.copyProperties(user, currUser, "id", "role", "email", "password");
 			userService.updateUser(currUser);
 			responseEntity = new ResponseEntity<>(currUser, HttpStatus.OK);
 		}
@@ -86,12 +86,23 @@ public class UserController {
 	}
 
 	@PostMapping("/followUser")
-	public ResponseEntity<Void> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
+	public ResponseEntity<User> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
 										   @RequestParam("username") String username) {
+		ResponseEntity<User> responseEntity;
+		
 		User currUser = userService.getUserById(currentUser.getId());
-		followerService.followUser(new Follower(userService.getUserByUsername(username).getId(), currUser));
+		User followedUser = userService.getUserByUsername(username); 
+		
+		if (followedUser == null) {
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} else {
+			
+			Follower follower = new Follower(followedUser.getId(), currUser);
+			followerService.followUser(follower);
+			responseEntity = new ResponseEntity<>(followedUser, HttpStatus.OK);
+		}
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		return responseEntity;
 	}
 
 	@GetMapping("/followers")

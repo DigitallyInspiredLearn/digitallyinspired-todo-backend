@@ -8,11 +8,13 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AllArgsConstructor
+@AllArgsConstructor 
+@NoArgsConstructor
 public class Share extends BaseEntity {
 
 	@NotNull
