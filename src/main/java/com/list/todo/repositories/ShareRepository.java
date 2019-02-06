@@ -9,5 +9,5 @@ import com.list.todo.entity.Share;
 
 @Repository
 public interface ShareRepository extends JpaRepository<Share, Long> {
-	public List<Share> findBySharedUserId(Long userId);
+	List<Share> findBySharedUserId(Long userId);
 }

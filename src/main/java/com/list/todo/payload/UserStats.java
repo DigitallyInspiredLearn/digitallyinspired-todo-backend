@@ -8,7 +8,6 @@ import lombok.Data;
 
 @Data
 public class UserStats {
-	
 	private List<TodoList> myTodoLists;
 	private List<TodoList> sharedTodoLists;
 
