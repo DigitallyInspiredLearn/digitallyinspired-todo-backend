@@ -72,31 +72,6 @@ public class TodoListController {
 		return new ResponseEntity<>(todoList, HttpStatus.OK);
 	}
 	
-	@PostMapping("/{todoListId}/share")
-	public ResponseEntity<Void> shareTodoListToUser(@AuthenticationPrincipal UserPrincipal currentUser,
-													@RequestParam("username") String sharedUsername,
-													@PathVariable("todoListId") TodoList sharedTodoList) {
-		ResponseEntity<Void> responseEntity;
-
-		User sharedUser = userService.getUserByUsername(sharedUsername);
-		
-		if(sharedUser == null || sharedTodoList == null) {
-			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}  else if (!sharedTodoList.getUserOwnerId().equals(currentUser.getId()) || 
-				currentUser.getUsername().equals(sharedUsername)) {
-			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		} else {
-			Share share = new Share(sharedUser.getId(), sharedTodoList);
-			
-			shareService.addShare(share);
-			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, sharedTodoList);
-			followerService.notifyFollowersAboutSharingTodoList(currentUser, sharedTodoList, sharedUser);
-
-			responseEntity = new ResponseEntity<>(HttpStatus.OK);
-		}
-		return responseEntity;
-	}
-	
 	@PutMapping("/{id}")
 	public ResponseEntity<TodoList> updateTodoList(@RequestBody TodoList todoList,
 												   @AuthenticationPrincipal UserPrincipal currentUser,
@@ -137,5 +112,30 @@ public class TodoListController {
 
 		return responseEntity;
 	}
+	
+	
+	@PostMapping("/{todoListId}/share")
+	public ResponseEntity<Void> shareTodoListToUser(@AuthenticationPrincipal UserPrincipal currentUser,
+													@RequestParam("username") String sharedUsername,
+													@PathVariable("todoListId") TodoList sharedTodoList) {
+		ResponseEntity<Void> responseEntity;
+
+		User sharedUser = userService.getUserByUsername(sharedUsername);
 		
+		if(sharedUser == null || sharedTodoList == null) {
+			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}  else if (!sharedTodoList.getUserOwnerId().equals(currentUser.getId()) || 
+				currentUser.getUsername().equals(sharedUsername)) {
+			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		} else {
+			Share share = new Share(sharedUser.getId(), sharedTodoList);
+			
+			shareService.addShare(share);
+			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, sharedTodoList);
+			followerService.notifyFollowersAboutSharingTodoList(currentUser, sharedTodoList, sharedUser);
+
+			responseEntity = new ResponseEntity<>(HttpStatus.OK);
+		}
+		return responseEntity;
+	}
 }

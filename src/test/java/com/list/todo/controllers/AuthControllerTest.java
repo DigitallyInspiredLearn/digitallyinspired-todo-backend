@@ -30,10 +30,10 @@ public class AuthControllerTest {
 	@Test
 	public void registerUser() throws Exception {
 		this.mockMvc.perform(post("/api/auth/register").content("{\n" + 
-				"	\"name\": \"Anton Zvonorev\",\n" + 
-				"	\"username\": \"toha\",\n" + 
-				"	\"email\": \"anton.znonar@gmail.com\",\n" + 
-				"	\"password\": \"Secret\"\n" + 
+				"	\"name\": \"Vitaliy\",\n" + 
+				"	\"username\": \"vital\",\n" + 
+				"	\"email\": \"cheremushev@yandex.com\",\n" + 
+				"	\"password\": \"Password\"\n" + 
 				"}")
 				.contentType(MediaType.parseMediaType("application/json;charset=UTF-8")))
 			.andDo(print())

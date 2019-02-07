@@ -16,7 +16,8 @@ public class TaskService {
 	private final TaskRepository taskRepository;
 
 	public List<Task> getAllTasksOnTodoList(TodoList todoList) {
-		return taskRepository.findTasksByTodoListId(todoList.getId());
+		List<Task> tasks = taskRepository.findTasksByTodoListId(todoList.getId());
+		return tasks;
 	}
 
 	public Task getTask(Long id) {
