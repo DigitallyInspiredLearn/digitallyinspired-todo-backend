@@ -22,14 +22,16 @@ public class FollowerService {
     private final EmailService emailService;
 
     public List<User> getFollowersByUserId(Long userId) {
-        return followerRepository.findByFollowedUserId(userId).stream()
+        return followerRepository.findByFollowedUserId(userId)
+                .stream()
                 .map(Follower::getFollower)
                 .collect(Collectors.toList());
     }
 
     public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
-        return followerRepository.findByFollowedUserId(userId).stream()
-                .map(f -> new UserSummary(f.getFollower().getUsername(), f.getFollower().getName(), f.getFollower().getEmail()))
+        return followerRepository.findByFollowedUserId(userId)
+                .stream()
+                .map(Follower::getFollowerUserSumm)
                 .collect(Collectors.toList());
     }
 

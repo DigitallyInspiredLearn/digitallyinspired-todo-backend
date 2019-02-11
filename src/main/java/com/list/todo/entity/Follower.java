@@ -1,5 +1,6 @@
 package com.list.todo.entity;
 
+import com.list.todo.payload.UserSummary;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,4 +26,8 @@ public class Follower extends BaseEntity {
     @JoinColumn(name = "followeruser_id")
     @NotNull
     private User follower;
+
+    public UserSummary getFollowerUserSumm(){
+        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail());
+    }
 }
