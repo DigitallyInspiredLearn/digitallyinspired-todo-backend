@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserStats {
-	
 	private List<TodoList> myTodoLists;
 	private List<TodoList> sharedTodoLists;
 

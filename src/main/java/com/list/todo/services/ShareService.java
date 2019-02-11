@@ -26,7 +26,8 @@ public class ShareService {
 				.map(Share::getSharedTodoList)
 				.collect(Collectors.toList());
 	}
-	
+
+
 	public void addShare(Share shares) {
 		sharesRepository.save(shares);
 	}

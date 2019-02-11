@@ -24,12 +24,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ROLE_USER')")
 public class TaskMutation implements GraphQLMutationResolver {
 
     private TodoListRepository todoListRepository;
     private TaskRepository taskRepository;
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public Task addTask(Long todoListId, String body, Boolean isComplete) {
 
         UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -46,7 +46,6 @@ public class TaskMutation implements GraphQLMutationResolver {
         return newTask;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public Task updateTask(Long taskId, String body, Boolean isComplete) {
 
         UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -66,7 +65,6 @@ public class TaskMutation implements GraphQLMutationResolver {
         return task;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public boolean deleteTask(Long taskId) {
 
         UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

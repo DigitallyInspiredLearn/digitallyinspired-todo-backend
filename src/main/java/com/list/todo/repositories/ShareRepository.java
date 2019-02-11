@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ShareRepository extends JpaRepository<Share, Long> {
-	public List<Share> findBySharedUserId(Long userId);
+	List<Share> findBySharedUserId(Long userId);
 }

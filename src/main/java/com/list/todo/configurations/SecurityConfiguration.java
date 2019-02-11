@@ -3,6 +3,7 @@ package com.list.todo.configurations;
 import com.list.todo.security.CustomBasicAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationFilter;
+import com.list.todo.security.JwtTokenProvider;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,11 +33,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
+    private JwtTokenProvider jwtTokenProvider;
 	private JwtAuthenticationEntryPoint unauthorizedHandler;
 
 	@Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+        return new JwtAuthenticationFilter(jwtTokenProvider, userService);
     }
     
     @Bean

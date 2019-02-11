@@ -17,13 +17,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ROLE_USER')")
 public class TaskQuery implements GraphQLQueryResolver {
 
 	private TaskRepository taskRepository;
     private TodoListRepository todoListRepository;
 
-
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
 
         UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();

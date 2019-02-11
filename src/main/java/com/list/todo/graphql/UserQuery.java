@@ -17,6 +17,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ROLE_USER')")
 public class UserQuery implements GraphQLQueryResolver {
 
     private UserRepository userRepository;
@@ -24,20 +25,17 @@ public class UserQuery implements GraphQLQueryResolver {
 	private TodoListRepository todoListRepository;
 	private ShareRepository shareRepository;
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public UserSummary getUserInfo() {
         UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new UserSummary(user.getUsername(), user.getName(), user.getEmail());
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public Set<String> searchUserNames(String partOfUserName) {
         return userRepository.findByUsernameLike(partOfUserName + "%").stream()
                 .map(User::getUsername)
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public UserStats getUserStats() {
 
         UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -49,7 +47,6 @@ public class UserQuery implements GraphQLQueryResolver {
         return new UserStats(myTodoLists, sharedTodoLists);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public List<UserSummary> getFollowers() {
         UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

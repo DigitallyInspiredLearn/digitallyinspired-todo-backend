@@ -26,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @AllArgsConstructor
+@PreAuthorize("hasAnyRole('ROLE_USER')")
 public class TodoListMutation implements GraphQLMutationResolver {
 
     private UserRepository userRepository;
@@ -34,7 +35,6 @@ public class TodoListMutation implements GraphQLMutationResolver {
     private ShareService shareService;
     private FollowerService followerService;
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public TodoList addTodoList(String todoListName) {
 
         UserPrincipal currentUser = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -48,7 +48,6 @@ public class TodoListMutation implements GraphQLMutationResolver {
         return todoListRepository.save(todoList);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public TodoList updateTodoList(Long todoListId, String todoListName) {
 
         UserPrincipal currentUser = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -65,7 +64,6 @@ public class TodoListMutation implements GraphQLMutationResolver {
         return todoList;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public boolean deleteTodoList(Long todoListId) {
 
         UserPrincipal currentUser = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -81,7 +79,6 @@ public class TodoListMutation implements GraphQLMutationResolver {
         return isSuccess;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
     public ApiResponse shareTodoListToUser(String sharedUsername, Long sharedTodoListId) {
 
         UserPrincipal currentUser = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
