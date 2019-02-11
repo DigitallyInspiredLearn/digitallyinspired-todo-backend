@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,7 +33,7 @@ public class UserController {
 	private final FollowerService followerService;
 
 	@GetMapping("/me")
-    public ResponseEntity<UserSummary> getCurrentUser(@AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<UserSummary> getUserInfo(@AuthenticationPrincipal UserPrincipal currentUser) {
 		User user = userService.getUserById(currentUser.getId());
 		UserSummary userSummary = new UserSummary(user.getUsername(), user.getName(), user.getEmail());
 		
@@ -40,11 +41,9 @@ public class UserController {
     }
 	
 	@GetMapping("/search")
-	public ResponseEntity<List<User>> searchUserByUsername(@RequestParam("username") String username) {
+	public ResponseEntity<Set<String>> searchUserNamesByPartOfUserName(@RequestParam("username") String username) {
 
-		List<User> users = userService.getUsersByPartOfUsername(username);
-		
-		return new ResponseEntity<>(users, HttpStatus.OK);
+		return new ResponseEntity<>(userService.searchUsersByPartOfUsername(username), HttpStatus.OK);
 	}
 	
 	@GetMapping("/userStats")
@@ -62,7 +61,7 @@ public class UserController {
 	}
 	
 	@PutMapping("/editProfile")
-	public ResponseEntity<User> updateUser(@AuthenticationPrincipal UserPrincipal currentUser,
+	public ResponseEntity<User> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
 										   @RequestBody User user) {
 		ResponseEntity<User> responseEntity;
 		User currUser = userService.getUserById(currentUser.getId());
@@ -78,7 +77,7 @@ public class UserController {
 	}
 	
 	@DeleteMapping("/deleteProfile")
-	public ResponseEntity<User> deleteUser(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<User> deleteMyProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
 
 		userService.deleteUser(currentUser.getId());
 
@@ -107,8 +106,7 @@ public class UserController {
 
 	@GetMapping("/followers")
 	public ResponseEntity<List<UserSummary>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
-		List<UserSummary> userSummaries = followerService.getFollowersUserSummariesByUserId(currentUser.getId());
 
-		return new ResponseEntity<>(userSummaries, HttpStatus.OK);
+		return new ResponseEntity<>(followerService.getFollowersUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
 	}
 }

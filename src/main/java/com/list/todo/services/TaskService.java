@@ -1,13 +1,14 @@
 package com.list.todo.services;
 
-import com.list.todo.entity.Task;
-import com.list.todo.entity.TodoList;
-import com.list.todo.repositories.TaskRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.list.todo.entity.Task;
+import com.list.todo.repositories.TaskRepository;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -15,14 +16,8 @@ public class TaskService {
 
 	private final TaskRepository taskRepository;
 
-	public List<Task> getAllTasksOnTodoList(TodoList todoList) {
-		List<Task> tasks = taskRepository.findTasksByTodoListId(todoList.getId());
-		return tasks;
-	}
-
-	public Task getTask(Long id) {
-		Optional<Task> task = taskRepository.findById(id);
-		return task.orElse(null);
+	public List<Task> getAllTasksOnTodoList(Long todoListId) {
+		return taskRepository.findTasksByTodoListId(todoListId);
 	}
 
 	public void addTask(Task task) {

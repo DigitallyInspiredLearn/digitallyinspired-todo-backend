@@ -1,0 +1,19 @@
+type TodoList {
+	id: ID!
+	todoListName: String!
+	userOwnerId: ID!
+	tasks: [Task]
+}
+
+type Query {
+	getMyTodoLists: [TodoList]!
+	getMySharedTodoLists: [TodoList]!
+	getTodoList(id: ID!): TodoList!
+}
+
+type Mutation {
+	addTodoList(todoListName: String!): TodoList
+	updateTodoList(id: ID!, todoListName: String!): TodoList
+	deleteTodoList(id: ID!): Boolean!
+	shareTodoListToUser(sharedUsername: String!, sharedTodoListId: ID!): ApiResponse!
+}

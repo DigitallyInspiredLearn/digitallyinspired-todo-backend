@@ -12,8 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -34,17 +37,17 @@ public class UserService implements UserDetailsService {
     }
 
     public User getUserById(Long userId){
-        return userRepository.findById(userId).get();
+        return userRepository.findById(userId).orElse(null);
     }
     
-    public List<User> getUsersByPartOfUsername(String partOfUsername){
-        List<User> users = userRepository.findByUsernameLike(partOfUsername + "%");
-    	return users;
+    public Set<String> searchUsersByPartOfUsername(String partOfUsername){
+        return userRepository.findByUsernameLike(partOfUsername+"%").stream()
+                .map(User::getUsername)
+                .collect(Collectors.toCollection(HashSet::new));
     }
     
     public User getUserByUsername(String username){
-        Optional<User> user = userRepository.findByUsername(username);
-    	return user.orElse(null);
+    	return userRepository.findByUsername(username).orElse(null);
     }
 
     public void saveUser(User user){

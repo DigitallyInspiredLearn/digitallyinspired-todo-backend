@@ -1,11 +1,10 @@
 package com.list.todo.repositories;
 
-import java.util.List;
-
+import com.list.todo.entity.Share;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.list.todo.entity.Share;
+import java.util.List;
 
 @Repository
 public interface ShareRepository extends JpaRepository<Share, Long> {

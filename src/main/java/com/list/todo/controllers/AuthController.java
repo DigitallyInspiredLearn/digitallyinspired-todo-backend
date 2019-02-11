@@ -5,7 +5,7 @@ import com.list.todo.entity.User;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.JwtAuthenticationResponse;
 import com.list.todo.payload.LoginRequest;
-import com.list.todo.payload.SignUpRequest;
+import com.list.todo.payload.RegisterRequest;
 import com.list.todo.repositories.UserRepository;
 import com.list.todo.security.JwtTokenProvider;
 import lombok.AllArgsConstructor;
@@ -53,20 +53,20 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if(userRepository.existsByUsername(signUpRequest.getUsername())) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        if(userRepository.existsByUsername(registerRequest.getUsername())) {
             return new ResponseEntity<>(new ApiResponse(false, "Username is already taken!"),
                     HttpStatus.BAD_REQUEST);
         }
 
-        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
+        if(userRepository.existsByEmail(registerRequest.getEmail())) {
             return new ResponseEntity<>(new ApiResponse(false, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
 
         // Creating user's account
-        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
-                signUpRequest.getEmail(), signUpRequest.getPassword());
+        User user = new User(registerRequest.getName(), registerRequest.getUsername(),
+                registerRequest.getEmail(), registerRequest.getPassword());
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 

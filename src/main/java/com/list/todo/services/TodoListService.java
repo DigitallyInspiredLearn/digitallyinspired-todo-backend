@@ -1,12 +1,13 @@
 package com.list.todo.services;
 
-import com.list.todo.entity.TodoList;
-import com.list.todo.repositories.TodoListRepository;
-import lombok.AllArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.list.todo.entity.TodoList;
+import com.list.todo.repositories.TodoListRepository;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -16,11 +17,6 @@ public class TodoListService {
 
     public List<TodoList> getTodoListsByUser(Long userId){
         return repository.findTodoListsByUserOwnerId(userId);
-    }
-    
-    public TodoList getTodoList(Long id){
-    	Optional<TodoList> todoList = repository.findById(id);
-        return todoList.orElse(null);
     }
 
     public void addTodoList(TodoList todoList){

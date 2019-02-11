@@ -62,7 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()        
         .csrf().disable()
                 .authorizeRequests()
-                	.antMatchers("/api/auth/**").permitAll()
+                	.antMatchers("/api/auth/**", "/graphql/**", "/graphiql/**", "/vendor/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
                 .exceptionHandling()
@@ -82,7 +82,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
 
-        web.ignoring().antMatchers("/v2/api-docs")//
+        web.ignoring()
+        		.antMatchers("/graphiql"/*, "/graphql", "/subscriptions", "/vendor/**"*/)
+        		.antMatchers("/v2/api-docs")//
                 .antMatchers("/swagger-resources/**")//
                 .antMatchers("/swagger-ui.html")//
                 .antMatchers("/configuration/**")//

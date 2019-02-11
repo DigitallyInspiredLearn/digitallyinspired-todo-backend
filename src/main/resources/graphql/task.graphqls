@@ -1,0 +1,16 @@
+type Task {
+	id: ID!
+	body: String!
+	isComplete: Boolean!
+	todoList: TodoList!
+}
+
+extend type Query {
+	getAllTasksOnTodoList(todoListId: ID!): [Task]
+}
+
+extend type Mutation {
+	addTask(taskId: ID!, body: String!, isComplete: Boolean!): Task
+	updateTask(taskId: ID!, body: String!, isComplete: Boolean!): Task
+	deleteTask(taskId: ID!): Boolean
+}

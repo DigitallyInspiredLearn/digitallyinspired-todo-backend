@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -20,12 +21,10 @@ public class ShareService {
 	private final EmailService emailService;
 
 	public List<TodoList> getSharedTodoListsByUser(Long userId) {
-		List<Share> shares = sharesRepository.findBySharedUserId(userId);
-		List<TodoList> sharedTodoLists = new ArrayList<>();
-		shares
-			.forEach(share -> sharedTodoLists.add(share.getSharedTodoList()));
-		
-		return sharedTodoLists;
+
+		return sharesRepository.findBySharedUserId(userId).stream()
+				.map(Share::getSharedTodoList)
+				.collect(Collectors.toList());
 	}
 	
 	public void addShare(Share shares) {

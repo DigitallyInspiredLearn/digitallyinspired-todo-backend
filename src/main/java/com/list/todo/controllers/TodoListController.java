@@ -30,7 +30,7 @@ public class TodoListController {
 	private final FollowerService followerService;
 	
 	@GetMapping("/my")
-	public ResponseEntity<List<TodoList>> getTodoListsByUser(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<List<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
 		
 		List<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId());
 
@@ -38,7 +38,7 @@ public class TodoListController {
 	}
 	
 	@GetMapping ("/shared")
-	public ResponseEntity<List<TodoList>> getSharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<List<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
 
 		List<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
 

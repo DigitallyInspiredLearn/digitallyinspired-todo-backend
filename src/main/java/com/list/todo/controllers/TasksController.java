@@ -32,7 +32,7 @@ public class TasksController {
 		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			List<Task> tasks = taskService.getAllTasksOnTodoList(currentTodoList);
+			List<Task> tasks = taskService.getAllTasksOnTodoList(currentTodoList.getId());
 			responseEntity = new ResponseEntity<>(tasks, HttpStatus.OK);
 		}
 		return responseEntity;

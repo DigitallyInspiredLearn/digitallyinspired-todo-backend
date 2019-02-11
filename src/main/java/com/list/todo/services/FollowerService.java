@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,22 +22,15 @@ public class FollowerService {
     private final EmailService emailService;
 
     public List<User> getFollowersByUserId(Long userId) {
-        List<Follower> followers = followerRepository.findByFollowedUserId(userId);
-        List<User> followedUsers = new ArrayList<>();
-        followers.forEach(follower -> followedUsers.add(follower.getFollower()));
-
-        return followedUsers;
+        return followerRepository.findByFollowedUserId(userId).stream()
+                .map(Follower::getFollower)
+                .collect(Collectors.toList());
     }
 
     public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
-        List<Follower> followers = followerRepository.findByFollowedUserId(userId);
-        List<UserSummary> followedUsers = new ArrayList<>();
-        followers.forEach(follower -> followedUsers.add(new UserSummary(
-                        follower.getFollower().getUsername(),
-                        follower.getFollower().getName(),
-                        follower.getFollower().getEmail())));
-
-        return followedUsers;
+        return followerRepository.findByFollowedUserId(userId).stream()
+                .map(f -> new UserSummary(f.getFollower().getUsername(), f.getFollower().getName(), f.getFollower().getEmail()))
+                .collect(Collectors.toList());
     }
 
     public void followUser(Follower follower) {
