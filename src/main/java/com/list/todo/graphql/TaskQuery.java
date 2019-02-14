@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Component
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
+@Component
 public class TaskQuery implements GraphQLQueryResolver {
 
 	private TaskRepository taskRepository;

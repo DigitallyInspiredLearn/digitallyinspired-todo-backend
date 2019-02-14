@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
+@Component
 @PreAuthorize("hasAnyRole('ROLE_USER')")
 public class UserQuery implements GraphQLQueryResolver {
 
