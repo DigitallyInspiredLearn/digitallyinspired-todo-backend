@@ -5,6 +5,7 @@ import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
+import com.list.todo.repositories.UserRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class FollowerService {
 
     private FollowerRepository followerRepository;
+    private UserRepository userRepository;
 
     private final EmailService emailService;
 
@@ -35,8 +37,17 @@ public class FollowerService {
                 .collect(Collectors.toList());
     }
 
-    public void followUser(Follower follower) {
-        followerRepository.save(follower);
+    public boolean followUser(Long currentUserId, String userNameOfFollowedUser) {
+        User currUser = userRepository.findById(currentUserId).orElse(null);
+        User followedUser = userRepository.findByUsername(userNameOfFollowedUser).orElse(null);
+        boolean isSuccess = false;
+
+        if (followedUser != null) {
+            followerRepository.save(new Follower(followedUser.getId(), currUser));
+            isSuccess = true;
+        }
+
+        return isSuccess;
     }
 
     public void notifyFollowersAboutAddTodoList(UserPrincipal user, TodoList todoList){

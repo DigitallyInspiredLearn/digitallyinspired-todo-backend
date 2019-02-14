@@ -81,7 +81,9 @@ public class UserControllerTest {
     public void updateUser() throws Exception {
         this.mockMvc.perform(put("/api/users/editProfile").content("{\n" +
                 "	\"name\": \"Stepa Baklagan\",\n" +
-                "	\"username\": \"stepka\"\n" +
+                "	\"username\": \"stepka\",\n" +
+                "	\"email\": \"stepa.matv72@gmail.com\",\n" +
+                "	\"password\": \"Secrett\"\n" +
                 "}").contentType(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andDo(print())
                 .andExpect(authenticated())
@@ -89,7 +91,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("name").value("Stepa Baklagan"))
                 .andExpect(jsonPath("username").value("stepka"))
                 /*.andExpect(jsonPath("email").value("stepa.matv72@gmail.com"))
-                .andExpect(jsonPath("password").value("stepa.matv72@gmail.com"))*/
+                .andExpect(jsonPath("password").value("Secrett"))*/
                 .andExpect(status().isOk());
     }
 
@@ -106,8 +108,8 @@ public class UserControllerTest {
         this.mockMvc.perform(post("/api/users/followUser?username={username}", "anna"))
                 .andDo(print())
                 .andExpect(authenticated())
-                .andExpect(jsonPath("id").value("3"))
-                .andExpect(jsonPath("username").value("anna"))
+                .andExpect(jsonPath("success").value(true))
+                .andExpect(jsonPath("message").value("You'll follow this user!"))
                 .andExpect(status().isOk());
     }
 
@@ -116,6 +118,8 @@ public class UserControllerTest {
         this.mockMvc.perform(post("/api/users/followUser?username={username}", "annaanna"))
                 .andDo(print())
                 .andExpect(authenticated())
+                .andExpect(jsonPath("success").value(false))
+                .andExpect(jsonPath("message").value("You can't follow this user!"))
                 .andExpect(status().isNotFound());
     }
 

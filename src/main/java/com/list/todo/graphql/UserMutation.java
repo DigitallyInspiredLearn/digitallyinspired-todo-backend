@@ -5,105 +5,67 @@ import com.list.todo.entity.*;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.JwtAuthenticationResponse;
 import com.list.todo.payload.LoginRequest;
-import com.list.todo.payload.RegisterRequest;
+import com.list.todo.payload.UserInput;
 import com.list.todo.repositories.*;
-import com.list.todo.security.JwtTokenProvider;
 import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.AuthenticationService;
+import com.list.todo.services.FollowerService;
+import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.stereotype.Component;
 
-import java.net.URI;
-
+@Component
 @AllArgsConstructor
 public class UserMutation implements GraphQLMutationResolver {
 
-    private AuthenticationManager authenticationManager;
-    private PasswordEncoder passwordEncoder;
-    private JwtTokenProvider tokenProvider;
-
-    private UserRepository userRepository;
-    private FollowerRepository followerRepository;
+    private AuthenticationService authenticationService;
+    private UserService userService;
+    private FollowerService followerService;
 
     public JwtAuthenticationResponse login(LoginRequest loginRequest) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(),
-                        loginRequest.getPassword()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = tokenProvider.generateToken(authentication);
-        return new JwtAuthenticationResponse(jwt);
+        return authenticationService.authenticateUser(loginRequest);
     }
 
-    public ApiResponse register(RegisterRequest registerRequest) {
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+    public ApiResponse register(UserInput userInput) {
+        if (authenticationService.isUserExistByUserName(userInput.getUsername())) {
             return new ApiResponse(false, "Username is already taken!");
         }
 
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+        if (authenticationService.isUserExistByEmail(userInput.getEmail())) {
             return new ApiResponse(false, "Email Address already in use!");
         }
 
-        // Creating user's account
-        User user = new User(registerRequest.getName(), registerRequest.getUsername(),
-                registerRequest.getEmail(), registerRequest.getPassword());
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(RoleName.ROLE_USER);
-        User result = userRepository.save(user);
+        authenticationService.createUserAccount(userInput);
 
         return new ApiResponse(true, "User registered successfully");
 
     }
 
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public User updateMyProfile(String name, String username, String email, String password) {
-
-        UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User updatedUser = userRepository.findById(user.getId()).orElse(null);
-
-        if (updatedUser != null) {
-            updatedUser.setName(name);
-            updatedUser.setUsername(username);
-            updatedUser.setEmail(email);
-            updatedUser.setPassword(password);
-
-            userRepository.save(updatedUser);
-        }
-
-        return updatedUser;
+    public User updateMyProfile(UserInput userInput) {
+        UserPrincipal user = userService.getCurrentUser();
+        return userService.updateUser(user.getId(), userInput);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_USER')")
     public ApiResponse deleteMyProfile() {
-
-        UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        userRepository.deleteById(user.getId());
-    return new ApiResponse(true, "Profile is deleted successfully!");
+        UserPrincipal user = userService.getCurrentUser();
+        userService.deleteUser(user.getId());
+        return new ApiResponse(true, "Profile is deleted successfully!");
     }
 
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public ApiResponse followUser(String username) {
+    public ApiResponse followUser(String userNameOfFollowedUser) {
 
-        UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currUser = userRepository.findById(user.getId()).orElse(null);
-        User followedUser = userRepository.findByUsername(username).orElse(null);
-        ApiResponse apiResponse = new ApiResponse(false, "You can't follow this user!");
+        UserPrincipal user = userService.getCurrentUser();
+        ApiResponse apiResponse;
 
-        if (followedUser != null) {
-            Follower follower = new Follower(followedUser.getId(), currUser);
-            followerRepository.save(follower);
+        if (followerService.followUser(user.getId(), userNameOfFollowedUser)) {
             apiResponse = new ApiResponse(true, "You'll follow this user!");
+        } else {
+            apiResponse = new ApiResponse(false, "You can't follow this user!");
         }
 
         return apiResponse;

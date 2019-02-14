@@ -1,17 +1,14 @@
 package com.list.todo.controllers;
 
-import com.list.todo.entity.Follower;
-import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.payload.ApiResponse;
+import com.list.todo.payload.UserInput;
 import com.list.todo.payload.UserStats;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
-import com.list.todo.services.ShareService;
-import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,87 +23,55 @@ import java.util.Set;
 @AllArgsConstructor
 @PreAuthorize("hasRole('ROLE_USER')")
 public class UserController {
-	
-	private final UserService userService;
-	private final TodoListService todoListService;
-	private final ShareService shareService;
-	private final FollowerService followerService;
 
-	@GetMapping("/me")
+    private final UserService userService;
+    private final FollowerService followerService;
+
+    @GetMapping("/me")
     public ResponseEntity<UserSummary> getUserInfo(@AuthenticationPrincipal UserPrincipal currentUser) {
-		User user = userService.getUserById(currentUser.getId());
-		UserSummary userSummary = new UserSummary(user.getUsername(), user.getName(), user.getEmail());
-		
-		return new ResponseEntity<UserSummary>(userSummary, HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUserInfo(currentUser), HttpStatus.OK);
     }
-	
-	@GetMapping("/search")
-	public ResponseEntity<Set<String>> searchUserNamesByPartOfUserName(@RequestParam("username") String username) {
 
-		return new ResponseEntity<>(userService.searchUsersByPartOfUsername(username), HttpStatus.OK);
-	}
-	
-	@GetMapping("/userStats")
-	public ResponseEntity<UserStats> getUserStats(@AuthenticationPrincipal UserPrincipal currentUser) {
+    @GetMapping("/search")
+    public ResponseEntity<Set<String>> searchUserNamesByPartOfUserName(@RequestParam("username") String username) {
+        return new ResponseEntity<>(userService.searchUsersByPartOfUsername(username), HttpStatus.OK);
+    }
 
-		UserStats userStats = new UserStats();
-		
-		List<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId());
-		userStats.setMyTodoLists(myTodoLists);
-		
-		List<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
-		userStats.setSharedTodoLists(sharedTodoLists);
+    @GetMapping("/userStats")
+    public ResponseEntity<UserStats> getUserStats(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return new ResponseEntity<>(userService.getUserStats(currentUser.getId()), HttpStatus.OK);
+    }
 
-		return new ResponseEntity<>(userStats, HttpStatus.OK);
-	}
-	
-	@PutMapping("/editProfile")
-	public ResponseEntity<User> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
-										   @RequestBody User user) {
-		ResponseEntity<User> responseEntity;
-		User currUser = userService.getUserById(currentUser.getId());
+    @PutMapping("/editProfile")
+    public ResponseEntity<User> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                @RequestBody UserInput userInput) {
+        User user = userService.updateUser(currentUser.getId(), userInput);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 
-		if (currUser == null){
-			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		} else {
-			BeanUtils.copyProperties(user, currUser, "id", "role", "email", "password");
-			userService.updateUser(currUser);
-			responseEntity = new ResponseEntity<>(currUser, HttpStatus.OK);
-		}
-		return responseEntity;
-	}
-	
-	@DeleteMapping("/deleteProfile")
-	public ResponseEntity<User> deleteMyProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
+    @DeleteMapping("/deleteProfile")
+    public ResponseEntity<User> deleteMyProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
+        // TODO: девалидация токена
+        userService.deleteUser(currentUser.getId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
-		userService.deleteUser(currentUser.getId());
+    @PostMapping("/followUser")
+    public ResponseEntity<ApiResponse> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                  @RequestParam("username") String userNameOfFollowedUser) {
+        ResponseEntity<ApiResponse> responseEntity;
 
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
+        if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(new ApiResponse(true, "You'll follow this user!"), HttpStatus.OK);
+        } else {
+            responseEntity = new ResponseEntity<>(new ApiResponse(false, "You can't follow this user!"), HttpStatus.NOT_FOUND);
+        }
 
-	@PostMapping("/followUser")
-	public ResponseEntity<User> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
-										   @RequestParam("username") String username) {
-		ResponseEntity<User> responseEntity;
-		
-		User currUser = userService.getUserById(currentUser.getId());
-		User followedUser = userService.getUserByUsername(username); 
-		
-		if (followedUser == null) {
-			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		} else {
-			
-			Follower follower = new Follower(followedUser.getId(), currUser);
-			followerService.followUser(follower);
-			responseEntity = new ResponseEntity<>(followedUser, HttpStatus.OK);
-		}
+        return responseEntity;
+    }
 
-		return responseEntity;
-	}
-
-	@GetMapping("/followers")
-	public ResponseEntity<List<UserSummary>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
-
-		return new ResponseEntity<>(followerService.getFollowersUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
-	}
+    @GetMapping("/followers")
+    public ResponseEntity<List<UserSummary>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return new ResponseEntity<>(followerService.getFollowersUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
+    }
 }

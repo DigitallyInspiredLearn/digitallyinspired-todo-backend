@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.*;
 
 @Data
-public class RegisterRequest {
+public class UserInput {
     @NotBlank
     @Size(min = 4, max = 40)
     private String name;

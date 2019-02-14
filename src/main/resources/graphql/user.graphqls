@@ -32,7 +32,7 @@ type UserStats {
 	sharedTodoLists: [TodoList]!
 }
 
-input RegisterRequest {
+input UserInput {
 	name: String!
 	username: String!
 	email: String!
@@ -52,9 +52,9 @@ extend type Query {
 }
 
 extend type Mutation {
-	register(registerRequest: RegisterRequest!): ApiResponse!
+	register(userInput: UserInput!): ApiResponse!
 	login(loginRequest: LoginRequest!): JwtAuthenticationResponse!
-	updateMyProfile(name: String!, username: String!, email: String!, password: String!): User!
+	updateMyProfile(userInput: UserInput!): User!
 	deleteMyProfile: ApiResponse!
 	followUser(username: String!): ApiResponse!
 }

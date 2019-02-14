@@ -2,10 +2,7 @@ package com.list.todo.graphql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.list.todo.entity.*;
-import com.list.todo.payload.ApiResponse;
-import com.list.todo.payload.JwtAuthenticationResponse;
-import com.list.todo.payload.LoginRequest;
-import com.list.todo.payload.RegisterRequest;
+import com.list.todo.payload.*;
 import com.list.todo.repositories.ShareRepository;
 import com.list.todo.repositories.TaskRepository;
 import com.list.todo.repositories.TodoListRepository;
@@ -19,10 +16,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+@Component
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
 public class TaskMutation implements GraphQLMutationResolver {
@@ -30,16 +29,16 @@ public class TaskMutation implements GraphQLMutationResolver {
     private TodoListRepository todoListRepository;
     private TaskRepository taskRepository;
 
-    public Task addTask(Long todoListId, String body, Boolean isComplete) {
+    public Task addTask(TaskInput taskInput) {
 
         UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        TodoList todoList = todoListRepository.findById(todoListId).orElse(null);
+        TodoList todoList = todoListRepository.findById(taskInput.getTodoListId()).orElse(null);
         Task newTask = new Task();
 
         if (todoList != null && todoList.getUserOwnerId().equals(user.getId())) {
-            newTask.setBody(body);
-            newTask.setIsComplete(isComplete);
-            newTask.setTodoList(todoListRepository.findById(todoListId).orElse(null));
+            newTask.setBody(taskInput.getBody());
+            newTask.setIsComplete(false);
+            newTask.setTodoList(todoListRepository.findById(taskInput.getTodoListId()).orElse(null));
             newTask = taskRepository.save(newTask);
 
         }

@@ -1,6 +1,5 @@
 package com.list.todo.configurations;
 
-import com.list.todo.security.CustomBasicAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationFilter;
 import com.list.todo.security.JwtTokenProvider;
@@ -40,11 +39,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, userService);
     }
-    
-    @Bean
-    public CustomBasicAuthenticationEntryPoint getBasicAuthEntryPoint(){
-        return new CustomBasicAuthenticationEntryPoint();
-    }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -71,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .authenticationEntryPoint(unauthorizedHandler)
                     .and()
                 .httpBasic()
-                    .authenticationEntryPoint(getBasicAuthEntryPoint())
+                    .authenticationEntryPoint(unauthorizedHandler)
                     .and()
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
