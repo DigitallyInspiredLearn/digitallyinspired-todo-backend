@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-@Component
 public class TaskResolver implements GraphQLResolver<Task> {
 	
 	private TodoListRepository todoListRepository;

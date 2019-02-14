@@ -49,6 +49,8 @@ public class TodoListController {
 	public ResponseEntity<TodoList> getTodoList(@PathVariable("id") TodoList todoList,
 												@AuthenticationPrincipal UserPrincipal currentUser) {
 		ResponseEntity<TodoList> responseEntity;
+
+		// TODO: придумать как убрать условные конструкции
 		if (todoList == null){
 			responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} else if (!todoList.getUserOwnerId().equals(currentUser.getId())){

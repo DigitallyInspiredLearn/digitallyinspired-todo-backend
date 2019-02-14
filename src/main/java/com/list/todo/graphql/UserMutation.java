@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-@Component
 public class UserMutation implements GraphQLMutationResolver {
 
     private AuthenticationService authenticationService;
