@@ -3,6 +3,7 @@ package com.list.todo.controllers;
 import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.payload.InputTodoList;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.ShareService;
@@ -27,7 +28,6 @@ public class TodoListController {
 	private final TodoListService todoListService;
 	private final UserService userService;
 	private final ShareService shareService;
-	private final FollowerService followerService;
 	
 	@GetMapping("/my")
 	public ResponseEntity<List<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -61,19 +61,16 @@ public class TodoListController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<TodoList> addTodoList(@RequestBody TodoList todoList,
+	public ResponseEntity<TodoList> addTodoList(@RequestBody InputTodoList inputTodoList,
 												@AuthenticationPrincipal UserPrincipal currentUser) {
-		Long userId = currentUser.getId();
-		todoList.setUserOwnerId(userId);
 
-		todoListService.addTodoList(todoList);
-		followerService.notifyFollowersAboutAddTodoList(currentUser, todoList);
+		TodoList todoList = todoListService.addTodoList(inputTodoList);
 
 		return new ResponseEntity<>(todoList, HttpStatus.OK);
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<TodoList> updateTodoList(@RequestBody TodoList todoList,
+	public ResponseEntity<TodoList> updateTodoList(@RequestBody InputTodoList inputTodoList,
 												   @AuthenticationPrincipal UserPrincipal currentUser,
 												   @PathVariable("id") TodoList currentTodoList) {
 		ResponseEntity<TodoList> responseEntity;
@@ -83,12 +80,8 @@ public class TodoListController {
 		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			BeanUtils.copyProperties(todoList, currentTodoList, "id", "userOwnerId");
-
-			todoListService.updateTodoList(currentTodoList);
-			followerService.notifyFollowersAboutUpdatingTodoList(currentUser, todoList);
-
-			responseEntity = new ResponseEntity<>(currentTodoList, HttpStatus.OK);
+			TodoList todoList = todoListService.updateTodoList(currentTodoList.getId(), inputTodoList);
+			responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
 		}
 
 		return responseEntity;
@@ -104,8 +97,7 @@ public class TodoListController {
 		} else if (!todoList.getUserOwnerId().equals(currentUser.getId())){
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			todoListService.deleteTodoList(todoList);
-			followerService.notifyFollowersAboutDeletingTodoList(currentUser, todoList);
+			todoListService.deleteTodoList(todoList.getId());
 
 			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
@@ -128,11 +120,7 @@ public class TodoListController {
 				currentUser.getUsername().equals(sharedUsername)) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			Share share = new Share(sharedUser.getId(), sharedTodoList);
-			
-			shareService.addShare(share);
-			shareService.sendNotificationAboutShareTodoList(sharedUser, currentUser, sharedTodoList);
-			followerService.notifyFollowersAboutSharingTodoList(currentUser, sharedTodoList, sharedUser);
+			todoListService.shareTodoList(sharedUsername, sharedTodoList.getId());
 
 			responseEntity = new ResponseEntity<>(HttpStatus.OK);
 		}

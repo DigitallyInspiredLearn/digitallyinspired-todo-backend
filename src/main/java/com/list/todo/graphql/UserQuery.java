@@ -11,12 +11,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
+@Component
 @PreAuthorize("hasAnyRole('ROLE_USER')")
 public class UserQuery implements GraphQLQueryResolver {
 

@@ -3,6 +3,7 @@ package com.list.todo.services;
 import com.list.todo.entity.Follower;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.payload.InputTodoList;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
 import com.list.todo.security.UserPrincipal;
@@ -39,7 +40,7 @@ public class FollowerService {
         followerRepository.save(follower);
     }
 
-    public void notifyFollowersAboutAddTodoList(UserPrincipal user, TodoList todoList){
+    public void notifyFollowersAboutAddTodoList(UserPrincipal user, InputTodoList todoList){
         List<User> followers = getFollowersByUserId(user.getId());
 
         for (User follower : followers){

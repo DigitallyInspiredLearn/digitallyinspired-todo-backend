@@ -12,12 +12,14 @@ import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
+@Component
 public class TaskQuery implements GraphQLQueryResolver {
 
 	private TaskRepository taskRepository;

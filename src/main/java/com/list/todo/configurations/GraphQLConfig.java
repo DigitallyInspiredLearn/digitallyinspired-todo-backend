@@ -21,50 +21,6 @@ import java.util.stream.Collectors;
 public class GraphQLConfig {
 
     @Bean
-    public TaskResolver taskResolver(TodoListRepository todoListRepository) {
-        return new TaskResolver(todoListRepository);
-    }
-
-    @Bean
-    public TodoListResolver todoListResolver(TaskRepository taskRepository) {
-        return new TodoListResolver(taskRepository);
-    }
-
-    @Bean
-    public UserQuery userQuery(UserRepository userRepository, FollowerRepository followerRepository, TodoListRepository todoListRepository,
-                           ShareRepository shareRepository) {
-        return new UserQuery(userRepository, followerRepository, todoListRepository, shareRepository);
-    }
-
-    @Bean
-    public TodoListQuery todoListQuery(TodoListRepository todoListRepository, ShareRepository shareRepository) {
-        return new TodoListQuery(todoListRepository, shareRepository);
-    }
-
-    @Bean
-    public TaskQuery taskQuery(TaskRepository taskRepository, TodoListRepository todoListRepository) {
-        return new TaskQuery(taskRepository, todoListRepository);
-    }
-
-    @Bean
-    public UserMutation userMutation(UserRepository userRepository, FollowerRepository followerRepository,
-                                     AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder,
-                                     JwtTokenProvider tokenProvider) {
-        return new UserMutation(authenticationManager, passwordEncoder, tokenProvider, userRepository, followerRepository);
-    }
-
-    @Bean
-    public TodoListMutation todoListMutation(UserRepository userRepository, TodoListRepository todoListRepository,
-                                             ShareService shareService, FollowerService followerService) {
-        return new TodoListMutation(userRepository, todoListRepository, shareService, followerService);
-    }
-
-    @Bean
-    public TaskMutation taskMutation(TodoListRepository todoListRepository, TaskRepository taskRepository) {
-        return new TaskMutation(todoListRepository, taskRepository);
-    }
-
-    @Bean
     public GraphQLErrorHandler errorHandler() {
         return new GraphQLErrorHandler() {
             @Override

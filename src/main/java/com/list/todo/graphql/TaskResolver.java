@@ -6,8 +6,10 @@ import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.TodoListRepository;
 
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
+@Component
 public class TaskResolver implements GraphQLResolver<Task> {
 	
 	private TodoListRepository todoListRepository;
