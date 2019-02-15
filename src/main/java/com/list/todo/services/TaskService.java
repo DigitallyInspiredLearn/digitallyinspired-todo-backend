@@ -2,14 +2,11 @@ package com.list.todo.services;
 
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
-import com.list.todo.payload.InputTask;
+import com.list.todo.payload.TaskInput;
 import com.list.todo.repositories.TaskRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -18,19 +15,27 @@ public class TaskService {
 	private final TaskRepository taskRepository;
 
 	private TodoListService todoListService;
+	private UserService userService;
 
-	public List<Task> getAllTasksOnTodoList(Long todoListId) {
-		return taskRepository.findTasksByTodoListId(todoListId);
+	public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
+		UserPrincipal currentUser = userService.getCurrentUser();
+		TodoList todoList = todoListService.getTodoListById(todoListId).orElse(null);
+		Iterable<Task> tasks = null;
+
+		if (todoList != null && todoList.getUserOwnerId().equals(currentUser.getId())) {
+			tasks = taskRepository.findTasksByTodoListId(todoListId);
+		}
+
+		return tasks;
 	}
 
-	public Task addTask(InputTask inputTask) {
+	public Task addTask(TaskInput taskInput, UserPrincipal currentUser) {
 
-		UserPrincipal currentUser = getCurrentUser();
-		TodoList todoList = todoListService.getTodoListById(inputTask.getTodoListId()).orElse(null);
+		TodoList todoList = todoListService.getTodoListById(taskInput.getTodoListId()).orElse(null);
 		Task newTask = new Task();
 
 		if (todoList != null && todoList.getUserOwnerId().equals(currentUser.getId())) {
-			newTask.setBody(inputTask.getBody());
+			newTask.setBody(taskInput.getBody());
 			newTask.setIsComplete(false);
 			newTask.setTodoList(todoList);
 			newTask = taskRepository.save(newTask);
@@ -39,9 +44,8 @@ public class TaskService {
 		return newTask;
 	}
 
-	public Task updateTask(Long currentTaskId, InputTask inputTask) {
+	public Task updateTask(Long currentTaskId, TaskInput taskInput, UserPrincipal currentUser) {
 
-		UserPrincipal currentUser = getCurrentUser();
 		Task currentTask = taskRepository.findById(currentTaskId).orElse(null);
 
 		TodoList currentTodoList;
@@ -50,8 +54,8 @@ public class TaskService {
 			currentTodoList = currentTask.getTodoList();
 
 			if (currentTodoList != null && currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
-				currentTask.setBody(inputTask.getBody());
-				currentTask.setIsComplete(inputTask.getIsComplete());
+				currentTask.setBody(taskInput.getBody());
+				currentTask.setIsComplete(taskInput.getIsComplete());
 
 				currentTask = taskRepository.save(currentTask);
 			}
@@ -60,9 +64,8 @@ public class TaskService {
 		return currentTask;
 	}
 
-	public boolean deleteTask(Long taskId) {
+	public boolean deleteTask(Long taskId, UserPrincipal currentUser) {
 
-		UserPrincipal currentUser = getCurrentUser();
 		Task task = taskRepository.findById(taskId).orElse(null);
 		TodoList currentTodoList;
 		boolean isSuccess = false;
@@ -77,10 +80,6 @@ public class TaskService {
 			}
 		}
 		return isSuccess;
-	}
-
-	private UserPrincipal getCurrentUser(){
-		return (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	}
 
 }

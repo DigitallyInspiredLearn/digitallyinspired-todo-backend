@@ -6,8 +6,12 @@ import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.ShareRepository;
 import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.ShareService;
+import com.list.todo.services.TodoListService;
+import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -18,27 +22,22 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasAnyRole('ROLE_USER')")
 public class TodoListQuery implements GraphQLQueryResolver {
 
-	private TodoListRepository todoListRepository;
-	private ShareRepository shareRepository;
+	private TodoListService todoListService;
+	private UserService userService;
+	private ShareService shareService;
 
 	public Iterable<TodoList> getMyTodoLists() {
-
-		UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-		return todoListRepository.findTodoListsByUserOwnerId(user.getId());
+		UserPrincipal currentUser = userService.getCurrentUser();
+		return todoListService.getTodoListsByUser(currentUser.getId());
 	}
 
     public Iterable<TodoList> getMySharedTodoLists() {
-
-        UserPrincipal user = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-		return shareRepository.findBySharedUserId(user.getId()).stream()
-                .map(Share::getSharedTodoList)
-                .collect(Collectors.toList());
+        UserPrincipal currentUser = userService.getCurrentUser();
+		return shareService.getSharedTodoListsByUser(currentUser.getId());
 	}
 
     public TodoList getTodoList(Long todoListId) {
-        return todoListRepository.findById(todoListId).orElse(null);
+        return todoListService.getTodoListById(todoListId).orElse(null);
     }
 
 }

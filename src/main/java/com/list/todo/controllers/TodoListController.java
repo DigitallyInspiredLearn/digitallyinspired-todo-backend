@@ -1,23 +1,18 @@
 package com.list.todo.controllers;
 
-import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.payload.InputTodoList;
+import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
-import com.list.todo.services.FollowerService;
 import com.list.todo.services.ShareService;
 import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/todolists")
@@ -30,17 +25,17 @@ public class TodoListController {
 	private final ShareService shareService;
 	
 	@GetMapping("/my")
-	public ResponseEntity<List<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
 		
-		List<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId());
+		Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId());
 
 		return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
 	}
 	
 	@GetMapping ("/shared")
-	public ResponseEntity<List<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+	public ResponseEntity<Iterable<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
 
-		List<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
+		Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
 
 		return new ResponseEntity<>(sharedTodoLists, HttpStatus.OK);
 	}
@@ -63,16 +58,16 @@ public class TodoListController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<TodoList> addTodoList(@RequestBody InputTodoList inputTodoList,
+	public ResponseEntity<TodoList> addTodoList(@RequestBody TodoListInput todoListInput,
 												@AuthenticationPrincipal UserPrincipal currentUser) {
 
-		TodoList todoList = todoListService.addTodoList(inputTodoList);
+		TodoList todoList = todoListService.addTodoList(todoListInput, currentUser);
 
 		return new ResponseEntity<>(todoList, HttpStatus.OK);
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<TodoList> updateTodoList(@RequestBody InputTodoList inputTodoList,
+	public ResponseEntity<TodoList> updateTodoList(@RequestBody TodoListInput todoListInput,
 												   @AuthenticationPrincipal UserPrincipal currentUser,
 												   @PathVariable("id") TodoList currentTodoList) {
 		ResponseEntity<TodoList> responseEntity;
@@ -82,7 +77,7 @@ public class TodoListController {
 		} else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())){
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			TodoList todoList = todoListService.updateTodoList(currentTodoList.getId(), inputTodoList);
+			TodoList todoList = todoListService.updateTodoList(currentTodoList.getId(), todoListInput, currentUser);
 			responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
 		}
 
@@ -99,7 +94,7 @@ public class TodoListController {
 		} else if (!todoList.getUserOwnerId().equals(currentUser.getId())){
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			todoListService.deleteTodoList(todoList.getId());
+			todoListService.deleteTodoList(todoList.getId(), currentUser);
 
 			responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
@@ -122,7 +117,7 @@ public class TodoListController {
 				currentUser.getUsername().equals(sharedUsername)) {
 			responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			todoListService.shareTodoList(sharedUsername, sharedTodoList.getId());
+			todoListService.shareTodoList(sharedUsername, sharedTodoList.getId(), currentUser);
 
 			responseEntity = new ResponseEntity<>(HttpStatus.OK);
 		}

@@ -5,7 +5,7 @@ type Task {
 	todoList: TodoList!
 }
 
-input InputTask{
+input TaskInput{
 	body: String!
 	isComplete: Boolean!
 	todoListId: ID!
@@ -16,7 +16,7 @@ extend type Query {
 }
 
 extend type Mutation {
-	addTask(inputTask: InputTask!): Task
-	updateTask(currentTaskId: ID!, inputTask: InputTask!): Task
+	addTask(taskInput: TaskInput!): Task
+	updateTask(currentTaskId: ID!, taskInput: TaskInput!): Task
 	deleteTask(taskId: ID!): Boolean
 }

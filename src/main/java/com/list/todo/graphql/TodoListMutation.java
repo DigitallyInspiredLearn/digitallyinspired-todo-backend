@@ -3,8 +3,10 @@ package com.list.todo.graphql;
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.list.todo.entity.TodoList;
 import com.list.todo.payload.ApiResponse;
-import com.list.todo.payload.InputTodoList;
+import com.list.todo.payload.TodoListInput;
+import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.TodoListService;
+import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -15,21 +17,26 @@ import org.springframework.stereotype.Component;
 public class TodoListMutation implements GraphQLMutationResolver {
 
     private TodoListService todoListService;
+    private UserService userService;
 
-    public TodoList addTodoList(InputTodoList inputTodoList) {
-        return todoListService.addTodoList(inputTodoList);
+    public TodoList addTodoList(TodoListInput todoListInput) {
+        UserPrincipal currentUser = userService.getCurrentUser();
+        return todoListService.addTodoList(todoListInput, currentUser);
     }
 
-    public TodoList updateTodoList(Long todoListId, InputTodoList inputTodoList) {
-        return todoListService.updateTodoList(todoListId, inputTodoList);
+    public TodoList updateTodoList(Long todoListId, TodoListInput todoListInput) {
+        UserPrincipal currentUser = userService.getCurrentUser();
+        return todoListService.updateTodoList(todoListId, todoListInput, currentUser);
     }
 
     public boolean deleteTodoList(Long todoListId) {
-        return todoListService.deleteTodoList(todoListId);
+        UserPrincipal currentUser = userService.getCurrentUser();
+        return todoListService.deleteTodoList(todoListId, currentUser);
     }
 
     public ApiResponse shareTodoListToUser(String sharedUsername, Long sharedTodoListId) {
-        return todoListService.shareTodoList(sharedUsername, sharedTodoListId);
+        UserPrincipal currentUser = userService.getCurrentUser();
+        return todoListService.shareTodoList(sharedUsername, sharedTodoListId, currentUser);
     }
 
 }

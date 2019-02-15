@@ -5,17 +5,18 @@ import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.TodoListRepository;
 
+import com.list.todo.services.TodoListService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
 public class TaskResolver implements GraphQLResolver<Task> {
-	
-	private TodoListRepository todoListRepository;
+
+	private TodoListService todoListService;
 	
 	public TodoList getTodoList(Task task) {
-		return todoListRepository.findById(task.getTodoList().getId()).orElse(null);
+		return todoListService.getTodoListById(task.getTodoList().getId()).orElse(null);
 	}
 	
 }

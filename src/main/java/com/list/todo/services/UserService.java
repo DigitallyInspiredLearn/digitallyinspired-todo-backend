@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 	
 	private final UserRepository userRepository;
-    private TodoListRepository todoListRepository;
-    private ShareRepository shareRepository;
+    private final TodoListRepository todoListRepository;
+    private final ShareRepository shareRepository;
 
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 

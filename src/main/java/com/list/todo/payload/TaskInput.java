@@ -1,6 +1,5 @@
 package com.list.todo.payload;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TaskInput {
     private String body;
+    private Boolean isComplete;
     private Long todoListId;
 }

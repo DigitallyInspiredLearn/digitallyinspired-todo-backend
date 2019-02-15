@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InputTask {
-    private String body;
-    private Boolean isComplete;
-    private Long todoListId;
+public class TodoListInput {
+    private String todoListName;
 }

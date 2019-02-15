@@ -20,9 +20,10 @@ public class ShareService {
 
 	private final EmailService emailService;
 
-	public List<TodoList> getSharedTodoListsByUser(Long userId) {
+	public Iterable<TodoList> getSharedTodoListsByUser(Long userId) {
 
-		return sharesRepository.findBySharedUserId(userId).stream()
+		return sharesRepository.findBySharedUserId(userId)
+				.stream()
 				.map(Share::getSharedTodoList)
 				.collect(Collectors.toList());
 	}

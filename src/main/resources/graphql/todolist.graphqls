@@ -5,7 +5,7 @@ type TodoList {
 	tasks: [Task]
 }
 
-input InputTodoList{
+input TodoListInput{
 	todoListName: String!
 }
 
@@ -16,8 +16,8 @@ type Query {
 }
 
 type Mutation {
-	addTodoList(todoList: InputTodoList!): TodoList
-	updateTodoList(id: ID!, todoList: InputTodoList!): TodoList
+	addTodoList(todoListInput: TodoListInput!): TodoList
+	updateTodoList(id: ID!, todoListInput: TodoListInput!): TodoList
 	deleteTodoList(id: ID!): Boolean!
 	shareTodoListToUser(sharedUsername: String!, sharedTodoListId: ID!): ApiResponse!
 }
