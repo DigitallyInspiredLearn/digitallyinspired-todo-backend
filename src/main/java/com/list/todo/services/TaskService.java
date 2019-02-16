@@ -8,78 +8,59 @@ import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class TaskService {
 
-	private final TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
-	private TodoListService todoListService;
-	private UserService userService;
+    private TodoListService todoListService;
+    private UserService userService;
 
-	public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
-		UserPrincipal currentUser = userService.getCurrentUser();
-		TodoList todoList = todoListService.getTodoListById(todoListId).orElse(null);
-		Iterable<Task> tasks = null;
+    public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
+        UserPrincipal currentUser = userService.getCurrentUser();
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
+        Iterable<Task> tasks = null;
 
-		if (todoList != null && todoList.getUserOwnerId().equals(currentUser.getId())) {
-			tasks = taskRepository.findTasksByTodoListId(todoListId);
-		}
+        if (todoList.isPresent() && todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+            tasks = taskRepository.findTasksByTodoListId(todoListId);
+        }
 
-		return tasks;
-	}
+        return tasks;
+    }
 
-	public Task addTask(TaskInput taskInput, UserPrincipal currentUser) {
+    public Optional<Task> addTask(TaskInput taskInput) {
 
-		TodoList todoList = todoListService.getTodoListById(taskInput.getTodoListId()).orElse(null);
-		Task newTask = new Task();
+        Optional<TodoList> todoList = todoListService.getTodoListById(taskInput.getTodoListId());
+        Optional<Task> newTask = Optional.of(new Task());
 
-		if (todoList != null && todoList.getUserOwnerId().equals(currentUser.getId())) {
-			newTask.setBody(taskInput.getBody());
-			newTask.setIsComplete(false);
-			newTask.setTodoList(todoList);
-			newTask = taskRepository.save(newTask);
-		}
+        if (todoList.isPresent()) {
+            newTask = todoList
+                    .map(tl -> {
+                        Task task = new Task();
+                        task.setBody(taskInput.getBody());
+                        task.setIsComplete(false);
+                        task.setTodoList(tl);
+                        return taskRepository.save(task);
+                    });
+        }
 
-		return newTask;
-	}
+        return newTask;
+    }
 
-	public Task updateTask(Long currentTaskId, TaskInput taskInput, UserPrincipal currentUser) {
+    public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
 
-		Task currentTask = taskRepository.findById(currentTaskId).orElse(null);
+        return taskRepository.findById(currentTaskId).map(task -> {
+            task.setBody(taskInput.getBody());
+            task.setIsComplete(taskInput.getIsComplete());
+            return taskRepository.save(task);
+        });
+    }
 
-		TodoList currentTodoList;
-
-		if (currentTask != null) {
-			currentTodoList = currentTask.getTodoList();
-
-			if (currentTodoList != null && currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
-				currentTask.setBody(taskInput.getBody());
-				currentTask.setIsComplete(taskInput.getIsComplete());
-
-				currentTask = taskRepository.save(currentTask);
-			}
-		}
-
-		return currentTask;
-	}
-
-	public boolean deleteTask(Long taskId, UserPrincipal currentUser) {
-
-		Task task = taskRepository.findById(taskId).orElse(null);
-		TodoList currentTodoList;
-		boolean isSuccess = false;
-
-		if (task != null) {
-
-			currentTodoList = task.getTodoList();
-
-			if (currentTodoList != null && currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
-				taskRepository.deleteById(taskId);
-				isSuccess = true;
-			}
-		}
-		return isSuccess;
-	}
+    public void deleteTask(Long taskId) {
+        taskRepository.deleteById(taskId);
+    }
 
 }

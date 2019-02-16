@@ -16,7 +16,7 @@ extend type Query {
 }
 
 extend type Mutation {
-	addTask(taskInput: TaskInput!): Task
-	updateTask(currentTaskId: ID!, taskInput: TaskInput!): Task
+	addTask(taskInput: TaskInput!): Boolean!
+	updateTask(currentTaskId: ID!, taskInput: TaskInput!): Boolean!
 	deleteTask(taskId: ID!): Boolean
 }

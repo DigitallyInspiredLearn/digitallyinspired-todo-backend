@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +51,7 @@ public class FollowerService {
         return isSuccess;
     }
 
-    public void notifyFollowersAboutAddTodoList(UserPrincipal user, TodoListInput todoList){
+    public void notifyFollowersAboutAddTodoList(User user, TodoList todoList){
         List<User> followers = getFollowersByUserId(user.getId());
 
         for (User follower : followers){
@@ -68,7 +69,7 @@ public class FollowerService {
         }
     }
 
-    public void notifyFollowersAboutSharingTodoList(UserPrincipal user, TodoList todoList, User sharedUser){
+    public void notifyFollowersAboutSharingTodoList(User user, User sharedUser, TodoList todoList){
         List<User> followers = getFollowersByUserId(user.getId());
 
         for (User follower : followers){
@@ -87,7 +88,7 @@ public class FollowerService {
         }
     }
 
-    public void notifyFollowersAboutUpdatingTodoList(UserPrincipal user, TodoList todoList){
+    public void notifyFollowersAboutUpdatingTodoList(User user, TodoList todoList){
         List<User> followers = getFollowersByUserId(user.getId());
 
         for (User follower : followers){
@@ -105,7 +106,7 @@ public class FollowerService {
         }
     }
 
-    public void notifyFollowersAboutDeletingTodoList(UserPrincipal user, TodoList todoList){
+    public void notifyFollowersAboutDeletingTodoList(User user, TodoList todoList){
         List<User> followers = getFollowersByUserId(user.getId());
 
         for (User follower : followers){

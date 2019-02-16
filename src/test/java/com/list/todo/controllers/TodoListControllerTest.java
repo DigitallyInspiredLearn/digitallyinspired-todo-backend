@@ -194,4 +194,11 @@ public class TodoListControllerTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    public void shareTodoListToUser_shareTodoListToAnotherUserMoreThanOneTime() throws Exception {
+        this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", "4", "vitaliy"))
+                .andDo(print())
+                .andExpect(status().isConflict());
+    }
 }

@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
 @Component
@@ -18,18 +20,18 @@ public class TaskMutation implements GraphQLMutationResolver {
     private TaskService taskService;
     private UserService userService;
 
-    public Task addTask(TaskInput taskInput) {
+    public boolean addTask(TaskInput taskInput) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return taskService.addTask(taskInput, currentUser);
+        return taskService.addTask(taskInput).isPresent();
     }
 
-    public Task updateTask(Long currentTaskId, TaskInput taskInput) {
+    public boolean updateTask(Long currentTaskId, TaskInput taskInput) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return taskService.updateTask(currentTaskId, taskInput, currentUser);
+        return taskService.updateTask(currentTaskId, taskInput).isPresent();
     }
 
-    public boolean deleteTask(Long taskId) {
+    public void deleteTask(Long taskId) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return taskService.deleteTask(taskId, currentUser);
+        taskService.deleteTask(taskId);
     }
 }

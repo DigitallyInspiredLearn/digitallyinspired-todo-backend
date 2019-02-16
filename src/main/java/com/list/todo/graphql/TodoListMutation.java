@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
@@ -19,24 +21,24 @@ public class TodoListMutation implements GraphQLMutationResolver {
     private TodoListService todoListService;
     private UserService userService;
 
-    public TodoList addTodoList(TodoListInput todoListInput) {
+    public boolean addTodoList(TodoListInput todoListInput) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return todoListService.addTodoList(todoListInput, currentUser);
+        return todoListService.addTodoList(todoListInput, currentUser.getId()).isPresent();
     }
 
-    public TodoList updateTodoList(Long todoListId, TodoListInput todoListInput) {
+    public boolean updateTodoList(Long todoListId, TodoListInput todoListInput) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return todoListService.updateTodoList(todoListId, todoListInput, currentUser);
+        return todoListService.updateTodoList(todoListId, todoListInput, currentUser.getId()).isPresent();
     }
 
-    public boolean deleteTodoList(Long todoListId) {
+    public void deleteTodoList(Long todoListId) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return todoListService.deleteTodoList(todoListId, currentUser);
+        todoListService.deleteTodoList(todoListId, currentUser.getId());
     }
 
     public ApiResponse shareTodoListToUser(String sharedUsername, Long sharedTodoListId) {
         UserPrincipal currentUser = userService.getCurrentUser();
-        return todoListService.shareTodoList(sharedUsername, sharedTodoListId, currentUser);
+        return todoListService.shareTodoList(sharedUsername, sharedTodoListId, currentUser.getId());
     }
 
 }

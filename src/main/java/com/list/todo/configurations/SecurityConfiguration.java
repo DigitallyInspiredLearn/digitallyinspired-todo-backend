@@ -79,7 +79,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
 
         web.ignoring()
-        		.antMatchers("/graphiql"/*, "/graphql", "/subscriptions", "/vendor/**"*/)
+        		.antMatchers("/graphiql")
         		.antMatchers("/v2/api-docs")//
                 .antMatchers("/swagger-resources/**")//
                 .antMatchers("/swagger-ui.html")//

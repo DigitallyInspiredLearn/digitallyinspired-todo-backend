@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -43,9 +44,9 @@ public class UserController {
     }
 
     @PutMapping("/editProfile")
-    public ResponseEntity<User> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                @RequestBody UserInput userInput) {
-        User user = userService.updateUser(currentUser.getId(), userInput);
+    public ResponseEntity<Optional<User>> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                          @RequestBody UserInput userInput) {
+        Optional<User> user = userService.updateUser(currentUser.getId(), userInput);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 

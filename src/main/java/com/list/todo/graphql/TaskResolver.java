@@ -9,6 +9,8 @@ import com.list.todo.services.TodoListService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class TaskResolver implements GraphQLResolver<Task> {
@@ -16,7 +18,7 @@ public class TaskResolver implements GraphQLResolver<Task> {
 	private TodoListService todoListService;
 	
 	public TodoList getTodoList(Task task) {
-		return todoListService.getTodoListById(task.getTodoList().getId()).orElse(null);
+		return todoListService.getTodoListById(task.getTodoList().getId()).orElse(new TodoList());
 	}
 	
 }

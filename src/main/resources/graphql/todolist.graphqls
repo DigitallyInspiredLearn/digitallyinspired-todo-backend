@@ -16,8 +16,8 @@ type Query {
 }
 
 type Mutation {
-	addTodoList(todoListInput: TodoListInput!): TodoList
-	updateTodoList(id: ID!, todoListInput: TodoListInput!): TodoList
-	deleteTodoList(id: ID!): Boolean!
+	addTodoList(todoListInput: TodoListInput!): Boolean!
+	updateTodoList(id: ID!, todoListInput: TodoListInput!): Boolean!
+	deleteTodoList(id: ID!): Boolean
 	shareTodoListToUser(sharedUsername: String!, sharedTodoListId: ID!): ApiResponse!
 }

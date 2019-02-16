@@ -16,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class UserMutation implements GraphQLMutationResolver {
@@ -46,7 +48,7 @@ public class UserMutation implements GraphQLMutationResolver {
     @PreAuthorize("hasAnyRole('ROLE_USER')")
     public User updateMyProfile(UserInput userInput) {
         UserPrincipal user = userService.getCurrentUser();
-        return userService.updateUser(user.getId(), userInput);
+        return userService.updateUser(user.getId(), userInput).orElse(null);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_USER')")
