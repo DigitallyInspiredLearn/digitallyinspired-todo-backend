@@ -26,7 +26,6 @@ public class TodoListApplication extends AsyncConfigurerSupport {
 		executor.initialize();
 		return executor;
 	}
-	
 
 }
 

@@ -6,7 +6,6 @@ import com.list.todo.entity.User;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.repositories.TodoListRepository;
-import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +20,7 @@ public class TodoListService {
     private FollowerService followerService;
     private UserService userService;
     private ShareService shareService;
+    private final NotificationService notificationService;
 
     public Optional<TodoList> getTodoListById(Long todoListId) {
         return todoListRepository.findById(todoListId);
@@ -37,7 +37,7 @@ public class TodoListService {
         todoList.setTodoListName(todoListInput.getTodoListName());
 
         userService.getUserById(userId)
-                .ifPresent(user -> followerService.notifyFollowersAboutAddTodoList(user, todoList));
+                .ifPresent(user -> notificationService.notifyFollowersAboutAddingTodolist(user, todoList));
 
         return Optional.of(todoListRepository.save(todoList));
     }
@@ -51,7 +51,7 @@ public class TodoListService {
                 });
 
         todoList.ifPresent(todoList1 -> userService.getUserById(userId)
-                .ifPresent(user -> followerService.notifyFollowersAboutUpdatingTodoList(user, todoList1)));
+                .ifPresent(user -> notificationService.notifyFollowersAboutUpdatingTodolist(user, todoList1)));
 
         return todoList;
     }
@@ -63,25 +63,24 @@ public class TodoListService {
         if (todoList.isPresent()) {
             todoListRepository.deleteById(todoListId);
             userService.getUserById(userId)
-                    .ifPresent(user -> followerService.notifyFollowersAboutDeletingTodoList(user, todoList.get()));
+                    .ifPresent(user -> notificationService.notifyFollowersAboutDeletingTodolist(user, todoList.get()));
         }
     }
 
-    public ApiResponse shareTodoList(String sharedUsername, Long sharedTodoListId, Long userId) {
+    public ApiResponse shareTodoList(String targetUsername, Long sharedTodoListId, Long userId) {
 
-        Optional<User> sharedUser = userService.getUserByUsername(sharedUsername);
+        Optional<User> targetUser = userService.getUserByUsername(targetUsername);
         Optional<TodoList> sharedTodoList = todoListRepository.findById(sharedTodoListId);
 
-        if (sharedUser.isPresent() && sharedTodoList.isPresent()) {
-            Share share = new Share(sharedUser.get().getId(), sharedTodoList.get());
+        if (targetUser.isPresent() && sharedTodoList.isPresent()) {
+            Share share = new Share(targetUser.get().getId(), sharedTodoList.get());
             shareService.addShare(share);
 
             userService.getUserById(userId)
                     .ifPresent(user -> {
-                        followerService.notifyFollowersAboutSharingTodoList(user, sharedUser.get(), sharedTodoList.get());
-                        shareService.sendNotificationAboutShareTodoList(sharedUser.get(), user, sharedTodoList.get());
+                        notificationService.notifyAboutSharingTodolist(user, targetUser.get(), sharedTodoList.get());
                     });
         }
-        return new ApiResponse(true, "You shared your todoList to " + sharedUsername + "!");
+        return new ApiResponse(true, "You shared your todoList to " + targetUsername + "!");
     }
 }

@@ -35,25 +35,6 @@ public class ShareService {
         sharesRepository.save(shares);
     }
 
-    // TODO: вынести сообщения в файл .properties
-    public void sendNotificationAboutShareTodoList(User sharedUser, User senderUser, TodoList sharedTodoList) {
-        // TODO: вынести 'http://localhost:8080' в файл .properties
-        String link = "http://localhost:8080/api/todolists/shared";
-        String subject = "You have been new shared todo list!";
-
-        String message = String.format(
-                "Hi, %s!\n" +
-                        "User %s shared with you TodoList: \"%s\". " +
-                        "Follow the link to view: %s",
-                sharedUser.getName(),
-                senderUser.getName(),
-                sharedTodoList.getTodoListName(),
-                link
-        );
-
-        emailService.sendEmail(sharedUser.getEmail(), subject, message);
-    }
-
     public boolean isSharedTodoListToUser(TodoList sharedTodoList, User sharedUser) {
 
         return sharesRepository.findBySharedUserId(sharedUser.getId())
