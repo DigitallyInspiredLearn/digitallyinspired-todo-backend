@@ -1,7 +1,6 @@
 package com.list.todo.graphql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
-import com.list.todo.entity.TodoList;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
@@ -10,8 +9,6 @@ import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @AllArgsConstructor

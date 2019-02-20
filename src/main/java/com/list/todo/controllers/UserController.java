@@ -52,7 +52,6 @@ public class UserController {
 
     @DeleteMapping("/deleteProfile")
     public ResponseEntity<User> deleteMyProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
-        // TODO: девалидация токена
         userService.deleteUser(currentUser.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

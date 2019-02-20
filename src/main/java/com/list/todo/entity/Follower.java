@@ -1,10 +1,7 @@
 package com.list.todo.entity;
 
 import com.list.todo.payload.UserSummary;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -16,6 +13,8 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
+@Builder
 public class Follower extends BaseEntity {
 
 

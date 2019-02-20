@@ -18,7 +18,7 @@ public class TaskResolver implements GraphQLResolver<Task> {
 	private TodoListService todoListService;
 	
 	public TodoList getTodoList(Task task) {
-		return todoListService.getTodoListById(task.getTodoList().getId()).orElse(new TodoList());
+		return todoListService.getTodoListById(task.getTodoList().getId()).orElse(null);
 	}
 	
 }

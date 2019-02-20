@@ -2,9 +2,11 @@ package com.list.todo.controllers;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.payload.TaskInput;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.ShareService;
+import com.list.todo.services.TaskService;
 import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,7 @@ public class TodoListController {
     private final TodoListService todoListService;
     private final UserService userService;
     private final ShareService shareService;
+    private final TaskService taskService;
 
     @GetMapping("/my")
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -43,16 +46,14 @@ public class TodoListController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TodoList> getTodoList(@PathVariable("id") TodoList todoList,
-                                                @AuthenticationPrincipal UserPrincipal currentUser) {
-        ResponseEntity<TodoList> responseEntity;
+    public ResponseEntity<Optional<TodoList>> getTodoList(@PathVariable("id") Long todoListId,
+                                                          @AuthenticationPrincipal UserPrincipal currentUser) {
+        ResponseEntity<Optional<TodoList>> responseEntity;
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
-        // TODO: придумать как убрать условные конструкции
-        // Вариант 1: перенести условия в сервисы, а из сервисов возвращать ApiResponse.
-        // Тогда статус всегда будет HttpStatus.OK, но в контроллерах не будет лишней логики
-        if (todoList == null) {
+        if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
@@ -63,26 +64,35 @@ public class TodoListController {
 
     @PostMapping
     public ResponseEntity<Optional<TodoList>> addTodoList(@RequestBody TodoListInput todoListInput,
-                                                @AuthenticationPrincipal UserPrincipal currentUser) {
-
+                                                          @AuthenticationPrincipal UserPrincipal currentUser) {
         Optional<TodoList> todoList = todoListService.addTodoList(todoListInput, currentUser.getId());
+        Optional<TodoList> responseTodoList = Optional.empty();
 
-        return new ResponseEntity<>(todoList, HttpStatus.OK);
+        if (todoList.isPresent()) {
+            todoListInput.getTasks()
+                    .forEach(task -> taskService.addTask(
+                            new TaskInput(task.getBody(), task.getIsComplete(), todoList.get().getId())));
+
+            responseTodoList = todoListService.getTodoListById(todoList.get().getId());
+        }
+
+        return new ResponseEntity<>(responseTodoList, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Optional<TodoList>> updateTodoList(@RequestBody TodoListInput todoListInput,
                                                              @AuthenticationPrincipal UserPrincipal currentUser,
-                                                             @PathVariable("id") TodoList currentTodoList) {
+                                                             @PathVariable("id") Long todoListId) {
         ResponseEntity<Optional<TodoList>> responseEntity;
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
-        if (currentTodoList == null) {
+        if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!currentTodoList.getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> todoList = todoListService.updateTodoList(currentTodoList.getId(), todoListInput, currentUser.getId());
-            responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
+            Optional<TodoList> updatedtodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
+            responseEntity = new ResponseEntity<>(updatedtodoList, HttpStatus.OK);
         }
 
         return responseEntity;
@@ -90,15 +100,16 @@ public class TodoListController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTodoList(@AuthenticationPrincipal UserPrincipal currentUser,
-                                               @PathVariable("id") TodoList todoList) {
+                                               @PathVariable("id") Long todoListId) {
         ResponseEntity<Void> responseEntity;
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
-        if (todoList == null) {
+        if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            todoListService.deleteTodoList(todoList.getId(), currentUser.getId());
+            todoListService.deleteTodoList(todoList.get().getId(), currentUser.getId());
             responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
@@ -109,19 +120,20 @@ public class TodoListController {
     @PostMapping("/{todoListId}/share")
     public ResponseEntity<Void> shareTodoListToUser(@AuthenticationPrincipal UserPrincipal currentUser,
                                                     @RequestParam("username") String targetUserUsername,
-                                                    @PathVariable("todoListId") TodoList sharedTodoList) {
+                                                    @PathVariable("todoListId") Long sharedTodoListId) {
         ResponseEntity<Void> responseEntity;
         Optional<User> targetUserOfSharedTodoList = userService.getUserByUsername(targetUserUsername);
+        Optional<TodoList> sharedTodoList = todoListService.getTodoListById(sharedTodoListId);
 
-        if (!targetUserOfSharedTodoList.isPresent() || sharedTodoList == null) {
+        if (!targetUserOfSharedTodoList.isPresent() || !sharedTodoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!sharedTodoList.getUserOwnerId().equals(currentUser.getId()) ||
+        } else if (!sharedTodoList.get().getUserOwnerId().equals(currentUser.getId()) ||
                 currentUser.getUsername().equals(targetUserUsername)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } else if (shareService.isSharedTodoListToUser(sharedTodoList, targetUserOfSharedTodoList.get())) {
+        } else if (shareService.isSharedTodoListToUser(sharedTodoList.get(), targetUserOfSharedTodoList.get())) {
             responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
         } else {
-            todoListService.shareTodoList(targetUserUsername, sharedTodoList.getId(), currentUser.getId());
+            todoListService.shareTodoList(targetUserUsername, sharedTodoList.get().getId(), currentUser.getId());
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         }
         return responseEntity;

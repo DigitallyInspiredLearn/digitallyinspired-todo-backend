@@ -4,7 +4,6 @@ import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.payload.TaskInput;
 import com.list.todo.repositories.TaskRepository;
-import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +15,17 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
 
-    private TodoListService todoListService;
-    private UserService userService;
+    private final TodoListService todoListService;
+
+    public Optional<Task> getTaskById(Long currentTaskId) {
+        return taskRepository.findById(currentTaskId);
+    }
 
     public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
-        UserPrincipal currentUser = userService.getCurrentUser();
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
         Iterable<Task> tasks = null;
 
-        if (todoList.isPresent() && todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        if (todoList.isPresent()) {
             tasks = taskRepository.findTasksByTodoListId(todoListId);
         }
 
@@ -34,17 +35,16 @@ public class TaskService {
     public Optional<Task> addTask(TaskInput taskInput) {
 
         Optional<TodoList> todoList = todoListService.getTodoListById(taskInput.getTodoListId());
-        Optional<Task> newTask = Optional.of(new Task());
+        Optional<Task> newTask = Optional.empty();
 
         if (todoList.isPresent()) {
-            newTask = todoList
-                    .map(tl -> {
-                        Task task = new Task();
-                        task.setBody(taskInput.getBody());
-                        task.setIsComplete(false);
-                        task.setTodoList(tl);
-                        return taskRepository.save(task);
-                    });
+            Task task = Task.builder()
+                    .body(taskInput.getBody())
+                    .isComplete(taskInput.getIsComplete())
+                    .todoList(todoList.get())
+                    .build();
+            newTask = Optional.of(taskRepository.save(task));
+
         }
 
         return newTask;
@@ -52,11 +52,12 @@ public class TaskService {
 
     public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
 
-        return taskRepository.findById(currentTaskId).map(task -> {
-            task.setBody(taskInput.getBody());
-            task.setIsComplete(taskInput.getIsComplete());
-            return taskRepository.save(task);
-        });
+        return taskRepository.findById(currentTaskId)
+                .map(task -> {
+                    task.setBody(taskInput.getBody());
+                    task.setIsComplete(taskInput.getIsComplete());
+                    return taskRepository.save(task);
+                });
     }
 
     public void deleteTask(Long taskId) {

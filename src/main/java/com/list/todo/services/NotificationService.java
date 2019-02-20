@@ -13,9 +13,9 @@ import java.util.List;
 @AllArgsConstructor
 public class NotificationService {
 
-    private SimpMessagingTemplate webSocket;
-    private EmailService emailService;
-    private FollowerService followerService;
+    private final SimpMessagingTemplate webSocket;
+    private final EmailService emailService;
+    private final FollowerService followerService;
 
 
     public void notifyAboutSharingTodolist(User ownerUser, User targetUser, TodoList sharedTodoList) {

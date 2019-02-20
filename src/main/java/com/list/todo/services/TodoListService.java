@@ -17,9 +17,8 @@ public class TodoListService {
 
     private final TodoListRepository todoListRepository;
 
-    private FollowerService followerService;
-    private UserService userService;
-    private ShareService shareService;
+    private final UserService userService;
+    private final ShareService shareService;
     private final NotificationService notificationService;
 
     public Optional<TodoList> getTodoListById(Long todoListId) {
@@ -32,20 +31,25 @@ public class TodoListService {
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
 
-        TodoList todoList = new TodoList();
-        todoList.setUserOwnerId(userId);
-        todoList.setTodoListName(todoListInput.getTodoListName());
+        TodoList todoList = TodoList.builder()
+                .todoListName(todoListInput.getTodoListName())
+                .userOwnerId(userId)
+                .tasks(todoListInput.getTasks())
+                .build();
+
+        Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
 
         userService.getUserById(userId)
                 .ifPresent(user -> notificationService.notifyFollowersAboutAddingTodolist(user, todoList));
 
-        return Optional.of(todoListRepository.save(todoList));
+        return newTodoList;
     }
 
     public Optional<TodoList> updateTodoList(Long todoListId, TodoListInput todoListInput, Long userId) {
 
         Optional<TodoList> todoList = todoListRepository.findById(todoListId)
                 .map(tl -> {
+                    // TODO: обновление тасков через обновление листа?
                     tl.setTodoListName(todoListInput.getTodoListName());
                     return todoListRepository.save(tl);
                 });

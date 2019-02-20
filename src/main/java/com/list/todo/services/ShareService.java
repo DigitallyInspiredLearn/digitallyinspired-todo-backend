@@ -17,10 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ShareService {
 
-    // TODO: перенести поля на final
-    private ShareRepository sharesRepository;
-
-    private final EmailService emailService;
+    private final ShareRepository sharesRepository;
 
     public Iterable<TodoList> getSharedTodoListsByUser(Long userId) {
 
