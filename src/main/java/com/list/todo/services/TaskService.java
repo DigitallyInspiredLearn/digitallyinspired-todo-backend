@@ -17,14 +17,12 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     private TodoListService todoListService;
-    private UserService userService;
 
     public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
-        UserPrincipal currentUser = userService.getCurrentUser();
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
         Iterable<Task> tasks = null;
 
-        if (todoList.isPresent() && todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        if (todoList.isPresent()) {
             tasks = taskRepository.findTasksByTodoListId(todoListId);
         }
 
@@ -37,14 +35,19 @@ public class TaskService {
         Optional<Task> newTask = Optional.of(new Task());
 
         if (todoList.isPresent()) {
-            newTask = todoList
-                    .map(tl -> {
-                        Task task = new Task();
-                        task.setBody(taskInput.getBody());
-                        task.setIsComplete(false);
-                        task.setTodoList(tl);
-                        return taskRepository.save(task);
-                    });
+//            newTask = todoList
+//                    .map(tl -> {
+//                        Task task = new Task();
+//                        task.setBody(taskInput.getBody());
+//                        task.setIsComplete(taskInput.getIsComplete());
+//                        task.setTodoList(tl);
+//                        return taskRepository.save(task);
+//                    });
+            Task task = new Task();
+            task.setBody(taskInput.getBody());
+            task.setIsComplete(taskInput.getIsComplete());
+            task.setTodoList(todoList.get());
+            newTask = Optional.of(taskRepository.save(task));
         }
 
         return newTask;

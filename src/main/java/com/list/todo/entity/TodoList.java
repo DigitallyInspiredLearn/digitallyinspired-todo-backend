@@ -27,6 +27,6 @@ public class TodoList extends BaseEntity {
     private Long userOwnerId;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
-    private Set<Task> tasks = new HashSet<>();
+    private Set<Task> tasks;
     
 }

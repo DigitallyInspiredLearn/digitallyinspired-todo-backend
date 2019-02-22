@@ -20,9 +20,7 @@ import java.util.stream.Collectors;
 public class FollowerService {
 
     private FollowerRepository followerRepository;
-    private UserRepository userRepository;
-
-    private final EmailService emailService;
+    private UserService userService;
 
     public List<User> getFollowersByUserId(Long userId) {
         return followerRepository.findByFollowedUserId(userId)
@@ -39,8 +37,8 @@ public class FollowerService {
     }
 
     public boolean followUser(Long currentUserId, String userNameOfFollowedUser) {
-        User currUser = userRepository.findById(currentUserId).orElse(null);
-        User followedUser = userRepository.findByUsername(userNameOfFollowedUser).orElse(null);
+        User currUser = userService.getUserById(currentUserId).orElse(null);
+        User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);
         boolean isSuccess = false;
 
         if (followedUser != null) {

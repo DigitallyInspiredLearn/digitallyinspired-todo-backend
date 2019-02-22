@@ -16,8 +16,6 @@ import java.util.Optional;
 public class TodoListService {
 
     private final TodoListRepository todoListRepository;
-
-    private FollowerService followerService;
     private UserService userService;
     private ShareService shareService;
     private final NotificationService notificationService;
@@ -69,6 +67,7 @@ public class TodoListService {
 
     public ApiResponse shareTodoList(String targetUsername, Long sharedTodoListId, Long userId) {
 
+        ApiResponse apiResponse = new ApiResponse(false, "Something went wrong!");
         Optional<User> targetUser = userService.getUserByUsername(targetUsername);
         Optional<TodoList> sharedTodoList = todoListRepository.findById(sharedTodoListId);
 
@@ -80,7 +79,8 @@ public class TodoListService {
                     .ifPresent(user -> {
                         notificationService.notifyAboutSharingTodolist(user, targetUser.get(), sharedTodoList.get());
                     });
+            apiResponse = new ApiResponse(true, "You shared your todoList to " + targetUsername + "!");
         }
-        return new ApiResponse(true, "You shared your todoList to " + targetUsername + "!");
+        return apiResponse;
     }
 }

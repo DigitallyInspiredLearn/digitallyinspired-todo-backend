@@ -1,0 +1,1 @@
+update todolist_test.hibernate_sequence set next_val = 100;
