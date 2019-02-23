@@ -1,10 +1,7 @@
 package com.list.todo.controllers;
 
 import com.list.todo.entity.User;
-import com.list.todo.payload.ApiResponse;
-import com.list.todo.payload.UserInput;
-import com.list.todo.payload.UserStats;
-import com.list.todo.payload.UserSummary;
+import com.list.todo.payload.*;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
@@ -45,7 +42,7 @@ public class UserController {
 
     @PutMapping("/editProfile")
     public ResponseEntity<Optional<User>> updateMyProfile(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                          @RequestBody UserInput userInput) {
+                                                          @RequestBody UpdatingUserInput userInput) {
         Optional<User> user = userService.updateUser(currentUser.getId(), userInput);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }

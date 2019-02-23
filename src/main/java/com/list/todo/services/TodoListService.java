@@ -9,6 +9,7 @@ import com.list.todo.repositories.TodoListRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 @Service
@@ -34,22 +35,24 @@ public class TodoListService {
         TodoList todoList = TodoList.builder()
                 .todoListName(todoListInput.getTodoListName())
                 .userOwnerId(userId)
-                .tasks(todoListInput.getTasks())
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
 
+        todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
+        newTodoList.get().setTasks(todoListInput.getTasks());
+        Optional<TodoList> updatedTodoList = Optional.of(todoListRepository.save(todoList));
+
         userService.getUserById(userId)
                 .ifPresent(user -> notificationService.notifyFollowersAboutAddingTodolist(user, todoList));
 
-        return newTodoList;
+        return updatedTodoList;
     }
 
     public Optional<TodoList> updateTodoList(Long todoListId, TodoListInput todoListInput, Long userId) {
 
         Optional<TodoList> todoList = todoListRepository.findById(todoListId)
                 .map(tl -> {
-                    // TODO: обновление тасков через обновление листа?
                     tl.setTodoListName(todoListInput.getTodoListName());
                     return todoListRepository.save(tl);
                 });

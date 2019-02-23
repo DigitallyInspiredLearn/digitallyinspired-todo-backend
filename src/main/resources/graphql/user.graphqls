@@ -39,6 +39,13 @@ input UserInput {
 	password: String!
 }
 
+input UpdatingUserInput {
+	name: String
+	username: String
+	email: String
+	password: String
+}
+
 input LoginRequest {
 	usernameOrEmail: String!
 	password: String!
@@ -54,7 +61,7 @@ extend type Query {
 extend type Mutation {
 	register(userInput: UserInput!): ApiResponse!
 	login(loginRequest: LoginRequest!): JwtAuthenticationResponse!
-	updateMyProfile(userInput: UserInput!): User!
+	updateMyProfile(userInput: UpdatingUserInput!): User!
 	deleteMyProfile: ApiResponse!
 	followUser(username: String!): ApiResponse!
 }

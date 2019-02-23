@@ -2,21 +2,14 @@ package com.list.todo.graphql;
 
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import com.list.todo.entity.*;
-import com.list.todo.payload.ApiResponse;
-import com.list.todo.payload.JwtAuthenticationResponse;
-import com.list.todo.payload.LoginRequest;
-import com.list.todo.payload.UserInput;
-import com.list.todo.repositories.*;
+import com.list.todo.payload.*;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.AuthenticationService;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -46,7 +39,7 @@ public class UserMutation implements GraphQLMutationResolver {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public User updateMyProfile(UserInput userInput) {
+    public User updateMyProfile(UpdatingUserInput userInput) {
         UserPrincipal user = userService.getCurrentUser();
         return userService.updateUser(user.getId(), userInput).orElse(null);
     }

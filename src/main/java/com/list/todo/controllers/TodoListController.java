@@ -2,7 +2,6 @@ package com.list.todo.controllers;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.payload.TaskInput;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.ShareService;
@@ -66,17 +65,8 @@ public class TodoListController {
     public ResponseEntity<Optional<TodoList>> addTodoList(@RequestBody TodoListInput todoListInput,
                                                           @AuthenticationPrincipal UserPrincipal currentUser) {
         Optional<TodoList> todoList = todoListService.addTodoList(todoListInput, currentUser.getId());
-        Optional<TodoList> responseTodoList = Optional.empty();
 
-        if (todoList.isPresent()) {
-            todoListInput.getTasks()
-                    .forEach(task -> taskService.addTask(
-                            new TaskInput(task.getBody(), task.getIsComplete(), todoList.get().getId())));
-
-            responseTodoList = todoListService.getTodoListById(todoList.get().getId());
-        }
-
-        return new ResponseEntity<>(responseTodoList, HttpStatus.OK);
+        return new ResponseEntity<>(todoList, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

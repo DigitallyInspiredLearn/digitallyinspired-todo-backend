@@ -97,7 +97,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userService).passwordEncoder(bCryptPasswordEncoder());
     }
 
-    /*@Bean
+    @Bean
     public WebMvcConfigurer corsConfiguration() {
         return new WebMvcConfigurerAdapter() {
             @Override
@@ -106,5 +106,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         .allowedMethods("GET", "POST", "PUT", "DELETE");
             }
         };
-    }*/
+    }
 }

@@ -3,7 +3,7 @@ package com.list.todo.services;
 import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.payload.UserInput;
+import com.list.todo.payload.UpdatingUserInput;
 import com.list.todo.payload.UserStats;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.ShareRepository;
@@ -81,15 +81,31 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Optional<User> updateUser(Long userId, UserInput userInput) {
-        return userRepository.findById(userId)
-                .map(user -> {
-                    user.setName(userInput.getName());
-                    user.setUsername(userInput.getUsername());
-                    user.setEmail(userInput.getEmail());
-                    user.setPassword(bCryptPasswordEncoder.encode(userInput.getPassword()));
-                    return user;
+    public Optional<User> updateUser(Long userId, UpdatingUserInput userInput) {
+        Optional<User> user = userRepository.findById(userId)
+                .map(u -> {
+                    if (userInput.getName() != null) {
+                        u.setName(userInput.getName());
+                    }
+                    if (userInput.getUsername() != null) {
+                        u.setUsername(userInput.getUsername());
+                    }
+                    if (userInput.getEmail() != null) {
+                        u.setEmail(userInput.getEmail());
+                    }
+                    if (userInput.getPassword() != null) {
+                        u.setPassword(bCryptPasswordEncoder.encode(userInput.getPassword()));
+                    }
+                    return u;
                 });
+
+        User updatedUser = null;
+
+        if (user.isPresent()) {
+            updatedUser = userRepository.save(user.get());
+        }
+
+        return Optional.ofNullable(updatedUser);
     }
 
     public void deleteUser(Long id) {

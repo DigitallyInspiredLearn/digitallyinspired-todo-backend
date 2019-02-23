@@ -1,6 +1,5 @@
-package com.list.todo.controllers;
+package com.list.todo.it;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Sql(value = {"/create-user-before.sql", "/create-todolists-before.sql", "/create-task-before.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = {"/create-todolists-after.sql", "/create-user-after.sql", "/create-task-after.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @WithUserDetails(value = "stepanich")
-public class TaskControllerTest {
+public class TaskTest {
 
 	@Autowired
 	MockMvc mockMvc;
