@@ -1,0 +1,67 @@
+type User {
+	id: ID!
+	name: String!
+	username: String!
+	email: String!
+	password: String!
+	role: RoleName!
+}
+
+enum RoleName {
+	ROLE_USER
+}
+
+type ApiResponse {
+	success: Boolean!
+	message: String!
+}
+
+type JwtAuthenticationResponse {
+	accessToken: String!
+	tokenType: String!
+}
+
+type UserSummary {
+	name: String!
+	username: String!
+	email: String!
+}
+
+type UserStats {
+	myTodoLists: [TodoList]!
+	sharedTodoLists: [TodoList]!
+}
+
+input UserInput {
+	name: String!
+	username: String!
+	email: String!
+	password: String!
+}
+
+input UpdatingUserInput {
+	name: String
+	username: String
+	email: String
+	password: String
+}
+
+input LoginRequest {
+	usernameOrEmail: String!
+	password: String!
+}
+
+extend type Query {
+	getUserInfo: UserSummary!
+	searchUserNames(partOfUserName: String!): [String!]
+	getUserStats: UserStats!
+	getFollowers: [UserSummary]!
+}
+
+extend type Mutation {
+	register(userInput: UserInput!): ApiResponse!
+	login(loginRequest: LoginRequest!): JwtAuthenticationResponse!
+	updateMyProfile(userInput: UpdatingUserInput!): User!
+	deleteMyProfile: ApiResponse!
+	followUser(username: String!): ApiResponse!
+}

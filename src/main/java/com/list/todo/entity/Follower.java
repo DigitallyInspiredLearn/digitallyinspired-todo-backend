@@ -1,9 +1,7 @@
 package com.list.todo.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import com.list.todo.payload.UserSummary;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -15,6 +13,8 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
+@Builder
 public class Follower extends BaseEntity {
 
 
@@ -25,4 +25,8 @@ public class Follower extends BaseEntity {
     @JoinColumn(name = "followeruser_id")
     @NotNull
     private User follower;
+
+    public UserSummary getFollowerUserSumm(){
+        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail());
+    }
 }

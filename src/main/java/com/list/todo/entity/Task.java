@@ -1,8 +1,7 @@
 package com.list.todo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -10,7 +9,12 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Data @EqualsAndHashCode(callSuper=true, exclude = "todoList")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=true, exclude = "todoList")
+@ToString(exclude = "todoList")
+@Builder
 public class Task extends BaseEntity {
 	
 	@NotNull

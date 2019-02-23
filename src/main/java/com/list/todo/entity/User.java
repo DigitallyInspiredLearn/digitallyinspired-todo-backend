@@ -10,9 +10,13 @@ import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor
+@Data
+@NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper=true)
+@ToString
+@Builder
 public class User extends BaseEntity {
 	
 	@NonNull

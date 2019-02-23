@@ -1,4 +1,4 @@
-package com.list.todo.controllers;
+package com.list.todo.it;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,12 +17,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestPropertySource("/application-test.properties")
 @Sql(value = "/create-user-before.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/create-user-after.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class AuthControllerTest {
+public class AuthenticationTest {
 
 	@Autowired
 	MockMvc mockMvc;
@@ -111,6 +111,5 @@ public class AuthControllerTest {
 			.andDo(print())
 			.andExpect(status().is4xxClientError());
 	}
-
 }
 

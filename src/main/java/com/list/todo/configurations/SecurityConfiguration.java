@@ -1,8 +1,8 @@
 package com.list.todo.configurations;
 
-import com.list.todo.security.CustomBasicAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationEntryPoint;
 import com.list.todo.security.JwtAuthenticationFilter;
+import com.list.todo.security.JwtTokenProvider;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +19,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 
 @Configuration
@@ -32,16 +35,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
+    private JwtTokenProvider jwtTokenProvider;
 	private JwtAuthenticationEntryPoint unauthorizedHandler;
 
 	@Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
-    }
-    
-    @Bean
-    public CustomBasicAuthenticationEntryPoint getBasicAuthEntryPoint(){
-        return new CustomBasicAuthenticationEntryPoint();
+        return new JwtAuthenticationFilter(jwtTokenProvider, userService);
     }
 
     @Bean
@@ -62,14 +61,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()        
         .csrf().disable()
                 .authorizeRequests()
-                	.antMatchers("/api/auth/**").permitAll()
+                	.antMatchers("/api/auth/**", "/graphql/**", "/graphiql/**", "/vendor/**").permitAll()
+                    .antMatchers("/ws/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
                 .exceptionHandling()
                     .authenticationEntryPoint(unauthorizedHandler)
                     .and()
                 .httpBasic()
-                    .authenticationEntryPoint(getBasicAuthEntryPoint())
+                    .authenticationEntryPoint(unauthorizedHandler)
                     .and()
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -82,7 +82,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
 
-        web.ignoring().antMatchers("/v2/api-docs")//
+        web.ignoring()
+        		.antMatchers("/graphiql")
+        		.antMatchers("/v2/api-docs")//
                 .antMatchers("/swagger-resources/**")//
                 .antMatchers("/swagger-ui.html")//
                 .antMatchers("/configuration/**")//
@@ -95,4 +97,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userService).passwordEncoder(bCryptPasswordEncoder());
     }
 
+    @Bean
+    public WebMvcConfigurer corsConfiguration() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("http://localhost:3000")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+            }
+        };
+    }
 }

@@ -1,0 +1,22 @@
+type Task {
+	id: ID!
+	body: String!
+	isComplete: Boolean!
+	todoList: TodoList!
+}
+
+input TaskInput{
+	body: String!
+	isComplete: Boolean!
+	todoListId: ID!
+}
+
+extend type Query {
+	getAllTasksOnTodoList(todoListId: ID!): [Task]
+}
+
+extend type Mutation {
+	addTask(taskInput: TaskInput!): Boolean!
+	updateTask(currentTaskId: ID!, taskInput: TaskInput!): Boolean!
+	deleteTask(taskId: ID!): Boolean
+}

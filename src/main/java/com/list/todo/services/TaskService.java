@@ -2,39 +2,66 @@ package com.list.todo.services;
 
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
+import com.list.todo.payload.TaskInput;
 import com.list.todo.repositories.TaskRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class TaskService {
 
-	private final TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
-	public List<Task> getAllTasksOnTodoList(TodoList todoList) {
-		List<Task> tasks = taskRepository.findTasksByTodoListId(todoList.getId());
-		return tasks;
-	}
+    private final TodoListService todoListService;
 
-	public Task getTask(Long id) {
-		Optional<Task> task = taskRepository.findById(id);
-		return task.orElse(null);
-	}
+    public Optional<Task> getTaskById(Long currentTaskId) {
+        return taskRepository.findById(currentTaskId);
+    }
 
-	public void addTask(Task task) {
-		taskRepository.save(task);
-	}
+    public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
+        Iterable<Task> tasks = null;
 
-	public void updateTask(Task task) {
-		taskRepository.save(task);
-	}
+        if (todoList.isPresent()) {
+            tasks = taskRepository.findTasksByTodoListId(todoListId);
+        }
 
-	public void deleteTask(Task task) {
-		taskRepository.delete(task);
-	}
+        return tasks;
+    }
+
+    public Optional<Task> addTask(TaskInput taskInput) {
+
+        Optional<TodoList> todoList = todoListService.getTodoListById(taskInput.getTodoListId());
+        Optional<Task> newTask = Optional.empty();
+
+        if (todoList.isPresent()) {
+            Task task = Task.builder()
+                    .body(taskInput.getBody())
+                    .isComplete(taskInput.getIsComplete())
+                    .todoList(todoList.get())
+                    .build();
+            newTask = Optional.of(taskRepository.save(task));
+
+        }
+
+        return newTask;
+    }
+
+    public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
+
+        return taskRepository.findById(currentTaskId)
+                .map(task -> {
+                    task.setBody(taskInput.getBody());
+                    task.setIsComplete(taskInput.getIsComplete());
+                    return taskRepository.save(task);
+                });
+    }
+
+    public void deleteTask(Long taskId) {
+        taskRepository.deleteById(taskId);
+    }
 
 }
