@@ -107,7 +107,6 @@ public class TodoListTest {
                 "}")
                 .contentType(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andDo(print())
-                .andExpect(jsonPath("id").value("100"))
                 .andExpect(jsonPath("todoListName").value("todoList1"))
                 .andExpect(jsonPath("userOwnerId").value("1"))
                 // TODO: проверить на возвращаемые таски в запросе

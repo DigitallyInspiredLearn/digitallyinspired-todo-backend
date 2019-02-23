@@ -72,7 +72,6 @@ public class TaskTest {
 				"}")
 				.contentType(MediaType.parseMediaType("application/json;charset=UTF-8")))
 				.andDo(print())
-				.andExpect(jsonPath("id").value("100"))
 				.andExpect(jsonPath("body").value("task"))
 				.andExpect(jsonPath("isComplete").value("false"))
 				.andExpect(status().isOk());
