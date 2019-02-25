@@ -27,6 +27,6 @@ public class Follower extends BaseEntity {
     private User follower;
 
     public UserSummary getFollowerUserSumm(){
-        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail());
+        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail(), "https://www.gravatar.com/avatar/" + follower.getGravatarHash());
     }
 }

@@ -4,13 +4,10 @@ import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
 import com.list.todo.repositories.ShareRepository;
-import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,5 +34,10 @@ public class ShareService {
         return sharesRepository.findBySharedUserId(sharedUser.getId())
                 .stream()
                 .anyMatch(share -> share.getSharedTodoList().hashCode() == sharedTodoList.hashCode());
+    }
+
+    @Transactional
+    public void deleteShareBySharedTodoListId(Long todoListId) {
+        sharesRepository.deleteBySharedTodoListId(todoListId);
     }
 }

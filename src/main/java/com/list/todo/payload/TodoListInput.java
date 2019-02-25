@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -12,5 +13,5 @@ import java.util.Set;
 @NoArgsConstructor
 public class TodoListInput {
     private String todoListName;
-    private Set<Task> tasks;
+    private Set<Task> tasks = new LinkedHashSet<>();
 }

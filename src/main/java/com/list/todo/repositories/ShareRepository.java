@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ShareRepository extends JpaRepository<Share, Long> {
 	List<Share> findBySharedUserId(Long userId);
+
+    void deleteBySharedTodoListId(Long todoListId);
 }

@@ -7,6 +7,7 @@ import com.list.todo.payload.LoginRequest;
 import com.list.todo.payload.UserInput;
 import com.list.todo.repositories.UserRepository;
 import com.list.todo.security.JwtTokenProvider;
+import com.list.todo.util.MD5Util;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,8 +41,10 @@ public class AuthenticationService {
     }
 
     public User createUserAccount(UserInput userInput) {
+        String gravatarHash = MD5Util.md5Hex(userInput.getEmail());
+
         User user = new User(userInput.getName(), userInput.getUsername(),
-                userInput.getEmail(), userInput.getPassword());
+                userInput.getEmail(), userInput.getPassword(), gravatarHash);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(RoleName.ROLE_USER);

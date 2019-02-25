@@ -4,24 +4,22 @@ import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.payload.TaskInput;
 import com.list.todo.repositories.TaskRepository;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class TaskServiceTest {
 
     @Mock
@@ -33,15 +31,9 @@ public class TaskServiceTest {
     @InjectMocks
     private TaskService taskService;
 
-    @Before
-    public void setUp() throws Exception {
-
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
-    public void getAllTasksOnTodoList() {
-
+    public void getAllTasksOnTodoList_OnExistentTodoList_ReturnsAListOfTasks() {
+        // arrange
         Long userId = 1L;
         Long todoListId = 2L;
         Long task1Id = 3L;
@@ -65,24 +57,33 @@ public class TaskServiceTest {
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
         when(taskRepositoryMock.findTasksByTodoListId(todoListId)).thenReturn(tasks);
 
-        assertEquals(tasks, taskService.getAllTasksOnTodoList(todoListId));
+        // act
+        Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(todoListId);
+
+        // assert
+        assertEquals(tasks, tasksFromService);
 
         verify(taskRepositoryMock).findTasksByTodoListId(2L);
 
     }
 
     @Test
-    public void getAllTasksOnTodoList_withNonExistentTodoList() {
-
+    public void getAllTasksOnTodoList_OnNonExistentTodoList_ReturnsNull() {
+        // arrange
         Long todoListId = 100L;
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
-        assertNull(taskService.getAllTasksOnTodoList(todoListId));
+        // act
+        Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(todoListId);
+
+        // assert
+        assertNull(tasksFromService);
     }
 
     @Test
-    public void addTask() {
+    public void addTask_OnExistentTodoList_ReturnsAnObjectOfNewTask() {
+        // arrange
         Long todoListId = 1L;
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(new TodoList()));
@@ -90,21 +91,34 @@ public class TaskServiceTest {
 
         TaskInput taskInput = new TaskInput("task 1", false, 1L);
         Task newTask = new Task();
-        assertEquals(taskService.addTask(taskInput), Optional.of(newTask));
+
+        // act
+        Optional<Task> addedTask = taskService.addTask(taskInput);
+
+        // assert
+        assertEquals(addedTask, Optional.of(newTask));
     }
 
     @Test
-    public void addTask_withNonExistentTodoList() {
+    public void addTask_OnNonExistentTodoList_ReturnsAnEmptyOptional() {
+        // arrange
         Long todoListId = 100L;
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
         TaskInput taskInput = new TaskInput("task 1", false, 1L);
-        assertEquals(taskService.addTask(taskInput), Optional.empty());
+
+        // act
+        Optional<Task> addedTask = taskService.addTask(taskInput);
+
+        // assert
+        assertEquals(addedTask, Optional.empty());
     }
 
     @Test
-    public void updateTask() {
+    public void updateTask_OnNonExistentTodoList_ReturnsAnObjectOfUpdatedTask() {
+
+        // arrange
         Long todoListId = 1L;
 
         TodoList todoList = TodoList.builder()
@@ -134,13 +148,20 @@ public class TaskServiceTest {
         when(taskRepositoryMock.save(oldTask)).thenReturn(updatedTask);
 
         TaskInput taskInput = new TaskInput("task", false, todoListId);
-        assertEquals(Optional.of(updatedTask), taskService.updateTask(2L, taskInput));
+
+        // act
+        Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
+
+        // assert
+        assertEquals(taskFromService, Optional.of(updatedTask));
 
         verify(taskRepositoryMock).save(any(Task.class));
     }
 
     @Test
-    public void updateTask_updateNonExistentTask() {
+    public void updateTask_updateNonExistentTask_ReturnsAnEmptyOptional() {
+
+        // arrange
         Long todoListId = 1L;
 
         TodoList todoList = TodoList.builder()
@@ -160,16 +181,27 @@ public class TaskServiceTest {
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.empty());
 
         TaskInput taskInput = new TaskInput("task", false, todoListId);
-        assertEquals(Optional.empty(), taskService.updateTask(taskId, taskInput));
+
+        // act
+        Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
+
+        // assert
+        assertEquals(taskFromService, Optional.empty());
 
         verify(taskRepositoryMock, times(0)).save(any(Task.class));
     }
 
     @Test
-    public void deleteTask() {
+    public void deleteTask_OnNonExistentTodoList_Void() {
+
+        // arrange
         Long taskId = 1L;
+
+        // act
         taskService.deleteTask(taskId);
 
+
+        // assert
         verify(taskRepositoryMock).deleteById(taskId);
     }
 }

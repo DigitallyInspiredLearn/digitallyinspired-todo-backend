@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/todo_list?useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    password: 9n3f62Q_!
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: diTodoTestMail@gmail.com
+    password: vtcjwdedpcvwbcxq
+    protocol: smtp
+    properties:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+      mail:
+        debug: true
+mail:
+  pass: DRevelOu
+
+app:
+  jwtSecret: JWTSuperSecretKey
+  jwtExpirationInMs: 900000

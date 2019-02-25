@@ -4,7 +4,6 @@ import com.list.todo.entity.Follower;
 import com.list.todo.entity.User;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
-import com.list.todo.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

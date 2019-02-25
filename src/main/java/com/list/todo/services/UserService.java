@@ -57,7 +57,14 @@ public class UserService implements UserDetailsService {
     }
 
     public UserSummary getUserInfo(UserPrincipal user) {
-        return new UserSummary(user.getUsername(), user.getName(), user.getEmail());
+        Optional<User> currentUser = userRepository.findById(user.getId());
+        UserSummary userSummary = null;
+
+        if (currentUser.isPresent()) {
+            // TODO: url задавать в таком виде, либо брать из файла пропертей? Если брать из файла, то как поступать с сущностями, в которые нельзя добавить поле для пропертей, иначе оно пойдет в базу
+            userSummary = new UserSummary(currentUser.get().getUsername(), currentUser.get().getName(), currentUser.get().getEmail(), "https://www.gravatar.com/avatar/" + currentUser.get().getGravatarHash());
+        }
+        return userSummary;
     }
 
     public UserStats getUserStats(Long userId) {

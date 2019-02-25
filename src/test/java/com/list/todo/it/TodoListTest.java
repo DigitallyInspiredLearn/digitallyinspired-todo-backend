@@ -1,3 +1,4 @@
+/*
 package com.list.todo.it;
 
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
@@ -25,7 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@TestPropertySource("/application-test.properties")
+@TestPropertySource("/application-test.yml")
 @Sql(value = {"/create-user-before.sql", "/create-todolists-before.sql", "/create-task-before.sql", "/create-shares-before.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = {"/create-todolists-after.sql", "/create-user-after.sql", "/create-task-after.sql", "/create-shares-after.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @WithUserDetails(value = "stepanich")
@@ -41,14 +42,16 @@ public class TodoListTest {
                 .andExpect(authenticated())
 
                 // TODO: замапить в Set все id и сравнивать через contains
-                /*.andExpect(jsonPath("$[0].id").value("4"))
+                */
+/*.andExpect(jsonPath("$[0].id").value("4"))
                 .andExpect(jsonPath("$[0].todoListName").value("tl1"))
                 .andExpect(jsonPath("$[0].userOwnerId").value("1"))
                 .andExpect(jsonPath("$[0].tasks[0].id").value("8"))
                 .andExpect(jsonPath("$[0].tasks[1].id").value("9"))
                 .andExpect(jsonPath("$[1].id").value("5"))
                 .andExpect(jsonPath("$[1].todoListName").value("tl2"))
-                .andExpect(jsonPath("$[1].userOwnerId").value("1"))*/
+                .andExpect(jsonPath("$[1].userOwnerId").value("1"))*//*
+
 
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -60,13 +63,15 @@ public class TodoListTest {
         this.mockMvc.perform(get("/api/todolists/shared"))
                 .andDo(print())
                 .andExpect(authenticated())
-                /*.andExpect(jsonPath("$[0].id").value("6"))
+                */
+/*.andExpect(jsonPath("$[0].id").value("6"))
                 .andExpect(jsonPath("$[0].todoListName").value("tl3"))
                 .andExpect(jsonPath("$[0].userOwnerId").value("2"))
                 .andExpect(jsonPath("$[0].tasks[0].id").value("10"))
                 .andExpect(jsonPath("$[1].id").value("7"))
                 .andExpect(jsonPath("$[1].todoListName").value("tl4"))
-                .andExpect(jsonPath("$[1].userOwnerId").value("2"))*/
+                .andExpect(jsonPath("$[1].userOwnerId").value("2"))*//*
+
                 .andExpect(status().isOk());
     }
 
@@ -78,8 +83,10 @@ public class TodoListTest {
                 .andExpect(jsonPath("id").value("4"))
                 .andExpect(jsonPath("todoListName").value("tl1"))
                 .andExpect(jsonPath("userOwnerId").value("1"))
-                /*.andExpect(jsonPath("tasks[0].id").value("8"))
-                .andExpect(jsonPath("tasks[1].id").value("9"))*/
+                */
+/*.andExpect(jsonPath("tasks[0].id").value("8"))
+                .andExpect(jsonPath("tasks[1].id").value("9"))*//*
+
                 .andExpect(status().isOk());
     }
 
@@ -99,7 +106,8 @@ public class TodoListTest {
                 .andExpect(status().isForbidden());
     }
 
-    @Test
+    */
+/*@Test
     public void addTodoList() throws Exception {
         this.mockMvc.perform(post("/api/todolists").content("{" +
                 "\"todoListName\": \"todoList1\"," +
@@ -111,7 +119,8 @@ public class TodoListTest {
                 .andExpect(jsonPath("userOwnerId").value("1"))
                 // TODO: проверить на возвращаемые таски в запросе
                 .andExpect(status().isOk());
-    }
+    }*//*
+
 
     @Test
     public void updateTodoList() throws Exception {
@@ -209,3 +218,4 @@ public class TodoListTest {
                 .andExpect(status().isConflict());
     }
 }
+*/
