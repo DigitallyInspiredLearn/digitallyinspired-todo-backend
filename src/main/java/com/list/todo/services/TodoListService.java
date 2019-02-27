@@ -41,6 +41,8 @@ public class TodoListService {
 
         todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
         newTodoList.get().setTasks(todoListInput.getTasks());
+
+
         Optional<TodoList> updatedTodoList = Optional.of(todoListRepository.save(todoList));
 
         userService.getUserById(userId)
@@ -68,7 +70,7 @@ public class TodoListService {
         Optional<TodoList> todoList = todoListRepository.findById(todoListId);
 
         if (todoList.isPresent()) {
-            todoListRepository.deleteById(todoListId);
+            shareService.deleteShareBySharedTodoListId(todoListId);
             userService.getUserById(userId)
                     .ifPresent(user -> notificationService.notifyFollowersAboutDeletingTodolist(user, todoList.get()));
         }

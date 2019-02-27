@@ -8,9 +8,11 @@ import com.list.todo.repositories.TodoListRepository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TodoListServiceTest {
 
     @Mock
@@ -34,26 +37,27 @@ public class TodoListServiceTest {
     @InjectMocks
     private TodoListService todoListService;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
     public void getTodoListById() {
+        // arrange
         long todoListId = 1;
         long userId = 1;
         TodoList todoList = new TodoList();
         todoList.setTodoListName("name");
         todoList.setUserOwnerId(userId);
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
+
+        // act
         Optional<TodoList> returnedTodoList = todoListService.getTodoListById(todoListId);
+
+        // assert
         Assert.assertEquals(returnedTodoList, Optional.of(todoList));
     }
 
     @Test
     public void getTodoListsByUser() {
         long userId = 1;
+        // TODO: Можно выделить в отдельный private метод создание листа
         TodoList todoList1 = new TodoList();
         todoList1.setTodoListName("name1");
         todoList1.setUserOwnerId(userId);
@@ -66,6 +70,7 @@ public class TodoListServiceTest {
         todoLists.add(todoList2);
 
         when(todoListRepository.findTodoListsByUserOwnerId(userId)).thenReturn(todoLists);
+
         Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userId);
         Assert.assertEquals(returnedTodoLists, todoLists);
     }
@@ -103,7 +108,7 @@ public class TodoListServiceTest {
         long userId = 1;
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(new TodoList()));
         todoListService.deleteTodoList(todoListId, userId);
-        verify(todoListRepository).deleteById(todoListId);
+        verify(shareService).deleteShareBySharedTodoListId(todoListId);
     }
 
     @Test

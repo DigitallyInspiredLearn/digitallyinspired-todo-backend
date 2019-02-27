@@ -32,5 +32,7 @@ public class TodoList extends BaseEntity {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
     private Set<Task> tasks = new LinkedHashSet<>();
-    
+
+
+
 }

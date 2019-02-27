@@ -1,23 +1,17 @@
 package com.list.todo.graphql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
-import com.list.todo.entity.*;
 import com.list.todo.payload.UserStats;
 import com.list.todo.payload.UserSummary;
-import com.list.todo.repositories.*;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
-import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Set;
 
 @Component
 @AllArgsConstructor
