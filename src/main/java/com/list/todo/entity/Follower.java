@@ -22,11 +22,11 @@ public class Follower extends BaseEntity {
     private Long followedUserId;
 
     @ManyToOne
-    @JoinColumn(name = "followeruser_id")
+    @JoinColumn(name = "follower_user_id")
     @NotNull
     private User follower;
 
-    public UserSummary getFollowerUserSumm(){
+    public UserSummary getFollowerUserSummary(){
         return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail());
     }
 }

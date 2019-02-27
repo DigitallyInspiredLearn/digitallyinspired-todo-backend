@@ -58,10 +58,14 @@ public class UserController {
                                                   @RequestParam("username") String userNameOfFollowedUser) {
         ResponseEntity<ApiResponse> responseEntity;
 
-        if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)) {
-            responseEntity = new ResponseEntity<>(new ApiResponse(true, "You'll follow this user!"), HttpStatus.OK);
+        if (currentUser.getUsername().equals(userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else if (followerService.isAlreadyFollowed(currentUser.getId(), userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } else {
-            responseEntity = new ResponseEntity<>(new ApiResponse(false, "You can't follow this user!"), HttpStatus.NOT_FOUND);
+            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         return responseEntity;

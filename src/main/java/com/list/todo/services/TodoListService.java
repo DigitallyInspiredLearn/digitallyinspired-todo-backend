@@ -38,10 +38,13 @@ public class TodoListService {
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
+        Optional<TodoList> updatedTodoList = newTodoList;
 
-        todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
-        newTodoList.get().setTasks(todoListInput.getTasks());
-        Optional<TodoList> updatedTodoList = Optional.of(todoListRepository.save(todoList));
+        if (todoListInput.getTasks() != null){
+            todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
+            newTodoList.get().setTasks(todoListInput.getTasks());
+            updatedTodoList = Optional.of(todoListRepository.save(todoList));
+        }
 
         userService.getUserById(userId)
                 .ifPresent(user -> notificationService.notifyFollowersAboutAddingTodolist(user, todoList));

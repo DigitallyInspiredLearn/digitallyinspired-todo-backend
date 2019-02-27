@@ -20,7 +20,7 @@ public class Share extends BaseEntity {
 	private Long sharedUserId;
 
 	@ManyToOne
-	@JoinColumn(name = "sharedtodolist_id")
+	@JoinColumn(name = "shared_todolist_id")
 	@NotNull
 	private TodoList sharedTodoList;
 
