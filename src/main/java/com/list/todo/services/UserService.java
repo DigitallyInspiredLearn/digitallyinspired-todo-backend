@@ -13,6 +13,9 @@ import com.list.todo.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -48,10 +51,6 @@ public class UserService implements UserDetailsService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
     public Optional<User> getUserById(Long userId) {
         return userRepository.findById(userId);
     }
@@ -70,13 +69,17 @@ public class UserService implements UserDetailsService {
                 .orElse(null);
     }
 
-    public UserStats getUserStats(Long userId) {
-        List<TodoList> myTodoLists = todoListRepository.findTodoListsByCreatedBy(userId);
-        List<TodoList> sharedTodoLists = shareRepository.findBySharedUserId(userId)
+    public UserStats getUserStats(Long userId, Pageable pageable) {
+        List<TodoList> sharedTodoList = shareRepository.findBySharedUserId(userId)
                 .stream()
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
-        return new UserStats(myTodoLists, sharedTodoLists);
+
+        Page<TodoList> myTodoListsPage = todoListRepository.findTodoListsByCreatedBy(userId, pageable);
+
+        Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoList, pageable, sharedTodoList.size());
+
+        return new UserStats(myTodoListsPage, sharedTodoListsPage);
     }
 
     public Set<String> searchUsersByPartOfUsername(String partOfUsername) {

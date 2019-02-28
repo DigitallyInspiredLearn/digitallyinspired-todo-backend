@@ -1,4 +1,4 @@
-package com.list.todo.services.notification;
+package com.list.todo.services;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;

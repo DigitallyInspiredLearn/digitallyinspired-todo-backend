@@ -5,10 +5,10 @@ import com.list.todo.entity.User;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.ShareService;
-import com.list.todo.services.TaskService;
 import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,14 +26,23 @@ public class TodoListController {
     private final TodoListService todoListService;
     private final UserService userService;
     private final ShareService shareService;
-    private final TaskService taskService;
 
     @GetMapping("/my")
-    public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                             Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId());
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId(), pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Iterable<TodoList>> searchTodoListByName(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                   @RequestParam("name") String partOfTodoListName,
+                                                                   Pageable pageable) {
+        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getId(), pageable);
+
+        return new ResponseEntity<>(todoLists, HttpStatus.OK);
     }
 
     @GetMapping("/shared")

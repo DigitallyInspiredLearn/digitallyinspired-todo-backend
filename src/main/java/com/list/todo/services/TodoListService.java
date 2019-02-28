@@ -7,9 +7,10 @@ import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.repositories.TodoListRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,8 +27,8 @@ public class TodoListService {
         return todoListRepository.findById(todoListId);
     }
 
-    public Iterable<TodoList> getTodoListsByUser(Long userId) {
-        return todoListRepository.findTodoListsByCreatedBy(userId);
+    public Iterable<TodoList> getTodoListsByUser(Long userId, Pageable pageable) {
+        return todoListRepository.findTodoListsByCreatedBy(userId, pageable);
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
@@ -98,5 +99,9 @@ public class TodoListService {
             apiResponse = new ApiResponse(true, "You shared your todoList to " + targetUsername + "!");
         }
         return apiResponse;
+    }
+
+    public Iterable<TodoList> searchTodoListByName(String todoListName, Long userId, Pageable pageable){
+        return todoListRepository.findTodoListByTodoListNameLikeAndCreatedByEquals(todoListName, userId, pageable);
     }
 }

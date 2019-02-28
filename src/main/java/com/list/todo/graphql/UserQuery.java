@@ -7,6 +7,7 @@ import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +33,7 @@ public class UserQuery implements GraphQLQueryResolver {
 
     public UserStats getUserStats() {
         UserPrincipal user = userService.getCurrentUser();
-        return userService.getUserStats(user.getId());
+        return userService.getUserStats(user.getId(), Pageable.unpaged());
     }
 
     public List<UserSummary> getFollowers() {

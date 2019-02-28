@@ -10,6 +10,7 @@ import com.list.todo.services.ShareService;
 import com.list.todo.services.TodoListService;
 import com.list.todo.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +29,7 @@ public class TodoListQuery implements GraphQLQueryResolver {
 
 	public Iterable<TodoList> getMyTodoLists() {
 		UserPrincipal currentUser = userService.getCurrentUser();
-		return todoListService.getTodoListsByUser(currentUser.getId());
+		return todoListService.getTodoListsByUser(currentUser.getId(), Pageable.unpaged());
 	}
 
     public Iterable<TodoList> getMySharedTodoLists() {

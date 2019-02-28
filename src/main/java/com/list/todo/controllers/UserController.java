@@ -8,6 +8,7 @@ import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
 import com.list.todo.services.UserSettingsService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,8 +53,9 @@ public class UserController {
     }
 
     @GetMapping("/userStats")
-    public ResponseEntity<UserStats> getUserStats(@AuthenticationPrincipal UserPrincipal currentUser) {
-        return new ResponseEntity<>(userService.getUserStats(currentUser.getId()), HttpStatus.OK);
+    public ResponseEntity<UserStats> getUserStats(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                  Pageable pageable) {
+        return new ResponseEntity<>(userService.getUserStats(currentUser.getId(), pageable), HttpStatus.OK);
     }
 
     @PutMapping("/editProfile")

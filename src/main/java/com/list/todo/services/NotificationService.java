@@ -2,7 +2,6 @@ package com.list.todo.services;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.services.notification.Notifiable;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
