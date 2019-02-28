@@ -38,6 +38,7 @@ public class TodoListService {
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
+        Optional<TodoList> updatedTodoList = newTodoList;
 
         todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
         newTodoList.get().setTasks(todoListInput.getTasks());

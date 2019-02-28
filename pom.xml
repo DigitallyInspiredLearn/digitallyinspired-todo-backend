@@ -118,6 +118,7 @@
             <artifactId>graphiql-spring-boot-starter</artifactId>
             <version>${graphiql-spring-boot.version}</version>
         </dependency>
+
 		<!-- Web Sockets -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

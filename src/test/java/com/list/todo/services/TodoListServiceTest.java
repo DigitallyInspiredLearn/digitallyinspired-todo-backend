@@ -65,13 +65,14 @@ public class TodoListServiceTest {
         todoList2.setTodoListName("name2");
         todoList2.setUserOwnerId(userId);
         List<TodoList> todoLists = new ArrayList<>();
-
         todoLists.add(todoList1);
         todoLists.add(todoList2);
+        when(todoListRepository.findTodoListsByUserOwnerId(userId)).thenReturn(todoLists);
 
         when(todoListRepository.findTodoListsByUserOwnerId(userId)).thenReturn(todoLists);
 
         Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userId);
+
         Assert.assertEquals(returnedTodoLists, todoLists);
     }
 
@@ -82,10 +83,12 @@ public class TodoListServiceTest {
         todoList.setTodoListName("name");
         todoList.setUserOwnerId(userId);
         when(todoListRepository.save(todoList)).thenReturn(todoList);
+
         Optional<TodoList> addedTodoList = todoListService.addTodoList(
                 new TodoListInput(todoList.getTodoListName(), new LinkedHashSet<>()), userId);
+
         verify(userService).getUserById(userId);
-        Assert.assertEquals(Optional.of(todoList), addedTodoList);
+        Assert.assertEquals(addedTodoList, Optional.of(todoList));
         //verify(notificationService).notifyFollowersAboutAddingTodolist(any(User.class), any(TodoList.class));
     }
 
@@ -97,8 +100,10 @@ public class TodoListServiceTest {
         todoList.setTodoListName("updatedName");
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(new TodoList()));
         when(todoListRepository.save(todoList)).thenReturn(todoList);
+
         Optional<TodoList> updatedTodoList = todoListService.updateTodoList(
                 todoListId, new TodoListInput(todoList.getTodoListName(), new LinkedHashSet<>()), userId);
+
         Assert.assertEquals(updatedTodoList, Optional.of(todoList));
     }
 
@@ -107,6 +112,7 @@ public class TodoListServiceTest {
         long todoListId = 1;
         long userId = 1;
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(new TodoList()));
+
         todoListService.deleteTodoList(todoListId, userId);
         verify(shareService).deleteShareBySharedTodoListId(todoListId);
     }
@@ -120,13 +126,14 @@ public class TodoListServiceTest {
         TodoList todoList = new TodoList();
         todoList.setTodoListName("name");
         todoList.setUserOwnerId(ownerUserId);
-
         when(todoListRepository.findById(sharedTodoListId)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(targetUserUsername)).thenReturn(Optional.of(targetUser));
-        todoListService.shareTodoList(targetUserUsername, sharedTodoListId, ownerUserId);
-        verify(todoListRepository).findById(sharedTodoListId);
 
+        todoListService.shareTodoList(targetUserUsername, sharedTodoListId, ownerUserId);
         Share share = new Share(targetUser.getId(), todoList);
+
+        verify(todoListRepository).findById(sharedTodoListId);
         verify(shareService).addShare(share);
+
     }
 }

@@ -21,7 +21,7 @@ public class Share extends BaseEntity {
 	private Long sharedUserId;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "sharedtodolist_id")
+	@JoinColumn(name = "shared_todolist_id")
 	@NotNull
 	private TodoList sharedTodoList;
 

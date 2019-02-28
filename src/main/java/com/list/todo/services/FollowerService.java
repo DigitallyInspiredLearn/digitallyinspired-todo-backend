@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class FollowerService {
         User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);
         boolean isSuccess = false;
 
-        if (followedUser != null) {
+        if (followedUser != null && currUser != null) {
             followerRepository.save(new Follower(followedUser.getId(), currUser));
             isSuccess = true;
         }
@@ -54,4 +55,20 @@ public class FollowerService {
         return isSuccess;
     }
 
+    public boolean isAlreadyFollowed(Long currentUserId, String userNameOfFollowedUser) {
+        User currUser = userService.getUserById(currentUserId).orElse(null);
+        User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);
+        boolean isAlreadyFollowed = false;
+
+        if (followedUser != null && currUser != null) {
+            for (Follower follower : followerRepository.findByFollower(currUser)) {
+                if (follower.getFollowedUserId().equals(followedUser.getId()) && follower.getFollower().equals(currUser)) {
+                    isAlreadyFollowed = true;
+                    break;
+                }
+            }
+        }
+
+        return isAlreadyFollowed;
+    }
 }
