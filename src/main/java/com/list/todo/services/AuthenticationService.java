@@ -2,6 +2,7 @@ package com.list.todo.services;
 
 import com.list.todo.entity.RoleName;
 import com.list.todo.entity.User;
+import com.list.todo.entity.UserSettings;
 import com.list.todo.payload.JwtAuthenticationResponse;
 import com.list.todo.payload.LoginRequest;
 import com.list.todo.payload.UserInput;

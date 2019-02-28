@@ -5,6 +5,7 @@ import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.LoginRequest;
 import com.list.todo.payload.UserInput;
 import com.list.todo.services.AuthenticationService;
+import com.list.todo.services.UserSettingsService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.net.URI;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final UserSettingsService userSettingsService;
 
 	@PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -43,6 +45,7 @@ public class AuthenticationController {
         }
 
         User user = authenticationService.createUserAccount(userInput);
+        userSettingsService.addUserSettings(user);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/users/{username}")

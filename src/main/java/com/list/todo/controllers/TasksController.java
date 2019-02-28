@@ -32,7 +32,7 @@ public class TasksController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             Iterable<Task> tasks = taskService.getAllTasksOnTodoList(todoList.get().getId());
@@ -50,7 +50,7 @@ public class TasksController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             taskInput.setTodoListId(todoList.get().getId());
@@ -73,7 +73,7 @@ public class TasksController {
 
             if (todoList == null) {
                 responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else if (!todoList.getUserOwnerId().equals(currentUser.getId())) {
+            } else if (!todoList.getCreatedBy().equals(currentUser.getId())) {
                 responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
             } else {
                 Optional<Task> updatedTask = taskService.updateTask(task.get().getId(), taskInput);
@@ -96,7 +96,7 @@ public class TasksController {
 
             if (todoList == null) {
                 responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else if (!todoList.getUserOwnerId().equals(currentUser.getId())) {
+            } else if (!todoList.getCreatedBy().equals(currentUser.getId())) {
                 responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
             } else {
                 taskService.deleteTask(task.get().getId());

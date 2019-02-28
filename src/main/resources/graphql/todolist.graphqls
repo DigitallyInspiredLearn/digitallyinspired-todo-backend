@@ -1,7 +1,10 @@
 type TodoList {
 	id: ID!
 	todoListName: String!
-	userOwnerId: ID!
+	createdDate: ID!
+	modifiedDate: ID!
+	createdBy: ID!
+	modifiedBy: ID!
 	tasks: [Task]
 }
 

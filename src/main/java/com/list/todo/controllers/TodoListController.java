@@ -52,7 +52,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
@@ -78,7 +78,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             Optional<TodoList> updatedtodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
@@ -96,7 +96,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getUserOwnerId().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             todoListService.deleteTodoList(todoList.get().getId(), currentUser.getId());
@@ -117,7 +117,7 @@ public class TodoListController {
 
         if (!targetUserOfSharedTodoList.isPresent() || !sharedTodoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!sharedTodoList.get().getUserOwnerId().equals(currentUser.getId()) ||
+        } else if (!sharedTodoList.get().getCreatedBy().equals(currentUser.getId()) ||
                 currentUser.getUsername().equals(targetUserUsername)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else if (shareService.isSharedTodoListToUser(sharedTodoList.get(), targetUserOfSharedTodoList.get().getId())) {

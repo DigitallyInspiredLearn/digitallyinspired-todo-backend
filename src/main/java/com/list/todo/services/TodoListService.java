@@ -27,14 +27,13 @@ public class TodoListService {
     }
 
     public Iterable<TodoList> getTodoListsByUser(Long userId) {
-        return todoListRepository.findTodoListsByUserOwnerId(userId);
+        return todoListRepository.findTodoListsByCreatedBy(userId);
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
 
         TodoList todoList = TodoList.builder()
                 .todoListName(todoListInput.getTodoListName())
-                .userOwnerId(userId)
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
@@ -47,7 +46,7 @@ public class TodoListService {
         Optional<TodoList> updatedTodoList = Optional.of(todoListRepository.save(todoList));
 
         userService.getUserById(userId)
-                .ifPresent(user -> notificationService.notifyFollowersAboutAddingTodolist(user, todoList));
+                .ifPresent(user -> notificationService.notifyAboutAddingTodoList(user, todoList));
 
         return updatedTodoList;
     }
@@ -61,7 +60,7 @@ public class TodoListService {
                 });
 
         todoList.ifPresent(todoList1 -> userService.getUserById(userId)
-                .ifPresent(user -> notificationService.notifyFollowersAboutUpdatingTodolist(user, todoList1)));
+                .ifPresent(user -> notificationService.notifyAboutUpdatingTodoList(user, todoList1)));
 
         return todoList;
     }
@@ -94,7 +93,7 @@ public class TodoListService {
 
             userService.getUserById(userId)
                     .ifPresent(user -> {
-                        notificationService.notifyAboutSharingTodolist(user, targetUser.get(), sharedTodoList.get());
+                        notificationService.notifyAboutSharingTodoList(user, targetUser.get(), sharedTodoList.get());
                     });
             apiResponse = new ApiResponse(true, "You shared your todoList to " + targetUsername + "!");
         }

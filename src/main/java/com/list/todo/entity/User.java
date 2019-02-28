@@ -3,8 +3,7 @@ package com.list.todo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
@@ -43,4 +42,7 @@ public class User extends BaseEntity {
 
 	@NonNull
 	private String gravatarHash;
+
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+	private UserSettings userSettings;
 }

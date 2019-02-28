@@ -2,7 +2,7 @@ package com.list.todo.services;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.security.UserPrincipal;
+import com.list.todo.services.notification.Notifiable;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -11,15 +11,17 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class NotificationService {
+public class NotificationService implements Notifiable {
 
-    private final SimpMessagingTemplate webSocket;
     private final EmailService emailService;
+    private final UserSettingsService userSettingsService;
+    private final SimpMessagingTemplate webSocket;
     private final FollowerService followerService;
 
+    @Override
+    public void notifyAboutSharingTodoList(User ownerUser, User targetUser, TodoList sharedTodoList) {
 
-    public void notifyAboutSharingTodolist(User ownerUser, User targetUser, TodoList sharedTodoList) {
-        String link = "http://localhost:8080/api/todolists/shared";
+        String link = "http://";
         String subject = "You have a new shared todo list!";
         String channel = "/" + targetUser.getName();
 
@@ -33,15 +35,17 @@ public class NotificationService {
                 link
         );
 
-        emailService.sendEmail(targetUser.getEmail(), subject, message);
-        webSocket.convertAndSend(channel, message);
+        sendNotification(targetUser, subject, channel, message);
     }
 
-    public void notifyFollowersAboutAddingTodolist(User ownerUser, TodoList todoList) {
+    @Override
+    public void notifyAboutAddingTodoList(User ownerUser, TodoList todoList) {
         List<User> followers = followerService.getFollowersByUserId(ownerUser.getId());
 
         for (User follower : followers) {
             String subject = "Todo list was added!";
+
+            String channel = "/" + follower.getName();
 
             String message = String.format(
                     "Hi, %s!\n" +
@@ -50,17 +54,19 @@ public class NotificationService {
                     ownerUser.getName(),
                     todoList.getTodoListName()
             );
-            String channel = "/" + follower.getName();
-            emailService.sendEmail(follower.getEmail(), subject, message);
-            webSocket.convertAndSend(channel, message);
+
+            sendNotification(follower, subject, channel, message);
         }
     }
 
-    public void notifyFollowersAboutUpdatingTodolist(User ownerUser, TodoList todoList) {
+    @Override
+    public void notifyAboutUpdatingTodoList(User ownerUser, TodoList todoList) {
         List<User> followers = followerService.getFollowersByUserId(ownerUser.getId());
 
         for (User follower : followers){
             String subject = "Todo list was updated!";
+
+            String channel = "/" + follower.getName();
 
             String message = String.format(
                     "Hi, %s!\n" +
@@ -69,17 +75,19 @@ public class NotificationService {
                     ownerUser.getName(),
                     todoList.getTodoListName()
             );
-            emailService.sendEmail(follower.getEmail(), subject, message);
-            String channel = "/" + follower.getName();
-            webSocket.convertAndSend(channel, message);
+
+            sendNotification(follower, subject, channel, message);
         }
     }
 
-    public void notifyFollowersAboutDeletingTodolist(User ownerUser, TodoList todoList) {
+    @Override
+    public void notifyAboutDeletingTodoList(User ownerUser, TodoList todoList) {
         List<User> followers = followerService.getFollowersByUserId(ownerUser.getId());
 
         for (User follower : followers){
             String subject = "Todo list was deleted!";
+
+            String channel = "/" + follower.getName();
 
             String message = String.format(
                     "Hi, %s!\n" +
@@ -89,8 +97,15 @@ public class NotificationService {
                     todoList.getTodoListName()
             );
 
-            emailService.sendEmail(follower.getEmail(), subject, message);
-            String channel = "/" + follower.getName();
+            sendNotification(follower, subject, channel, message);
+        }
+    }
+
+    private void sendNotification(User targetUser, String subject, String channel, String message) {
+        if (userSettingsService.getUserSettingsByUserId(targetUser.getId()).get().getIsEnableEmailNotification()){
+            emailService.sendEmail(targetUser.getEmail(), subject, message);
+        }
+        if (userSettingsService.getUserSettingsByUserId(targetUser.getId()).get().getIsEnableWebSocketNotification()) {
             webSocket.convertAndSend(channel, message);
         }
     }

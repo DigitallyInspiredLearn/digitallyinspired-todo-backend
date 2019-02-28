@@ -1,10 +1,12 @@
 package com.list.todo.controllers;
 
 import com.list.todo.entity.User;
+import com.list.todo.entity.UserSettings;
 import com.list.todo.payload.*;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
+import com.list.todo.services.UserSettingsService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +25,25 @@ import java.util.Set;
 public class UserController {
 
     private final UserService userService;
+    private final UserSettingsService settingsService;
     private final FollowerService followerService;
 
     @GetMapping("/me")
     public ResponseEntity<UserSummary> getUserInfo(@AuthenticationPrincipal UserPrincipal currentUser) {
         return new ResponseEntity<>(userService.getUserInfo(currentUser), HttpStatus.OK);
+    }
+
+    @GetMapping("/settings")
+    public ResponseEntity<Optional<UserSettings>> getUserSettings(@AuthenticationPrincipal UserPrincipal currentUser){
+        return new ResponseEntity<>(settingsService.getUserSettingsByUserId(currentUser.getId()), HttpStatus.OK);
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<Optional<UserSettings>> updateUserSettings(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                     @RequestBody UserSettingsInput userSettingsInput){
+        Optional<UserSettings> userSettings = settingsService.updateUserSettings(userSettingsInput, currentUser.getId());
+
+        return new ResponseEntity<>(userSettings, HttpStatus.OK);
     }
 
     @GetMapping("/search")

@@ -71,7 +71,7 @@ public class UserService implements UserDetailsService {
     }
 
     public UserStats getUserStats(Long userId) {
-        List<TodoList> myTodoLists = todoListRepository.findTodoListsByUserOwnerId(userId);
+        List<TodoList> myTodoLists = todoListRepository.findTodoListsByCreatedBy(userId);
         List<TodoList> sharedTodoLists = shareRepository.findBySharedUserId(userId)
                 .stream()
                 .map(Share::getSharedTodoList)

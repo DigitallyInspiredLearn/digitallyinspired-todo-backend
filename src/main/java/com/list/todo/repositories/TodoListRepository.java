@@ -9,5 +9,5 @@ import com.list.todo.entity.TodoList;
 
 @Repository
 public interface TodoListRepository extends JpaRepository<TodoList, Long> {
-	List<TodoList> findTodoListsByUserOwnerId(Long userId);
+	List<TodoList> findTodoListsByCreatedBy(Long userId);
 }
