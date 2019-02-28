@@ -30,3 +30,6 @@ mail:
 app:
   jwtSecret: JWTSuperSecretKey
   jwtExpirationInMs: 900000
+
+gravatar:
+  url: https://www.gravatar.com/avatar/

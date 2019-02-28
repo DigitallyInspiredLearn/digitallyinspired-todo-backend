@@ -11,4 +11,6 @@ public interface ShareRepository extends JpaRepository<Share, Long> {
 	List<Share> findBySharedUserId(Long userId);
 
     void deleteBySharedTodoListId(Long todoListId);
+
+    boolean existsBySharedTodoListId(Long sharedTodoListId);
 }

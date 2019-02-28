@@ -16,15 +16,16 @@ import lombok.*;
 
 @Entity
 @Table(name = "todoList")
-@Data @EqualsAndHashCode(callSuper=true, exclude = "tasks")
+@Data
+@EqualsAndHashCode(callSuper = true, exclude = "tasks")
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @Builder
 public class TodoList extends BaseEntity {
-	
-	@NotNull
-	@Size(max = 100)
+
+    @NotNull
+    @Size(max = 100)
     private String todoListName;
 
     @NotNull
@@ -32,7 +33,4 @@ public class TodoList extends BaseEntity {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
     private Set<Task> tasks = new LinkedHashSet<>();
-
-
-
 }

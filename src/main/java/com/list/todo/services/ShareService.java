@@ -29,15 +29,20 @@ public class ShareService {
         sharesRepository.save(shares);
     }
 
-    public boolean isSharedTodoListToUser(TodoList sharedTodoList, User sharedUser) {
+    public boolean isSharedTodoListToUser(TodoList sharedTodoList, Long sharedUserId) {
 
-        return sharesRepository.findBySharedUserId(sharedUser.getId())
+        return sharesRepository.findBySharedUserId(sharedUserId)
                 .stream()
                 .anyMatch(share -> share.getSharedTodoList().hashCode() == sharedTodoList.hashCode());
+    }
+
+    public boolean isSharedTodoList(Long sharedTodoListId) {
+        return sharesRepository.existsBySharedTodoListId(sharedTodoListId);
     }
 
     @Transactional
     public void deleteShareBySharedTodoListId(Long todoListId) {
         sharesRepository.deleteBySharedTodoListId(todoListId);
     }
+
 }

@@ -17,7 +17,6 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class Follower extends BaseEntity {
 
-
     @NotNull
     private Long followedUserId;
 
@@ -25,8 +24,4 @@ public class Follower extends BaseEntity {
     @JoinColumn(name = "followeruser_id")
     @NotNull
     private User follower;
-
-    public UserSummary getFollowerUserSumm(){
-        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail(), "https://www.gravatar.com/avatar/" + follower.getGravatarHash());
-    }
 }

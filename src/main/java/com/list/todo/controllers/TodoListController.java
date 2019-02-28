@@ -120,7 +120,7 @@ public class TodoListController {
         } else if (!sharedTodoList.get().getUserOwnerId().equals(currentUser.getId()) ||
                 currentUser.getUsername().equals(targetUserUsername)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } else if (shareService.isSharedTodoListToUser(sharedTodoList.get(), targetUserOfSharedTodoList.get())) {
+        } else if (shareService.isSharedTodoListToUser(sharedTodoList.get(), targetUserOfSharedTodoList.get().getId())) {
             responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
         } else {
             todoListService.shareTodoList(targetUserUsername, sharedTodoList.get().getId(), currentUser.getId());

@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor()
+@RequiredArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString

@@ -5,17 +5,22 @@ import com.list.todo.entity.User;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FollowerService {
 
-    private FollowerRepository followerRepository;
-    private UserService userService;
+    private final FollowerRepository followerRepository;
+    private final UserService userService;
+
+    @Value("${gravatar.url}")
+    private String gravatarURL;
 
     public List<User> getFollowersByUserId(Long userId) {
         return followerRepository.findByFollowedUserId(userId)
@@ -27,8 +32,13 @@ public class FollowerService {
     public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
         return followerRepository.findByFollowedUserId(userId)
                 .stream()
-                .map(Follower::getFollowerUserSumm)
+                .map(this::getFollowerUserSumm)
                 .collect(Collectors.toList());
+    }
+
+    public UserSummary getFollowerUserSumm(Follower follower) {
+        User user = follower.getFollower();
+        return new UserSummary(user.getUsername(), user.getName(), user.getEmail(), gravatarURL + user.getGravatarHash());
     }
 
     public boolean followUser(Long currentUserId, String userNameOfFollowedUser) {

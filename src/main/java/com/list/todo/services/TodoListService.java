@@ -65,15 +65,20 @@ public class TodoListService {
         return todoList;
     }
 
-    public void deleteTodoList(Long todoListId, Long userId) {
+    public void deleteTodoList(Long todoListId, Long currentUserId) {
 
         Optional<TodoList> todoList = todoListRepository.findById(todoListId);
 
-        if (todoList.isPresent()) {
-            shareService.deleteShareBySharedTodoListId(todoListId);
-            userService.getUserById(userId)
+        todoList.ifPresent(tList -> {
+            if (shareService.isSharedTodoList(todoListId)) {
+                shareService.deleteShareBySharedTodoListId(tList.getId());
+            } else {
+                todoListRepository.deleteById(tList.getId());
+            }
+
+            userService.getUserById(currentUserId)
                     .ifPresent(user -> notificationService.notifyFollowersAboutDeletingTodolist(user, todoList.get()));
-        }
+        });
     }
 
     public ApiResponse shareTodoList(String targetUsername, Long sharedTodoListId, Long userId) {

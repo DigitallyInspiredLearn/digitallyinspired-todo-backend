@@ -11,6 +11,7 @@ import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.repositories.UserRepository;
 import com.list.todo.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,6 +36,9 @@ public class UserService implements UserDetailsService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Value("${gravatar.url}")
+    private String gravatarURL;
+
     @Autowired
     public UserService(UserRepository repository, TodoListRepository todoListRepository,
                        ShareRepository shareRepository, @Lazy BCryptPasswordEncoder bCryptPasswordEncoder) {
@@ -57,14 +61,13 @@ public class UserService implements UserDetailsService {
     }
 
     public UserSummary getUserInfo(UserPrincipal user) {
-        Optional<User> currentUser = userRepository.findById(user.getId());
-        UserSummary userSummary = null;
-
-        if (currentUser.isPresent()) {
-            // TODO: url задавать в таком виде, либо брать из файла пропертей? Если брать из файла, то как поступать с сущностями, в которые нельзя добавить поле для пропертей, иначе оно пойдет в базу
-            userSummary = new UserSummary(currentUser.get().getUsername(), currentUser.get().getName(), currentUser.get().getEmail(), "https://www.gravatar.com/avatar/" + currentUser.get().getGravatarHash());
-        }
-        return userSummary;
+        return userRepository.findById(user.getId())
+                .map(currentUser ->
+                        new UserSummary(currentUser.getUsername(),
+                                currentUser.getName(),
+                                currentUser.getEmail(),
+                                gravatarURL + currentUser.getGravatarHash()))
+                .orElse(null);
     }
 
     public UserStats getUserStats(Long userId) {
