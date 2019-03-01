@@ -72,9 +72,9 @@ public class UserController {
     }
 
     @PostMapping("/followUser")
-    public ResponseEntity<ApiResponse> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
+    public ResponseEntity<Void> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
                                                   @RequestParam("username") String userNameOfFollowedUser) {
-        ResponseEntity<ApiResponse> responseEntity;
+        ResponseEntity<Void> responseEntity;
 
         if (currentUser.getUsername().equals(userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);

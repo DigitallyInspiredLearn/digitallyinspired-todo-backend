@@ -1,5 +1,7 @@
+package com.list.todo.entity;
 
-
+import com.list.todo.entity.BaseEntity;
+import com.list.todo.entity.User;
 import com.list.todo.payload.UserSummary;
 import lombok.*;
 
@@ -24,8 +26,4 @@ public class Follower extends BaseEntity {
     @JoinColumn(name = "follower_user_id")
     @NotNull
     private User follower;
-
-    public UserSummary getFollowerUserSumm(){
-        return new UserSummary(follower.getUsername(), follower.getName(), follower.getEmail());
-    }
 }

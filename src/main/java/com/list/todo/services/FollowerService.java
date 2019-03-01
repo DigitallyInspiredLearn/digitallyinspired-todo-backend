@@ -4,12 +4,10 @@ import com.list.todo.entity.Follower;
 import com.list.todo.entity.User;
 import com.list.todo.payload.UserSummary;
 import com.list.todo.repositories.FollowerRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
