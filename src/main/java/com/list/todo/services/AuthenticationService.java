@@ -7,6 +7,7 @@ import com.list.todo.payload.LoginRequest;
 import com.list.todo.payload.UserInput;
 import com.list.todo.repositories.UserRepository;
 import com.list.todo.security.JwtTokenProvider;
+import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +36,15 @@ public class AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
+        return new JwtAuthenticationResponse(jwt);
+
+    }
+
+    public JwtAuthenticationResponse updateAccessToken() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String jwt = tokenProvider.generateToken(authentication);
+
         return new JwtAuthenticationResponse(jwt);
 
     }

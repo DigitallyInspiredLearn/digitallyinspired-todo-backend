@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -63,6 +64,24 @@ public class UserController {
         } else if (followerService.isAlreadyFollowed(currentUser.getId(), userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return responseEntity;
+    }
+
+    @PostMapping("/unfollowUser")
+    public ResponseEntity<ApiResponse> unfollowUser(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                  @RequestParam("username") String userNameOfFollowedUser) {
+        ResponseEntity<ApiResponse> responseEntity;
+
+        if (currentUser.getUsername().equals(userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else if (!followerService.isAlreadyFollowed(currentUser.getId(), userNameOfFollowedUser)) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else if (followerService.unfollowUser(currentUser.getId(), userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } else {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);

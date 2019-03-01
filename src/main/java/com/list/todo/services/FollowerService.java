@@ -46,6 +46,20 @@ public class FollowerService {
         return isSuccess;
     }
 
+    public boolean unfollowUser(Long currentUserId, String userNameOfFollowedUser) {
+        User currUser = userService.getUserById(currentUserId).orElse(null);
+        User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);
+        boolean isSuccess = false;
+
+        if (followedUser != null && currUser != null) {
+            followerRepository.findByFollowedUserIdAndFollower(followedUser.getId(), currUser)
+                    .forEach(followerRepository::delete);
+            isSuccess = true;
+        }
+
+        return isSuccess;
+    }
+
     public boolean isAlreadyFollowed(Long currentUserId, String userNameOfFollowedUser) {
         User currUser = userService.getUserById(currentUserId).orElse(null);
         User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);

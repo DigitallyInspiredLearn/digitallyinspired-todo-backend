@@ -6,6 +6,7 @@ import com.list.todo.entity.User;
 import com.list.todo.payload.UpdatingUserInput;
 import com.list.todo.payload.UserStats;
 import com.list.todo.payload.UserSummary;
+import com.list.todo.repositories.FollowerRepository;
 import com.list.todo.repositories.ShareRepository;
 import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.repositories.UserRepository;
@@ -32,15 +33,17 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final TodoListRepository todoListRepository;
     private final ShareRepository shareRepository;
+    private final FollowerRepository followerRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     public UserService(UserRepository repository, TodoListRepository todoListRepository,
-                       ShareRepository shareRepository, @Lazy BCryptPasswordEncoder bCryptPasswordEncoder) {
+                       ShareRepository shareRepository, FollowerRepository followerRepository, @Lazy BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = repository;
         this.todoListRepository = todoListRepository;
         this.shareRepository = shareRepository;
+        this.followerRepository = followerRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
@@ -109,7 +112,13 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null){
+            followerRepository.findByFollower(user).forEach(followerRepository::delete);
+            followerRepository.findByFollowedUserId(id).forEach(followerRepository::delete);
+            todoListRepository.findTodoListsByUserOwnerId(user.getId()).forEach(todoListRepository::delete);
+            userRepository.deleteById(id);
+        }
     }
 
     public UserPrincipal getCurrentUser() {
