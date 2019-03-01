@@ -43,12 +43,12 @@ create table share
 (
   id                bigint not null,
   shared_user_id    bigint not null,
-  sharedtodolist_id bigint not null,
+  shared_todolist_id bigint not null,
   primary key (id)
 ) engine = MyISAM;
 
 alter table share
-  add constraint sharedtodolist_id_fk foreign key (sharedtodolist_id) references todo_list (id);
+  add constraint shared_todolist_id_fk foreign key (shared_todolist_id) references todo_list (id);
 
 alter table task
   add constraint todolist_id_fk foreign key (todolist_id) references todo_list (id);
