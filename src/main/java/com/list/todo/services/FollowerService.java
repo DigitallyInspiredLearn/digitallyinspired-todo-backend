@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,20 @@ public class FollowerService {
 
         if (followedUser != null && currUser != null) {
             followerRepository.save(new Follower(followedUser.getId(), currUser));
+            isSuccess = true;
+        }
+
+        return isSuccess;
+    }
+
+    public boolean unfollowUser(Long currentUserId, String userNameOfFollowedUser) {
+        User currUser = userService.getUserById(currentUserId).orElse(null);
+        User followedUser = userService.getUserByUsername(userNameOfFollowedUser).orElse(null);
+        boolean isSuccess = false;
+
+        if (followedUser != null && currUser != null) {
+            followerRepository.findByFollowedUserIdAndFollower(followedUser.getId(), currUser)
+                    .forEach(followerRepository::delete);
             isSuccess = true;
         }
 

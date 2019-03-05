@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface TodoListRepository extends PagingAndSortingRepository<TodoList, Long> {
 	Page<TodoList> findTodoListsByCreatedBy(Long userId, Pageable pageable);
-
+	List<TodoList> findTodoListsByCreatedBy(Long userId);
 	Page<TodoList> findTodoListByTodoListNameLikeAndCreatedByEquals(String todoListName, Long userId, Pageable pageable);
 }
