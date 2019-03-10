@@ -37,10 +37,10 @@ public class TodoList extends BaseEntity {
 
     @Column(nullable = false, updatable = false)
     @CreatedBy
-    private Long createdBy;
+    private String createdBy;
 
     @LastModifiedBy
-    private Long modifiedBy;
+    private String modifiedBy;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
     private Set<Task> tasks = new LinkedHashSet<>();

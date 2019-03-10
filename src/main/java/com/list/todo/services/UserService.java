@@ -72,13 +72,13 @@ public class UserService implements UserDetailsService {
                 .orElse(null);
     }
 
-    public UserStats getUserStats(Long userId, Pageable pageable) {
-        List<TodoList> sharedTodoList = shareRepository.findBySharedUserId(userId)
+    public UserStats getUserStats(UserPrincipal user, Pageable pageable) {
+        List<TodoList> sharedTodoList = shareRepository.findBySharedUserId(user.getId())
                 .stream()
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
 
-        Page<TodoList> myTodoListsPage = todoListRepository.findTodoListsByCreatedBy(userId, pageable);
+        Page<TodoList> myTodoListsPage = todoListRepository.findTodoListsByCreatedBy(user.getUsername(), pageable);
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoList, pageable, sharedTodoList.size());
 
@@ -129,7 +129,7 @@ public class UserService implements UserDetailsService {
         if (user != null){
             followerRepository.findByFollower(user).forEach(followerRepository::delete);
             followerRepository.findByFollowedUserId(id).forEach(followerRepository::delete);
-            todoListRepository.findTodoListsByCreatedBy(user.getId()).forEach(todoListRepository::delete);
+            todoListRepository.findTodoListsByCreatedBy(user.getUsername()).forEach(todoListRepository::delete);
             userRepository.deleteById(id);
         }
     }

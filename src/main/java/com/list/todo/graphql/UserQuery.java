@@ -33,7 +33,7 @@ public class UserQuery implements GraphQLQueryResolver {
 
     public UserStats getUserStats() {
         UserPrincipal user = userService.getCurrentUser();
-        return userService.getUserStats(user.getId(), Pageable.unpaged());
+        return userService.getUserStats(user, Pageable.unpaged());
     }
 
     public List<UserSummary> getFollowers() {

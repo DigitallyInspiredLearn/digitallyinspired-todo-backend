@@ -56,7 +56,7 @@ public class UserController {
     @GetMapping("/userStats")
     public ResponseEntity<UserStats> getUserStats(@AuthenticationPrincipal UserPrincipal currentUser,
                                                   Pageable pageable) {
-        return new ResponseEntity<>(userService.getUserStats(currentUser.getId(), pageable), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUserStats(currentUser, pageable), HttpStatus.OK);
     }
 
     @PutMapping("/editProfile")

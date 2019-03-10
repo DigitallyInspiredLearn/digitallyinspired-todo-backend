@@ -31,7 +31,7 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getId(), pageable);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }
@@ -40,7 +40,7 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> searchTodoListByName(@AuthenticationPrincipal UserPrincipal currentUser,
                                                                    @RequestParam("name") String partOfTodoListName,
                                                                    Pageable pageable) {
-        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getId(), pageable);
+        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getUsername(), pageable);
 
         return new ResponseEntity<>(todoLists, HttpStatus.OK);
     }
@@ -61,7 +61,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             responseEntity = new ResponseEntity<>(todoList, HttpStatus.OK);
@@ -87,7 +87,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             Optional<TodoList> updatedtodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
@@ -105,7 +105,7 @@ public class TodoListController {
 
         if (!todoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!todoList.get().getCreatedBy().equals(currentUser.getId())) {
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             todoListService.deleteTodoList(todoList.get().getId(), currentUser.getId());
@@ -126,7 +126,7 @@ public class TodoListController {
 
         if (!targetUserOfSharedTodoList.isPresent() || !sharedTodoList.isPresent()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (!sharedTodoList.get().getCreatedBy().equals(currentUser.getId()) ||
+        } else if (!sharedTodoList.get().getCreatedBy().equals(currentUser.getUsername()) ||
                 currentUser.getUsername().equals(targetUserUsername)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else if (shareService.isSharedTodoListToUser(sharedTodoList.get(), targetUserOfSharedTodoList.get().getId())) {

@@ -27,8 +27,8 @@ public class TodoListService {
         return todoListRepository.findById(todoListId);
     }
 
-    public Iterable<TodoList> getTodoListsByUser(Long userId, Pageable pageable) {
-        return todoListRepository.findTodoListsByCreatedBy(userId, pageable);
+    public Iterable<TodoList> getTodoListsByUser(String createdBy, Pageable pageable) {
+        return todoListRepository.findTodoListsByCreatedBy(createdBy, pageable);
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
@@ -100,7 +100,7 @@ public class TodoListService {
         return apiResponse;
     }
 
-    public Iterable<TodoList> searchTodoListByName(String todoListName, Long userId, Pageable pageable){
-        return todoListRepository.findTodoListByTodoListNameLikeAndCreatedByEquals(todoListName, userId, pageable);
+    public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable){
+        return todoListRepository.findTodoListByTodoListNameLikeAndCreatedByEquals(todoListName, createdBy, pageable);
     }
 }
