@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,11 +30,35 @@ public class FollowerService {
                 .collect(Collectors.toList());
     }
 
+    public List<UserSummary> getFollowedUserSummariesByUserId(Long userId) {
+        User currUser = userService.getUserById(userId).orElse(null);
+        List<UserSummary> followedUserSummaries = new ArrayList<>();
+        if (currUser != null) {
+            followedUserSummaries = followerRepository.findByFollower(currUser)
+                    .stream()
+                    .map(this::getFollowedUserSumm)
+                    .collect(Collectors.toList());
+        }
+        return followedUserSummaries;
+    }
+
     public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
         return followerRepository.findByFollowedUserId(userId)
                 .stream()
                 .map(this::getFollowerUserSumm)
                 .collect(Collectors.toList());
+    }
+
+    public UserSummary getFollowedUserSumm(Follower follower) {
+        User user = userService.getUserById(follower.getFollowedUserId()).orElse(null);
+        UserSummary userSummary = new UserSummary();
+        if (user != null){
+            userSummary.setUsername(user.getUsername());
+            userSummary.setName(user.getName());
+            userSummary.setEmail(user.getEmail());
+            userSummary.setGravatarUrl(gravatarURL + user.getGravatarHash());
+        }
+        return userSummary;
     }
 
     public UserSummary getFollowerUserSumm(Follower follower) {
