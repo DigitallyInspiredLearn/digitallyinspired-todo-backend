@@ -112,4 +112,9 @@ public class UserController {
     public ResponseEntity<List<UserSummary>> getFollowers(@AuthenticationPrincipal UserPrincipal currentUser) {
         return new ResponseEntity<>(followerService.getFollowersUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
     }
+
+    @GetMapping("/followed")
+    public ResponseEntity<List<UserSummary>> getFollowedUsers(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return new ResponseEntity<>(followerService.getFollowedUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
+    }
 }
