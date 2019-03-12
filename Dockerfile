@@ -1,6 +1,6 @@
 FROM openjdk:8-jre-alpine
 
-WORKDIR /usr
+WORKDIR /usr/todo
 
 COPY . .
 

@@ -10,13 +10,14 @@ pipeline {
             }
             steps {
                 sh 'mvn -B -DskipTests clean package'
-                archiveArtifacts '**/target/*.jar'
+                archiveArtifacts 'target/*.jar'
             }
         }
         stage('Push') {
             steps {
                 script {
                     def ECR_REPO = "618548633277.dkr.ecr.eu-west-1.amazonaws.com/todolist-demo"
+                    unarchive(mapping: ['target/*.jar' : '.'])
                     docker.withRegistry('https://' + ECR_REPO, 'ecr:eu-west-1:aws_ecr_creds') {
                         docker.build(ECR_REPO + ':${BUILD_NUMBER}').push()
                     }
