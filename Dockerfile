@@ -4,4 +4,4 @@ WORKDIR /usr/todo
 
 COPY . .
 
-CMD ["/usr/bin/java", "java", "-jat", "TodoList-0.0.1-SNAPSHOT.jar"]
+CMD ["/usr/bin/java", "java", "-jar", "TodoList-0.0.1-SNAPSHOT.jar"]
