@@ -10,17 +10,18 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @Builder
-public class Follower extends BaseEntity {
+public class TaggedTask extends BaseEntity {
 
     @NotNull
-    private Long followedUserId;
+    private Long taskId;
 
     @ManyToOne
-    @JoinColumn(name = "follower_user_id")
+    @JoinColumn(name = "taggedTask_tag_id")
     @NotNull
-    private User follower;
+    private Tag tag;
+    
 }
