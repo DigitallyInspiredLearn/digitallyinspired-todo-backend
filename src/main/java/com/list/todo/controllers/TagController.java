@@ -113,9 +113,30 @@ public class TagController {
         return responseEntity;
     }
 
+    @DeleteMapping("/removeTagFromTask/{id}")
+    public ResponseEntity<Void> removeTagFromTask(@PathVariable("id") Long tagId,
+                                                  @RequestParam("taskId") Long taskId,
+                                                  @AuthenticationPrincipal UserPrincipal currentUser) {
+        ResponseEntity<Void> responseEntity;
+        Optional<TaggedTask> taggedTask = taggedTaskService.getTaggedTaskByTaskIdAndTagId(taskId, tagId);
+
+        if (taggedTask.isPresent()) {
+            if (!taggedTask.get().getTag().getOwnerId().equals(currentUser.getId())){
+                responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            } else {
+                taggedTaskService.deleteTaggedTask(taggedTask.get());
+                responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+        } else {
+            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return responseEntity;
+    }
+
     @GetMapping("/lists")
     public ResponseEntity<Iterable<TodoList>> getTodoListsByTags(@RequestBody List<Long> tagsIds,
-                                                         @AuthenticationPrincipal UserPrincipal currentUser) {
+                                                                 @AuthenticationPrincipal UserPrincipal currentUser) {
         ResponseEntity<Iterable<TodoList>> responseEntity;
 
         if (tagsIds.isEmpty()){
