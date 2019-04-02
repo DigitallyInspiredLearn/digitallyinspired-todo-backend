@@ -56,6 +56,10 @@ public class TaskService {
                 .map(task -> {
                     task.setBody(taskInput.getBody());
                     task.setIsComplete(taskInput.getIsComplete());
+                    if (taskInput.getIsComplete()){
+                        task.setCompletedDate(System.currentTimeMillis());
+                        task.setRealizationTime(task.getCompletedDate()-task.getCreatedDate());
+                    }
                     return taskRepository.save(task);
                 });
     }
