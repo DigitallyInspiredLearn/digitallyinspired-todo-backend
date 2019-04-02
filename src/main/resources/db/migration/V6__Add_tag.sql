@@ -2,6 +2,7 @@ create table tag
 (
     id       bigint       not null,
     name_tag varchar(255) not null,
+    owner_id bigint       not null,
     primary key (id)
 ) engine = MyISAM;
 

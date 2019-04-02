@@ -49,7 +49,7 @@ public class FollowerService {
                 .collect(Collectors.toList());
     }
 
-    public UserSummary getFollowedUserSumm(Follower follower) {
+    private UserSummary getFollowedUserSumm(Follower follower) {
         User user = userService.getUserById(follower.getFollowedUserId()).orElse(null);
         UserSummary userSummary = new UserSummary();
         if (user != null){
@@ -61,7 +61,7 @@ public class FollowerService {
         return userSummary;
     }
 
-    public UserSummary getFollowerUserSumm(Follower follower) {
+    private UserSummary getFollowerUserSumm(Follower follower) {
         User user = follower.getFollower();
         return new UserSummary(user.getUsername(), user.getName(), user.getEmail(), gravatarURL + user.getGravatarHash());
     }

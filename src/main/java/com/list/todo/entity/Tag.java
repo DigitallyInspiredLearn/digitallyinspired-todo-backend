@@ -16,4 +16,7 @@ public class Tag extends BaseEntity{
 
     @NotNull
     private String nameTag;
+
+    @NotNull
+    private Long ownerId;
 }

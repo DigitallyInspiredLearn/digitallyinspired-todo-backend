@@ -1,6 +1,7 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Tag;
+import com.list.todo.payload.TagInput;
 import com.list.todo.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,28 +13,39 @@ import java.util.Optional;
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final TaggedTaskService taggedTaskService;
 
     public Optional<Tag> getTagById(Long tagId) {
         return tagRepository.findById(tagId);
     }
 
-    public Optional<Tag> addTag(String nameTag) {
+    public Iterable<Tag> getTagsByOwnerId(Long ownerId) {
+        return tagRepository.getByOwnerId(ownerId);
+    }
+
+    public Optional<Tag> addTag(TagInput tagInput, Long currentUserId) {
         Tag newTag = Tag.builder()
-                .nameTag(nameTag)
+                .nameTag(tagInput.getTagName())
+                .ownerId(currentUserId)
                 .build();
 
         return Optional.of(tagRepository.save(newTag));
     }
 
-    public Optional<Tag> updateTag(Long currentTagId, String nameTag) {
+    public Optional<Tag> updateTag(Long currentTagId, TagInput tagInput) {
         return tagRepository.findById(currentTagId)
                 .map(tag -> {
-                    tag.setNameTag(nameTag);
+                    tag.setNameTag(tagInput.getTagName());
                     return tagRepository.save(tag);
                 });
     }
 
     public void deleteTag(Long tagId) {
+        Optional<Tag> tag = tagRepository.findById(tagId);
+
+        tag.ifPresent(value -> taggedTaskService.getTaggedTaskByTag(value)
+                .forEach(taggedTaskService::deleteTaggedTask));
+
         tagRepository.deleteById(tagId);
     }
 
