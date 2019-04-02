@@ -3,7 +3,6 @@ package com.list.todo.services;
 import com.list.todo.entity.Tag;
 import com.list.todo.payload.TagInput;
 import com.list.todo.repositories.TagRepository;
-import com.list.todo.repositories.TaggedTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,7 @@ import java.util.Optional;
 public class TagService {
 
     private final TagRepository tagRepository;
-    private final TaggedTaskRepository taggedTaskRepository;
+    private final TaggedTaskService taggedTaskService;
 
     public Optional<Tag> getTagById(Long tagId) {
         return tagRepository.findById(tagId);
@@ -44,8 +43,8 @@ public class TagService {
     public void deleteTag(Long tagId) {
         Optional<Tag> tag = tagRepository.findById(tagId);
 
-        tag.ifPresent(value -> taggedTaskRepository.findByTag(value)
-                .forEach(taggedTaskRepository::delete));
+        tag.ifPresent(value -> taggedTaskService.getTaggedTaskByTag(value)
+                .forEach(taggedTaskService::deleteTaggedTask));
 
         tagRepository.deleteById(tagId);
     }

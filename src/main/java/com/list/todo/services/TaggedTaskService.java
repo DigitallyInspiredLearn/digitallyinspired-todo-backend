@@ -40,17 +40,6 @@ public class TaggedTaskService {
         return taggedTaskRepository.findByTag(tag);
     }
 
-    public Optional<TaggedTask> getTaggedTaskByTaskIdAndTagId(Long taskId, Long tagId) {
-        Optional<Tag> tag = tagService.getTagById(tagId);
-        Optional<TaggedTask> taggedTask = Optional.empty();
-
-        if (tag.isPresent()){
-            taggedTask = taggedTaskRepository.findByTaskIdAndTag(taskId, tag.get());
-        }
-
-        return taggedTask;
-    }
-
     public void deleteTaggedTask(TaggedTask taggedTask) {
         taggedTaskRepository.delete(taggedTask);
     }
@@ -68,7 +57,7 @@ public class TaggedTaskService {
     private Set<Task> getTasksByTags(List<Long> tagsIds, Long currentUserId) {
         Set<Task> tasksByTags = new HashSet<>();
 
-        tagsIds.forEach(tagId -> {
+        for (Long tagId : tagsIds) {
             Optional<Tag> tag = tagService.getTagById(tagId);
 
             if (tag.isPresent()) {
@@ -80,7 +69,7 @@ public class TaggedTaskService {
                             .collect(Collectors.toSet()));
                 }
             }
-        });
+        }
 
         return tasksByTags;
     }
