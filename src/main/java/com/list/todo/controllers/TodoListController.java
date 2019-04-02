@@ -31,7 +31,7 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), pageable);
+        Iterable<TodoList> myTodoLists = todoListService.getActiveTodoListsByUser(currentUser.getUsername(), pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }
@@ -51,6 +51,14 @@ public class TodoListController {
         Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
 
         return new ResponseEntity<>(sharedTodoLists, HttpStatus.OK);
+    }
+
+    @GetMapping("/deleted")
+    public ResponseEntity<Iterable<TodoList>> getMovedToCartTodoLists(@AuthenticationPrincipal UserPrincipal currentUser, Pageable pageable) {
+
+        Iterable<TodoList> movedToCartTodoLists = todoListService.getMovedToCartTodoLists(currentUser.getUsername(), pageable);
+
+        return new ResponseEntity<>(movedToCartTodoLists, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -86,12 +94,31 @@ public class TodoListController {
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
         if (!todoList.isPresent()) {
+
             responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
             Optional<TodoList> updatedtodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
             responseEntity = new ResponseEntity<>(updatedtodoList, HttpStatus.OK);
+        }
+
+        return responseEntity;
+    }
+
+    @PutMapping("/moveToCart/{id}")
+    public ResponseEntity<Optional<TodoList>> moveTodoListToCart(@AuthenticationPrincipal UserPrincipal currentUser,
+                                               @PathVariable("id") Long todoListId) {
+        ResponseEntity<Optional<TodoList>> responseEntity;
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
+
+        if (!todoList.isPresent()) {
+            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            Optional<TodoList> movedtodoList = todoListService.moveTodoListToCart(todoList.get().getId(), currentUser.getId());
+            responseEntity = new ResponseEntity<>(movedtodoList, HttpStatus.OK);
         }
 
         return responseEntity;

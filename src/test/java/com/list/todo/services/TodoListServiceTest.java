@@ -55,7 +55,7 @@
 //    }
 //
 //    @Test
-//    public void getTodoListsByUser() {
+//    public void getActiveTodoListsByUser() {
 //        long userId = 1;
 //        // TODO: Можно выделить в отдельный private метод создание листа
 //        TodoList todoList1 = new TodoList();
@@ -71,7 +71,7 @@
 //
 //        when(todoListRepository.findTodoListsByUserOwnerId(userId)).thenReturn(todoLists);
 //
-//        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userId);
+//        Iterable<TodoList> returnedTodoLists = todoListService.getActiveTodoListsByUser(userId);
 //
 //        Assert.assertEquals(returnedTodoLists, todoLists);
 //    }

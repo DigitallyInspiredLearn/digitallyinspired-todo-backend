@@ -36,7 +36,7 @@ public class TodoListTest {
     MockMvc mockMvc;
 
     @Test
-    public void getTodoListsByUser() throws Exception {
+    public void getActiveTodoListsByUser() throws Exception {
         MockHttpServletResponse response = this.mockMvc.perform(get("/api/todolists/my"))
                 .andDo(print())
                 .andExpect(authenticated())

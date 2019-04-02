@@ -2,6 +2,7 @@ package com.list.todo.services;
 
 import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.TodoListStatus;
 import com.list.todo.entity.User;
 import com.list.todo.payload.UpdatingUserInput;
 import com.list.todo.payload.UserStats;
@@ -78,7 +79,7 @@ public class UserService implements UserDetailsService {
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
 
-        Page<TodoList> myTodoListsPage = todoListRepository.findTodoListsByCreatedBy(user.getUsername(), pageable);
+        Page<TodoList> myTodoListsPage = todoListRepository.findByCreatedByAndTodoListStatus(user.getUsername(), TodoListStatus.Active, pageable);
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoList, pageable, sharedTodoList.size());
 
@@ -129,7 +130,7 @@ public class UserService implements UserDetailsService {
         if (user != null){
             followerRepository.findByFollower(user).forEach(followerRepository::delete);
             followerRepository.findByFollowedUserId(id).forEach(followerRepository::delete);
-            todoListRepository.findTodoListsByCreatedBy(user.getUsername()).forEach(todoListRepository::delete);
+            todoListRepository.findByCreatedBy(user.getUsername()).forEach(todoListRepository::delete);
             userRepository.deleteById(id);
         }
     }
