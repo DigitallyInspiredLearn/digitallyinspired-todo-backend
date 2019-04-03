@@ -41,7 +41,8 @@ public class TodoListServiceTest {
     public void getTodoListsByUser_getTodoListsByExistentUser_ReturnsTodoListsByUser() {
         // arrange
         String userName = "Vasiliy";
-        List<TodoList> todoLists = this.createListOfTodoLists(2);
+        int countOfTodoLists = 2;
+        List<TodoList> todoLists = this.createListOfTodoLists(countOfTodoLists);
         todoLists.forEach(todoList -> todoList.setCreatedBy(userName));
         Page<TodoList> page = new PageImpl<>(todoLists, pageable, todoLists.size());
 
@@ -55,37 +56,58 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void moveTodoListToCart_moveExistentTodoListToCart_ReturnsMovedToCartTodoList() {
+    public void changeTodoListStatus_moveExistentTodoListToCart_ReturnsMovedToCartTodoList() {
         // arrange
         Long todoListId = 1L;
 
         TodoList todoList = this.createTodoList();
+        todoList.setTodoListStatus(TodoListStatus.Active);
+
         when(todoListRepository.save(todoList)).thenReturn(todoList);
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
 
         // act
-        Optional<TodoList> movedToCartTodoList = todoListService.moveTodoListToCart(1L);
+        Optional<TodoList> movedToCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
 
         // assert
-        Assert.assertEquals(Optional.of(todoList), movedToCartTodoList);
+        movedToCartTodoList
+                .ifPresent(tl -> Assert.assertEquals(TodoListStatus.Deleted, tl.getTodoListStatus()));
         verify(todoListRepository).save(todoList);
-
     }
 
     @Test
-    public void moveTodoListToCart_moveNonExistentTodoListToCart_ReturnsNull() {
+    public void changeTodoListStatus_moveNonExistentTodoListToCart_ReturnsNull() {
         // arrange
         Long todoListId = 1L;
 
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.empty());
 
         // act
-        Optional<TodoList> movedToCartTodoList = todoListService.moveTodoListToCart(1L);
+        Optional<TodoList> movedToCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
 
         // assert
         Assert.assertEquals(Optional.empty(), movedToCartTodoList);
-        verify(todoListRepository, times(0)).save(any(TodoList.class));
+        verify(todoListRepository, never()).save(any(TodoList.class));
 
+    }
+
+    @Test
+    public void changeTodoListStatus_restoreExistentTodoListFromCart_ReturnsRestoredFromCartTodoList() {
+        // arrange
+        Long todoListId = 1L;
+
+        TodoList todoList = this.createTodoList();
+        todoList.setTodoListStatus(TodoListStatus.Deleted);
+        when(todoListRepository.save(todoList)).thenReturn(todoList);
+        when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
+
+        // act
+        Optional<TodoList> restoredFromCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Active);
+
+        // assert
+        restoredFromCartTodoList
+                .ifPresent(tl -> Assert.assertEquals(TodoListStatus.Active, tl.getTodoListStatus()));
+        verify(todoListRepository).save(todoList);
     }
 
     /*@Test

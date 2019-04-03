@@ -82,10 +82,10 @@ public class TodoListService {
         });
     }
 
-    public Optional<TodoList> moveTodoListToCart(Long todoListId) {
+    public Optional<TodoList> changeTodoListStatus(Long todoListId, TodoListStatus todoListStatus) {
         return todoListRepository.findById(todoListId)
                 .map(tl -> {
-                    tl.setTodoListStatus(TodoListStatus.Deleted);
+                    tl.setTodoListStatus(todoListStatus);
                     return todoListRepository.save(tl);
                 });
     }

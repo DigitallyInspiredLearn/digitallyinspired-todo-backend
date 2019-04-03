@@ -118,8 +118,26 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> movedtodoList = todoListService.moveTodoListToCart(todoList.get().getId());
+            Optional<TodoList> movedtodoList = todoListService.changeTodoListStatus(todoList.get().getId(), TodoListStatus.Deleted);
             responseEntity = new ResponseEntity<>(movedtodoList, HttpStatus.OK);
+        }
+
+        return responseEntity;
+    }
+
+    @PutMapping("/restoreFromCart/{id}")
+    public ResponseEntity<Optional<TodoList>> restoreTodoListFromCart(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                 @PathVariable("id") Long todoListId) {
+        ResponseEntity<Optional<TodoList>> responseEntity;
+        Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
+
+        if (!todoList.isPresent()) {
+            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
+            responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            Optional<TodoList> restoredTodoList = todoListService.changeTodoListStatus(todoList.get().getId(), TodoListStatus.Active);
+            responseEntity = new ResponseEntity<>(restoredTodoList, HttpStatus.OK);
         }
 
         return responseEntity;
