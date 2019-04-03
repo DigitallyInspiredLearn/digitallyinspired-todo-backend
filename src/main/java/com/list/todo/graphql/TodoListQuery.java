@@ -2,6 +2,7 @@ package com.list.todo.graphql;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.TodoListStatus;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.ShareService;
 import com.list.todo.services.TodoListService;
@@ -22,7 +23,7 @@ public class TodoListQuery implements GraphQLQueryResolver {
 
 	public Iterable<TodoList> getMyTodoLists() {
 		UserPrincipal currentUser = userService.getCurrentUser();
-		return todoListService.getActiveTodoListsByUser(currentUser.getUsername(), Pageable.unpaged());
+		return todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Active, Pageable.unpaged());
 	}
 
     public Iterable<TodoList> getMySharedTodoLists() {

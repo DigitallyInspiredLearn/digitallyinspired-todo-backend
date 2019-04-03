@@ -1,6 +1,7 @@
 package com.list.todo.controllers;
 
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.TodoListStatus;
 import com.list.todo.entity.User;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.security.UserPrincipal;
@@ -31,7 +32,7 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getActiveTodoListsByUser(currentUser.getUsername(), pageable);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Active, pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }
@@ -56,7 +57,7 @@ public class TodoListController {
     @GetMapping("/deleted")
     public ResponseEntity<Iterable<TodoList>> getMovedToCartTodoLists(@AuthenticationPrincipal UserPrincipal currentUser, Pageable pageable) {
 
-        Iterable<TodoList> movedToCartTodoLists = todoListService.getMovedToCartTodoLists(currentUser.getUsername(), pageable);
+        Iterable<TodoList> movedToCartTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Deleted, pageable);
 
         return new ResponseEntity<>(movedToCartTodoLists, HttpStatus.OK);
     }
@@ -117,7 +118,7 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> movedtodoList = todoListService.moveTodoListToCart(todoList.get().getId(), currentUser.getId());
+            Optional<TodoList> movedtodoList = todoListService.moveTodoListToCart(todoList.get().getId());
             responseEntity = new ResponseEntity<>(movedtodoList, HttpStatus.OK);
         }
 

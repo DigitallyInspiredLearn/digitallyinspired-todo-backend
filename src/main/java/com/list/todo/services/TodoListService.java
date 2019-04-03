@@ -27,12 +27,8 @@ public class TodoListService {
         return todoListRepository.findById(todoListId);
     }
 
-    public Iterable<TodoList> getActiveTodoListsByUser(String createdBy, Pageable pageable) {
-        return todoListRepository.findByCreatedByAndTodoListStatus(createdBy, TodoListStatus.Active, pageable);
-    }
-
-    public Iterable<TodoList> getMovedToCartTodoLists(String createdBy, Pageable pageable) {
-        return todoListRepository.findByCreatedByAndTodoListStatus(createdBy, TodoListStatus.Deleted, pageable);
+    public Iterable<TodoList> getTodoListsByUser(String createdBy, TodoListStatus todoListStatus, Pageable pageable) {
+        return todoListRepository.findByCreatedByAndTodoListStatus(createdBy, todoListStatus, pageable);
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
@@ -86,14 +82,12 @@ public class TodoListService {
         });
     }
 
-    public Optional<TodoList> moveTodoListToCart(Long todoListId, Long currentUserId) {
-
+    public Optional<TodoList> moveTodoListToCart(Long todoListId) {
         return todoListRepository.findById(todoListId)
                 .map(tl -> {
                     tl.setTodoListStatus(TodoListStatus.Deleted);
                     return todoListRepository.save(tl);
                 });
-
     }
 
     public ApiResponse shareTodoList(String targetUsername, Long sharedTodoListId, Long userId) {
