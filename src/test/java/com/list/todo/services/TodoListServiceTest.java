@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,12 +26,6 @@ public class TodoListServiceTest {
     @Mock
     private TodoListRepository todoListRepository;
 
-    @Mock
-    private ShareService shareService;
-
-    @Mock
-    private UserService userService;
-
     @InjectMocks
     private TodoListService todoListService;
 
@@ -38,7 +33,7 @@ public class TodoListServiceTest {
     private Pageable pageable;
 
     @Test
-    public void getTodoListsByUser_getTodoListsByExistentUser_ReturnsTodoListsByUser() {
+    public void getTodoListsByUser_getTodoListsByExistentUser_ListOfTodoListsByUser() {
         // arrange
         String userName = "Vasiliy";
         int countOfTodoLists = 2;
@@ -52,31 +47,30 @@ public class TodoListServiceTest {
         Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.Active, pageable);
 
         // assert
+        verify(todoListRepository).findByCreatedByAndTodoListStatus(userName, TodoListStatus.Active, pageable);
         Assert.assertEquals(returnedTodoLists, page);
     }
 
     @Test
-    public void changeTodoListStatus_moveExistentTodoListToCart_ReturnsMovedToCartTodoList() {
+    public void changeTodoListStatus_OnExistentTodoList_TodoList() {
         // arrange
         Long todoListId = 1L;
 
-        TodoList todoList = this.createTodoList();
-        todoList.setTodoListStatus(TodoListStatus.Active);
+        TodoList todoList = Mockito.mock(TodoList.class);
 
-        when(todoListRepository.save(todoList)).thenReturn(todoList);
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
+        when(todoListRepository.save(todoList)).thenReturn(todoList);
 
         // act
-        Optional<TodoList> movedToCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
 
         // assert
-        movedToCartTodoList
-                .ifPresent(tl -> Assert.assertEquals(TodoListStatus.Deleted, tl.getTodoListStatus()));
+        verify(todoList).setTodoListStatus(TodoListStatus.Deleted);
         verify(todoListRepository).save(todoList);
     }
 
     @Test
-    public void changeTodoListStatus_moveNonExistentTodoListToCart_ReturnsNull() {
+    public void changeTodoListStatus_OnNonExistentTodoList_Null() {
         // arrange
         Long todoListId = 1L;
 
@@ -87,115 +81,9 @@ public class TodoListServiceTest {
 
         // assert
         Assert.assertEquals(Optional.empty(), movedToCartTodoList);
+        verify(todoListRepository, times(1)).findById(todoListId);
         verify(todoListRepository, never()).save(any(TodoList.class));
 
-    }
-
-    @Test
-    public void changeTodoListStatus_restoreExistentTodoListFromCart_ReturnsRestoredFromCartTodoList() {
-        // arrange
-        Long todoListId = 1L;
-
-        TodoList todoList = this.createTodoList();
-        todoList.setTodoListStatus(TodoListStatus.Deleted);
-        when(todoListRepository.save(todoList)).thenReturn(todoList);
-        when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
-
-        // act
-        Optional<TodoList> restoredFromCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Active);
-
-        // assert
-        restoredFromCartTodoList
-                .ifPresent(tl -> Assert.assertEquals(TodoListStatus.Active, tl.getTodoListStatus()));
-        verify(todoListRepository).save(todoList);
-    }
-
-    /*@Test
-    public void getTodoListById() {
-        // arrange
-        long todoListId = 1;
-        String userName = "Vasiliy";
-        TodoList todoList = new TodoList();
-        todoList.setTodoListName("name");
-        todoList.setCreatedBy(userName);
-        when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
-
-        // act
-        Optional<TodoList> returnedTodoList = todoListService.getTodoListById(todoListId);
-
-        // assert
-        Assert.assertEquals(returnedTodoList, Optional.of(todoList));
-    }*/
-
-
-    /*@Test
-    public void addTodoList() {
-        Long userId = 1L;
-        String userName = "Vasiliy";
-        TodoList todoList = new TodoList();
-        todoList.setTodoListName("name");
-        todoList.setCreatedBy(userName);
-        when(todoListRepository.save(todoList)).thenReturn(todoList);
-
-        Optional<TodoList> addedTodoList = todoListService.addTodoList(
-                new TodoListInput(todoList.getTodoListName(), new LinkedHashSet<>()), userId);
-
-        verify(userService).getUserById(userId);
-        Assert.assertEquals(addedTodoList, Optional.of(todoList));
-        //verify(notificationService).notifyFollowersAboutAddingTodolist(any(User.class), any(TodoList.class));
-    }*/
-
-    /*@Test
-    public void updateTodoList() {
-        long todoListId = 1;
-        long userId = 1;
-        TodoList todoList = new TodoList();
-        todoList.setTodoListName("updatedName");
-        when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(new TodoList()));
-        when(todoListRepository.save(todoList)).thenReturn(todoList);
-
-        Optional<TodoList> updatedTodoList = todoListService.updateTodoList(
-                todoListId, new TodoListInput(todoList.getTodoListName(), new LinkedHashSet<>()), userId);
-
-        Assert.assertEquals(updatedTodoList, Optional.of(todoList));
-    }*/
-
-    /*@Test
-    public void deleteTodoList() {
-        long todoListId = 1;
-        long userId = 1;
-        when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(new TodoList()));
-
-        todoListService.deleteTodoList(todoListId, userId);
-        verify(shareService).deleteShareBySharedTodoListId(todoListId);
-    }*/
-
-    /*@Test
-    public void shareTodoList() {
-        String targetUserUsername = "vitaliy";
-        User targetUser = new User();
-        long ownerUserId = 1;
-        String userName = "Vasiliy";
-        long sharedTodoListId = 1;
-        TodoList todoList = new TodoList();
-        todoList.setTodoListName("name");
-        todoList.setCreatedBy(userName);
-        when(todoListRepository.findById(sharedTodoListId)).thenReturn(Optional.of(todoList));
-        when(userService.getUserByUsername(targetUserUsername)).thenReturn(Optional.of(targetUser));
-
-        todoListService.shareTodoList(targetUserUsername, sharedTodoListId, ownerUserId);
-        Share share = new Share(targetUser.getId(), todoList);
-
-        verify(todoListRepository).findById(sharedTodoListId);
-        verify(shareService).addShare(share);
-
-    }*/
-
-    private TodoList createTodoList() {
-        return TodoList.builder()
-                .todoListName("todoList")
-                .todoListStatus(TodoListStatus.Active)
-                .build();
     }
 
     private List<TodoList> createListOfTodoLists(int countOfTodoLists) {

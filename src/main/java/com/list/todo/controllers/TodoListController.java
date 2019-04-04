@@ -32,26 +32,10 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Active, pageable);
+        Iterable<TodoList> myTodoLists = todoListService
+                .getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Active, pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<Iterable<TodoList>> searchTodoListByName(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                                   @RequestParam("name") String partOfTodoListName,
-                                                                   Pageable pageable) {
-        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getUsername(), pageable);
-
-        return new ResponseEntity<>(todoLists, HttpStatus.OK);
-    }
-
-    @GetMapping("/shared")
-    public ResponseEntity<Iterable<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
-
-        Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
-
-        return new ResponseEntity<>(sharedTodoLists, HttpStatus.OK);
     }
 
     @GetMapping("/deleted")
@@ -60,6 +44,14 @@ public class TodoListController {
         Iterable<TodoList> movedToCartTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Deleted, pageable);
 
         return new ResponseEntity<>(movedToCartTodoLists, HttpStatus.OK);
+    }
+
+    @GetMapping("/shared")
+    public ResponseEntity<Iterable<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+
+        Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
+
+        return new ResponseEntity<>(sharedTodoLists, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -118,8 +110,8 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> movedtodoList = todoListService.changeTodoListStatus(todoList.get().getId(), TodoListStatus.Deleted);
-            responseEntity = new ResponseEntity<>(movedtodoList, HttpStatus.OK);
+            Optional<TodoList> movedTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+            responseEntity = new ResponseEntity<>(movedTodoList, HttpStatus.OK);
         }
 
         return responseEntity;
@@ -136,7 +128,7 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> restoredTodoList = todoListService.changeTodoListStatus(todoList.get().getId(), TodoListStatus.Active);
+            Optional<TodoList> restoredTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Active);
             responseEntity = new ResponseEntity<>(restoredTodoList, HttpStatus.OK);
         }
 
@@ -182,5 +174,14 @@ public class TodoListController {
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         }
         return responseEntity;
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Iterable<TodoList>> searchTodoListByName(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                   @RequestParam("name") String partOfTodoListName,
+                                                                   Pageable pageable) {
+        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getUsername(), pageable);
+
+        return new ResponseEntity<>(todoLists, HttpStatus.OK);
     }
 }
