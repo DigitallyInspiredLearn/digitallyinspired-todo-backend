@@ -51,7 +51,7 @@ public class TaskService {
     }
 
     public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
-
+        // Нет проверки на существование todolist у таска
         return taskRepository.findById(currentTaskId)
                 .map(task -> {
                     task.setBody(taskInput.getBody());
