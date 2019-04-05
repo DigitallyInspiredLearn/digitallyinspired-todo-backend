@@ -50,6 +50,7 @@ public class TodoListControllerTest {
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(todoLists, response.getBody());
         verify(todoListService).getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable);
+      
     }
 
     @Test

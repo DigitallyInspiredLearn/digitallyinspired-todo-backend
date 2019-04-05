@@ -51,11 +51,15 @@ public class TaskService {
     }
 
     public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
-
+        // Нет проверки на существование todolist у таска
         return taskRepository.findById(currentTaskId)
                 .map(task -> {
                     task.setBody(taskInput.getBody());
                     task.setIsComplete(taskInput.getIsComplete());
+                    if (taskInput.getIsComplete()){
+                        task.setCompletedDate(System.currentTimeMillis());
+                        task.setRealizationTime(task.getCompletedDate()-task.getCreatedDate());
+                    }
                     return taskRepository.save(task);
                 });
     }
