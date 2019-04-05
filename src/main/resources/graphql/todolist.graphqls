@@ -5,6 +5,7 @@ type TodoList {
 	modifiedDate: ID!
 	createdBy: ID!
 	modifiedBy: ID!
+	todoListStatus: String!
 	tasks: [Task]
 }
 
