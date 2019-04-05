@@ -7,6 +7,7 @@ import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
 import com.list.todo.services.UserSettingsService;
+import com.list.todo.services.UserStatisticsService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class UserController {
     private final UserService userService;
     private final UserSettingsService settingsService;
     private final FollowerService followerService;
+    private final UserStatisticsService userStatisticsService;
 
     @GetMapping("/me")
     public ResponseEntity<UserSummary> getUserInfo(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -116,5 +118,10 @@ public class UserController {
     @GetMapping("/followed")
     public ResponseEntity<List<UserSummary>> getFollowedUsers(@AuthenticationPrincipal UserPrincipal currentUser) {
         return new ResponseEntity<>(followerService.getFollowedUserSummariesByUserId(currentUser.getId()), HttpStatus.OK);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<UserStatistics> getUserStatistics(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return new ResponseEntity<>(userStatisticsService.getUserStatisticsByUserId(currentUser.getId()), HttpStatus.OK);
     }
 }

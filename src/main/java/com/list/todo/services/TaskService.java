@@ -21,6 +21,14 @@ public class TaskService {
         return taskRepository.findById(currentTaskId);
     }
 
+    public Long countTasksByCreatedBy(String createdBy) {
+        return taskRepository.countByCreatedBy(createdBy);
+    }
+
+    public Long countTasksByCreatedByAndIsComplete(String createdBy, Boolean isComplete) {
+        return taskRepository.countByCreatedByAndIsComplete(createdBy, isComplete);
+    }
+
     public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
         Iterable<Task> tasks = null;
