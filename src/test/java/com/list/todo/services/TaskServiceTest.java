@@ -209,7 +209,7 @@ public class TaskServiceTest {
     private TodoList createTodoList() {
         return TodoList.builder()
                 .todoListName("todoList")
-                .todoListStatus(TodoListStatus.Active)
+                .todoListStatus(TodoListStatus.ACTIVE)
                 .tasks(new LinkedHashSet<>())
                 .build();
     }

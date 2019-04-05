@@ -79,7 +79,7 @@ public class UserService implements UserDetailsService {
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
 
-        Page<TodoList> myTodoListsPage = todoListRepository.findByCreatedByAndTodoListStatus(user.getUsername(), TodoListStatus.Active, pageable);
+        Page<TodoList> myTodoListsPage = todoListRepository.findByCreatedByAndTodoListStatus(user.getUsername(), TodoListStatus.ACTIVE, pageable);
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoList, pageable, sharedTodoList.size());
 

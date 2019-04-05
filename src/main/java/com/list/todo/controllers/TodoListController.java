@@ -28,22 +28,14 @@ public class TodoListController {
     private final UserService userService;
     private final ShareService shareService;
 
-    @GetMapping("/my")
-    public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                             Pageable pageable) {
-
+    @GetMapping
+    public ResponseEntity<Iterable<TodoList>> getTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                             Pageable pageable,
+                                                             @RequestParam("status") TodoListStatus status) {
         Iterable<TodoList> myTodoLists = todoListService
-                .getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Active, pageable);
+                .getTodoListsByUser(currentUser.getUsername(), status, pageable);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
-    }
-
-    @GetMapping("/deleted")
-    public ResponseEntity<Iterable<TodoList>> getMovedToCartTodoLists(@AuthenticationPrincipal UserPrincipal currentUser, Pageable pageable) {
-
-        Iterable<TodoList> movedToCartTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), TodoListStatus.Deleted, pageable);
-
-        return new ResponseEntity<>(movedToCartTodoLists, HttpStatus.OK);
     }
 
     @GetMapping("/shared")
@@ -99,9 +91,9 @@ public class TodoListController {
         return responseEntity;
     }
 
-    @PutMapping("/moveToCart/{id}")
-    public ResponseEntity<Optional<TodoList>> moveTodoListToCart(@AuthenticationPrincipal UserPrincipal currentUser,
-                                               @PathVariable("id") Long todoListId) {
+    @PutMapping("/disable/{id}")
+    public ResponseEntity<Optional<TodoList>> disableTodoList(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                              @PathVariable("id") Long todoListId) {
         ResponseEntity<Optional<TodoList>> responseEntity;
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
@@ -110,16 +102,16 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> movedTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+            Optional<TodoList> movedTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
             responseEntity = new ResponseEntity<>(movedTodoList, HttpStatus.OK);
         }
 
         return responseEntity;
     }
 
-    @PutMapping("/restoreFromCart/{id}")
-    public ResponseEntity<Optional<TodoList>> restoreTodoListFromCart(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                                 @PathVariable("id") Long todoListId) {
+    @PutMapping("/enable/{id}")
+    public ResponseEntity<Optional<TodoList>> enableTodoList(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                             @PathVariable("id") Long todoListId) {
         ResponseEntity<Optional<TodoList>> responseEntity;
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
 
@@ -128,7 +120,7 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> restoredTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Active);
+            Optional<TodoList> restoredTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.ACTIVE);
             responseEntity = new ResponseEntity<>(restoredTodoList, HttpStatus.OK);
         }
 
@@ -177,9 +169,9 @@ public class TodoListController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Iterable<TodoList>> searchTodoListByName(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                                   @RequestParam("name") String partOfTodoListName,
-                                                                   Pageable pageable) {
+    public ResponseEntity<Iterable<TodoList>> getTodoListsByName(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                 @RequestParam("name") String partOfTodoListName,
+                                                                 Pageable pageable) {
         Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getUsername(), pageable);
 
         return new ResponseEntity<>(todoLists, HttpStatus.OK);

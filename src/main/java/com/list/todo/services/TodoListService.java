@@ -28,14 +28,22 @@ public class TodoListService {
     }
 
     public Iterable<TodoList> getTodoListsByUser(String createdBy, TodoListStatus todoListStatus, Pageable pageable) {
-        return todoListRepository.findByCreatedByAndTodoListStatus(createdBy, todoListStatus, pageable);
+        Iterable<TodoList> todoLists;
+
+        if (todoListStatus.equals(TodoListStatus.ALL)) {
+            todoLists = todoListRepository.findByCreatedBy(createdBy, pageable);
+        } else {
+            todoLists = todoListRepository.findByCreatedByAndTodoListStatus(createdBy, todoListStatus, pageable);
+        }
+
+        return todoLists;
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
 
         TodoList todoList = TodoList.builder()
                 .todoListName(todoListInput.getTodoListName())
-                .todoListStatus(TodoListStatus.Active)
+                .todoListStatus(TodoListStatus.ACTIVE)
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
@@ -110,6 +118,6 @@ public class TodoListService {
     }
 
     public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable){
-        return todoListRepository.findByTodoListNameLikeAndCreatedByEqualsAndTodoListStatus(todoListName, createdBy, TodoListStatus.Active, pageable);
+        return todoListRepository.findByTodoListNameLikeAndCreatedByEqualsAndTodoListStatus(todoListName, createdBy, TodoListStatus.ACTIVE, pageable);
     }
 }

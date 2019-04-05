@@ -33,7 +33,7 @@ public class TodoListControllerTest {
     private TodoListController todoListController;
 
     @Test
-    public void getMyTodoLists_GetTodoListsByExistentUser_OK() {
+    public void getTodoLists_GetTodoListsByExistentUser_OK() {
 
         // arrange
         String userName = "Vasiliy";
@@ -41,38 +41,19 @@ public class TodoListControllerTest {
         UserPrincipal currentUser = new UserPrincipal();
         currentUser.setUsername(userName);
 
-        when(todoListService.getTodoListsByUser(userName, TodoListStatus.Active, pageable)).thenReturn(todoLists);
+        when(todoListService.getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable)).thenReturn(todoLists);
 
         // act
-        ResponseEntity<Iterable<TodoList>> response = todoListController.getMyTodoLists(currentUser, pageable);
+        ResponseEntity<Iterable<TodoList>> response = todoListController.getTodoLists(currentUser, pageable, TodoListStatus.ACTIVE);
 
         // assert
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(todoLists, response.getBody());
-        verify(todoListService).getTodoListsByUser(userName, TodoListStatus.Active, pageable);
+        verify(todoListService).getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable);
     }
 
     @Test
-    public void getMovedToCartTodoLists_GetTodoListsByExistentUser_OK() {
-        // arrange
-        String userName = "Vasiliy";
-        List<TodoList> todoLists = this.createListOfTodoLists(3);
-        UserPrincipal currentUser = new UserPrincipal();
-        currentUser.setUsername(userName);
-
-        when(todoListService.getTodoListsByUser(userName, TodoListStatus.Deleted, pageable)).thenReturn(todoLists);
-
-        // act
-        ResponseEntity<Iterable<TodoList>> response = todoListController.getMovedToCartTodoLists(currentUser, pageable);
-
-        // assert
-        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assert.assertEquals(todoLists, response.getBody());
-        verify(todoListService).getTodoListsByUser(userName, TodoListStatus.Deleted, pageable);
-    }
-
-    @Test
-    public void moveTodoListToCart_OnExistentTodolist_OK() {
+    public void disableTodoList_OnExistentTodolist_OK() {
 
         // arrange
         String userName = "Vasiliy";
@@ -82,30 +63,30 @@ public class TodoListControllerTest {
         Long todoListId = 1L;
         TodoList todoList = TodoList.builder()
                 .createdBy(userName)
-                .todoListStatus(TodoListStatus.Active)
+                .todoListStatus(TodoListStatus.ACTIVE)
                 .build();
 
         TodoList movedTodoList = TodoList.builder()
                 .createdBy(userName)
-                .todoListStatus(TodoListStatus.Deleted)
+                .todoListStatus(TodoListStatus.INACTIVE)
                 .build();
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
-        when(todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted)).thenReturn(Optional.of(movedTodoList));
+        when(todoListService.changeTodoListStatus(todoListId, TodoListStatus.INACTIVE)).thenReturn(Optional.of(movedTodoList));
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.moveTodoListToCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.disableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(Optional.of(movedTodoList), response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService).changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        verify(todoListService).changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
 
     }
 
     @Test
-    public void moveTodoListToCart_OnNonExistentTodolist_NotFound() {
+    public void disableTodoList_OnNonExistentTodolist_NotFound() {
 
         // arrange
         String userName = "Vasiliy";
@@ -117,18 +98,18 @@ public class TodoListControllerTest {
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.moveTodoListToCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.disableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         Assert.assertNull(response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
 
     }
 
     @Test
-    public void moveTodoListToCart_moveTodoListOfAnotherUser_Forbidden() {
+    public void disableTodoList_disableTodoListOfAnotherUser_Forbidden() {
 
         // arrange
         String userName = "Vasiliy";
@@ -139,24 +120,24 @@ public class TodoListControllerTest {
         Long todoListId = 1L;
         TodoList todoList = TodoList.builder()
                 .createdBy(userName2)
-                .todoListStatus(TodoListStatus.Active)
+                .todoListStatus(TodoListStatus.ACTIVE)
                 .build();
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.moveTodoListToCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.disableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         Assert.assertNull(response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
 
     }
 
     @Test
-    public void restoreTodoListFromCart_OnExistentTodolist_OK() {
+    public void enableTodoList_OnExistentTodolist_OK() {
 
         // arrange
         String userName = "Vasiliy";
@@ -166,30 +147,30 @@ public class TodoListControllerTest {
         Long todoListId = 1L;
         TodoList todoList = TodoList.builder()
                 .createdBy(userName)
-                .todoListStatus(TodoListStatus.Deleted)
+                .todoListStatus(TodoListStatus.INACTIVE)
                 .build();
 
         TodoList restoredTodoList = TodoList.builder()
                 .createdBy(userName)
-                .todoListStatus(TodoListStatus.Active)
+                .todoListStatus(TodoListStatus.ACTIVE)
                 .build();
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
-        when(todoListService.changeTodoListStatus(todoListId, TodoListStatus.Active)).thenReturn(Optional.of(restoredTodoList));
+        when(todoListService.changeTodoListStatus(todoListId, TodoListStatus.ACTIVE)).thenReturn(Optional.of(restoredTodoList));
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.restoreTodoListFromCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.enableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(Optional.of(restoredTodoList), response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService).changeTodoListStatus(todoListId, TodoListStatus.Active);
+        verify(todoListService).changeTodoListStatus(todoListId, TodoListStatus.ACTIVE);
 
     }
 
     @Test
-    public void restoreTodoListFromCart_OnNonExistentTodolist_NotFound() {
+    public void enableTodoList_OnNonExistentTodolist_NotFound() {
 
         // arrange
         String userName = "Vasiliy";
@@ -201,18 +182,18 @@ public class TodoListControllerTest {
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.restoreTodoListFromCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.enableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         Assert.assertNull(response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.Active);
+        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.ACTIVE);
 
     }
 
     @Test
-    public void restoreTodoListFromCart_restoreTodoListOfAnotherUser_Forbidden() {
+    public void enableTodoList_restoreTodoListOfAnotherUser_Forbidden() {
 
         // arrange
         String userName = "Vasiliy";
@@ -223,27 +204,20 @@ public class TodoListControllerTest {
         Long todoListId = 1L;
         TodoList todoList = TodoList.builder()
                 .createdBy(userName2)
-                .todoListStatus(TodoListStatus.Deleted)
+                .todoListStatus(TodoListStatus.INACTIVE)
                 .build();
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
 
         // act
-        ResponseEntity<Optional<TodoList>> response = todoListController.restoreTodoListFromCart(currentUser, todoListId);
+        ResponseEntity<Optional<TodoList>> response = todoListController.enableTodoList(currentUser, todoListId);
 
         // assert
         Assert.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         Assert.assertNull(response.getBody());
         verify(todoListService).getTodoListById(todoListId);
-        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.Active);
+        verify(todoListService, never()).changeTodoListStatus(todoListId, TodoListStatus.ACTIVE);
 
-    }
-
-    @Test
-    public void restoreTodoListFromCart() {
-        // arrange
-        // act
-        // assert
     }
 
     private List<TodoList> createListOfTodoLists(int countOfTodoLists) {

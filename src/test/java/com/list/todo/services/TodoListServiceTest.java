@@ -33,7 +33,7 @@ public class TodoListServiceTest {
     private Pageable pageable;
 
     @Test
-    public void getTodoListsByUser_getTodoListsByExistentUser_ListOfTodoListsByUser() {
+    public void getTodoListsByUser_getAllTodoListsByExistentUser_ListOfTodoListsByUser() {
         // arrange
         String userName = "Vasiliy";
         int countOfTodoLists = 2;
@@ -41,13 +41,32 @@ public class TodoListServiceTest {
         todoLists.forEach(todoList -> todoList.setCreatedBy(userName));
         Page<TodoList> page = new PageImpl<>(todoLists, pageable, todoLists.size());
 
-        when(todoListRepository.findByCreatedByAndTodoListStatus(userName, TodoListStatus.Active, pageable)).thenReturn(page);
+        when(todoListRepository.findByCreatedBy(userName, pageable)).thenReturn(page);
 
         // act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.Active, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.ALL, pageable);
 
         // assert
-        verify(todoListRepository).findByCreatedByAndTodoListStatus(userName, TodoListStatus.Active, pageable);
+        verify(todoListRepository).findByCreatedBy(userName, pageable);
+        Assert.assertEquals(returnedTodoLists, page);
+    }
+
+    @Test
+    public void getTodoListsByUser_getActiveTodoListsByExistentUser_ListOfTodoListsByUser() {
+        // arrange
+        String userName = "Vasiliy";
+        int countOfTodoLists = 2;
+        List<TodoList> todoLists = this.createListOfTodoLists(countOfTodoLists);
+        todoLists.forEach(todoList -> todoList.setCreatedBy(userName));
+        Page<TodoList> page = new PageImpl<>(todoLists, pageable, todoLists.size());
+
+        when(todoListRepository.findByCreatedByAndTodoListStatus(userName, TodoListStatus.ACTIVE, pageable)).thenReturn(page);
+
+        // act
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable);
+
+        // assert
+        verify(todoListRepository).findByCreatedByAndTodoListStatus(userName, TodoListStatus.ACTIVE, pageable);
         Assert.assertEquals(returnedTodoLists, page);
     }
 
@@ -62,10 +81,10 @@ public class TodoListServiceTest {
         when(todoListRepository.save(todoList)).thenReturn(todoList);
 
         // act
-        todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        todoListService.changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
 
         // assert
-        verify(todoList).setTodoListStatus(TodoListStatus.Deleted);
+        verify(todoList).setTodoListStatus(TodoListStatus.INACTIVE);
         verify(todoListRepository).save(todoList);
     }
 
@@ -77,7 +96,7 @@ public class TodoListServiceTest {
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.empty());
 
         // act
-        Optional<TodoList> movedToCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.Deleted);
+        Optional<TodoList> movedToCartTodoList = todoListService.changeTodoListStatus(todoListId, TodoListStatus.INACTIVE);
 
         // assert
         Assert.assertEquals(Optional.empty(), movedToCartTodoList);
