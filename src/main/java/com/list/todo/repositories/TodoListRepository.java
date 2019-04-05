@@ -13,4 +13,5 @@ public interface TodoListRepository extends PagingAndSortingRepository<TodoList,
 	Page<TodoList> findTodoListsByCreatedBy(String createdBy, Pageable pageable);
 	List<TodoList> findTodoListsByCreatedBy(String createdBy);
 	Page<TodoList> findTodoListByTodoListNameLikeAndCreatedByEquals(String todoListName, String createdBy, Pageable pageable);
+	Long countByCreatedBy(String createdBy);
 }

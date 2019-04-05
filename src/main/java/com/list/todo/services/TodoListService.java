@@ -31,6 +31,10 @@ public class TodoListService {
         return todoListRepository.findTodoListsByCreatedBy(createdBy, pageable);
     }
 
+    public Long countTodolistsByCreatedBy(String createdBy) {
+        return todoListRepository.countByCreatedBy(createdBy);
+    }
+
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
 
         TodoList todoList = TodoList.builder()
