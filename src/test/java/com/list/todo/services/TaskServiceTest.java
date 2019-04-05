@@ -2,6 +2,7 @@ package com.list.todo.services;
 
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.TodoListStatus;
 import com.list.todo.payload.TaskInput;
 import com.list.todo.repositories.TaskRepository;
 import org.junit.Test;
@@ -34,36 +35,37 @@ public class TaskServiceTest {
     @Test
     public void getAllTasksOnTodoList_OnExistentTodoList_ReturnsAListOfTasks() {
         // arrange
-//        Long userId = 1L;
-//        Long todoListId = 2L;
-//        Long task1Id = 3L;
-//        Long task2Id = 4L;
-//
-//        TodoList todoList = new TodoList("tl1", userId, new LinkedHashSet<>());
-//        todoList.setId(todoListId);
-//
-//        Task task1 = new Task("ggggg", false, todoList);
-//        Task task2 = new Task("zzzzz", false, todoList);
-//        task1.setId(task1Id);
-//        task2.setId(task2Id);
-//
-//        todoList.getTasks().add(task1);
-//        todoList.getTasks().add(task2);
-//
-//        List<Task> tasks = new ArrayList<>();
-//        tasks.add(task1);
-//        tasks.add(task2);
-//
-//        when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
-//        when(taskRepositoryMock.findTasksByTodoListId(todoListId)).thenReturn(tasks);
-//
-//        // act
-//        Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(todoListId);
-//
-//        // assert
-//        assertEquals(tasks, tasksFromService);
-//
-//        verify(taskRepositoryMock).findTasksByTodoListId(2L);
+        Long userId = 1L;
+        Long todoListId = 2L;
+        Long task1Id = 3L;
+        Long task2Id = 4L;
+
+        TodoList todoList = this.createTodoList();
+
+        todoList.setId(todoListId);
+
+        Task task1 = new Task("ggggg", false, todoList);
+        Task task2 = new Task("zzzzz", false, todoList);
+        task1.setId(task1Id);
+        task2.setId(task2Id);
+
+        todoList.getTasks().add(task1);
+        todoList.getTasks().add(task2);
+
+        List<Task> tasks = new ArrayList<>();
+        tasks.add(task1);
+        tasks.add(task2);
+
+        when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
+        when(taskRepositoryMock.findTasksByTodoListId(todoListId)).thenReturn(tasks);
+
+        // act
+        Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(todoListId);
+
+        // assert
+        assertEquals(tasks, tasksFromService);
+
+        verify(taskRepositoryMock).findTasksByTodoListId(2L);
 
     }
 
@@ -200,8 +202,15 @@ public class TaskServiceTest {
         // act
         taskService.deleteTask(taskId);
 
-
         // assert
         verify(taskRepositoryMock).deleteById(taskId);
+    }
+
+    private TodoList createTodoList() {
+        return TodoList.builder()
+                .todoListName("todoList")
+                .todoListStatus(TodoListStatus.ACTIVE)
+                .tasks(new LinkedHashSet<>())
+                .build();
     }
 }

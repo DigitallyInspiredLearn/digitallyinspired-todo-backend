@@ -42,6 +42,11 @@ public class TodoList extends BaseEntity {
     @LastModifiedBy
     private String modifiedBy;
 
+    @NotNull
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TodoListStatus todoListStatus;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
     private Set<Task> tasks = new LinkedHashSet<>();
 }
