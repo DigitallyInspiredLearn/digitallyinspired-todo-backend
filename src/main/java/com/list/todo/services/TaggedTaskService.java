@@ -9,7 +9,6 @@ import com.list.todo.repositories.TaskRepository;
 import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,7 @@ public class TaggedTaskService {
 
         todoListsByCreatedBy
                 .forEach(todoList -> todoList.getTasks()
-                .forEach(task -> myTaggedTask.add(taggedTaskRepository.findByTaskId(task.getId()))));
+                .forEach(task -> myTaggedTask.addAll(taggedTaskRepository.findByTaskId(task.getId()))));
 
         return myTaggedTask;
     }

@@ -10,12 +10,12 @@ import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -34,23 +34,13 @@ public class TodoListService {
 
     public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
 
-        List<TodoList> todoListsByTags = new ArrayList<>(getTodoListsByTags(tagsId, currentUser));
+        List<Task> tasks = new ArrayList<>(taggedTaskService.getTasksByTags(tagsId, currentUser.getId()));
+        Page<TodoList> todoLists;
 
-        return new PageImpl<>(todoListsByTags, pageable, todoListsByTags.size());
-    }
-
-    private Set<TodoList> getTodoListsByTags(List<Long> tagsId, UserPrincipal currentUser) {
-        Set<Task> tasksByTags = taggedTaskService.getTasksByTags(tagsId, currentUser.getId());
-
-        Set<TodoList> todoLists;
-
-        if (tasksByTags.isEmpty()) {
-            todoLists = new HashSet<>(todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername()));
+        if (tasks.isEmpty()) {
+            todoLists = todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername(), pageable);
         } else {
-            todoLists = tasksByTags
-                    .stream()
-                    .map(Task::getTodoList)
-                    .collect(Collectors.toSet());
+            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
         }
 
         return todoLists;
