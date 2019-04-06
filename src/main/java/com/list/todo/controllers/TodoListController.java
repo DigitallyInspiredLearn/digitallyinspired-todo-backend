@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,9 +30,10 @@ public class TodoListController {
 
     @GetMapping("/my")
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                             @RequestBody List<Long> tagsId,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser.getUsername(), pageable);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, pageable, tagsId);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }
@@ -90,8 +92,8 @@ public class TodoListController {
         } else if (!todoList.get().getCreatedBy().equals(currentUser.getUsername())) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else {
-            Optional<TodoList> updatedtodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
-            responseEntity = new ResponseEntity<>(updatedtodoList, HttpStatus.OK);
+            Optional<TodoList> updatedTodoList = todoListService.updateTodoList(todoList.get().getId(), todoListInput, currentUser.getId());
+            responseEntity = new ResponseEntity<>(updatedTodoList, HttpStatus.OK);
         }
 
         return responseEntity;

@@ -1,17 +1,21 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Share;
+import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.repositories.TodoListRepository;
+import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,14 +25,35 @@ public class TodoListService {
 
     private final UserService userService;
     private final ShareService shareService;
+    private final TaggedTaskService taggedTaskService;
     private final NotificationService notificationService;
 
     public Optional<TodoList> getTodoListById(Long todoListId) {
         return todoListRepository.findById(todoListId);
     }
 
-    public Iterable<TodoList> getTodoListsByUser(String createdBy, Pageable pageable) {
-        return todoListRepository.findTodoListsByCreatedBy(createdBy, pageable);
+    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
+
+        List<TodoList> todoListsByTags = new ArrayList<>(getTodoListsByTags(tagsId, currentUser));
+
+        return new PageImpl<>(todoListsByTags, pageable, todoListsByTags.size());
+    }
+
+    private Set<TodoList> getTodoListsByTags(List<Long> tagsId, UserPrincipal currentUser) {
+        Set<Task> tasksByTags = taggedTaskService.getTasksByTags(tagsId, currentUser.getId());
+
+        Set<TodoList> todoLists;
+
+        if (tasksByTags.isEmpty()) {
+            todoLists = new HashSet<>(todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername()));
+        } else {
+            todoLists = tasksByTags
+                    .stream()
+                    .map(Task::getTodoList)
+                    .collect(Collectors.toSet());
+        }
+
+        return todoLists;
     }
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {

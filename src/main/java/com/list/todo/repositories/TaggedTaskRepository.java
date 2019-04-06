@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface TaggedTaskRepository extends JpaRepository<TaggedTask, Long> {
     List<TaggedTask> findByTag(Tag tag);
-    List<TaggedTask> findByTaskId(Long taskId);
+    TaggedTask findByTaskIdAndTag(Long taskId, Tag tag);
+    TaggedTask findByTaskId(Long taskId);
 }

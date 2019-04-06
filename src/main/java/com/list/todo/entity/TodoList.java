@@ -1,5 +1,6 @@
 package com.list.todo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,5 +44,6 @@ public class TodoList extends BaseEntity {
     private String modifiedBy;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Set<Task> tasks = new LinkedHashSet<>();
 }
