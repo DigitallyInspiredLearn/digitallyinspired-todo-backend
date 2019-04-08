@@ -91,7 +91,7 @@ public class TodoListServiceTest {
 
         //act
         Optional<TodoList> addedTodoList = todoListService.addTodoList(
-                new TodoListInput(todoList.getTodoListName(), new LinkedHashSet<>()), userId);
+                new TodoListInput(todoList.getTodoListName(), "comment", new LinkedHashSet<>()), userId);
 
         //assert
         verify(userService).getUserById(userId);
@@ -110,7 +110,7 @@ public class TodoListServiceTest {
 
         //act
         todoListService.updateTodoList(
-                todoListId, new TodoListInput(newTodoListName, new LinkedHashSet<>()), userId);
+                todoListId, new TodoListInput(newTodoListName, "comment", new LinkedHashSet<>()), userId);
 
         //assert
         verify(todoList).setTodoListName(newTodoListName);

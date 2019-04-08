@@ -44,6 +44,7 @@ public class TodoListService {
         TodoList todoList = TodoList.builder()
                 .todoListName(todoListInput.getTodoListName())
                 .todoListStatus(TodoListStatus.ACTIVE)
+                .comment(todoListInput.getComment())
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
@@ -65,6 +66,7 @@ public class TodoListService {
         Optional<TodoList> todoList = todoListRepository.findById(todoListId)
                 .map(tl -> {
                     tl.setTodoListName(todoListInput.getTodoListName());
+                    tl.setComment(todoListInput.getComment());
                     return todoListRepository.save(tl);
                 });
 

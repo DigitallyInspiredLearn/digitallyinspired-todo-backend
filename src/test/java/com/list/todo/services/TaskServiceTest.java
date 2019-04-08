@@ -1,5 +1,6 @@
 package com.list.todo.services;
 
+import com.list.todo.entity.Priority;
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.TodoListStatus;
@@ -9,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ public class TaskServiceTest {
     @Test
     public void getAllTasksOnTodoList_OnExistentTodoList_ReturnsAListOfTasks() {
         // arrange
+        Long userId = 1L;
         Long todoListId = 2L;
         Long task1Id = 3L;
         Long task2Id = 4L;
@@ -44,8 +45,8 @@ public class TaskServiceTest {
 
         todoList.setId(todoListId);
 
-        Task task1 = new Task("ggggg", false, 0L, 0L, 0L, todoList);
-        Task task2 = new Task("zzzzz", false, 0L, 0L, 0L, todoList);
+        Task task1 = new Task("ggggg", false, 0L, 0L, 0L, Priority.NOT_SPECIFIED, todoList);
+        Task task2 = new Task("zzzzz", false, 0L, 0L, 0L, Priority.NOT_SPECIFIED, todoList);
         task1.setId(task1Id);
         task2.setId(task2Id);
 
@@ -57,7 +58,7 @@ public class TaskServiceTest {
         tasks.add(task2);
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
-        when(taskRepositoryMock.findTasksByTodoListId(todoListId)).thenReturn(tasks);
+        when(taskRepositoryMock.findTasksByTodoListIdOrderByPriority(todoListId)).thenReturn(tasks);
 
         // act
         Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(todoListId);
@@ -65,10 +66,9 @@ public class TaskServiceTest {
         // assert
         assertEquals(tasks, tasksFromService);
 
-        verify(taskRepositoryMock).findTasksByTodoListId(2L);
+        verify(taskRepositoryMock).findTasksByTodoListIdOrderByPriority(2L);
 
     }
-
 
     @Test
     public void getAllTasksOnTodoList_OnNonExistentTodoList_ReturnsNull() {
@@ -90,7 +90,7 @@ public class TaskServiceTest {
         Long todoListId = 1L;
         TodoList todoList = new TodoList();
         todoList.setId(todoListId);
-        TaskInput taskInput = new TaskInput("task 1", false, 1L);
+        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
         Task newTask = Task.builder()
                 .body(taskInput.getBody())
                 .isComplete(taskInput.getIsComplete())
@@ -104,7 +104,6 @@ public class TaskServiceTest {
         Optional<Task> addedTask = taskService.addTask(taskInput);
 
         // assert
-        verify(taskRepositoryMock).save(newTask);
         assertEquals(addedTask, Optional.of(newTask));
     }
 
@@ -112,9 +111,10 @@ public class TaskServiceTest {
     public void addTask_OnNonExistentTodoList_ReturnsAnEmptyOptional() {
         // arrange
         Long todoListId = 100L;
-        TaskInput taskInput = new TaskInput("task 1", false, 1L);
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
+
+        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
 
         // act
         Optional<Task> addedTask = taskService.addTask(taskInput);
@@ -123,9 +123,52 @@ public class TaskServiceTest {
         assertEquals(addedTask, Optional.empty());
     }
 
+    @Test
+    public void updateTask_OnNonExistentTodoList_ReturnsAnObjectOfUpdatedTask() {
+
+        // arrange
+        Long todoListId = 1L;
+
+        TodoList todoList = TodoList.builder()
+                .todoListName("todoList")
+                .tasks(new LinkedHashSet<>())
+                .build();
+        todoList.setId(todoListId);
+
+        Task oldTask = Task.builder()
+                .body("task")
+                .isComplete(false)
+                .todoList(todoList)
+                .build();
+
+        Long taskId = 2L;
+        oldTask.setId(taskId);
+        todoList.getTasks().add(oldTask);
+
+        Task updatedTask = Task.builder()
+                .body("updatedTask")
+                .isComplete(true)
+                .todoList(todoList)
+                .build();
+        updatedTask.setId(taskId);
+
+        when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.of(oldTask));
+        when(taskRepositoryMock.save(oldTask)).thenReturn(updatedTask);
+
+        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
+
+        // act
+        Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
+
+        // assert
+        assertEquals(taskFromService, Optional.of(updatedTask));
+
+        verify(taskRepositoryMock).save(any(Task.class));
+    }
 
     @Test
     public void updateTask_updateNonExistentTask_ReturnsAnEmptyOptional() {
+
         // arrange
         Long todoListId = 1L;
 
@@ -142,9 +185,10 @@ public class TaskServiceTest {
         Long taskId = 1000L;
         oldTask.setId(taskId);
         todoList.getTasks().add(oldTask);
-        TaskInput taskInput = new TaskInput("task", false, todoListId);
 
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.empty());
+
+        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
 
         // act
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
@@ -153,27 +197,6 @@ public class TaskServiceTest {
         assertEquals(taskFromService, Optional.empty());
 
         verify(taskRepositoryMock, times(0)).save(any(Task.class));
-    }
-
-    @Test
-    public void updateTask_SuccessfulUpdate() {
-        // arrange
-        Task task = Mockito.mock(Task.class);
-        Long todoListId = 1L;
-        Long taskId = 1000L;
-        TaskInput taskInput = new TaskInput("updatedTask", true, todoListId);
-
-        when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.of(task));
-
-        // act
-        taskService.updateTask(taskId, taskInput);
-
-        // assert
-        verify(task).setBody(taskInput.getBody());
-        verify(task).setIsComplete(taskInput.getIsComplete());
-        verify(task).setRealizationTime(anyLong());
-        verify(task).setCompletedDate(anyLong());
-        verify(taskRepositoryMock, times(1)).save(task);
     }
 
     @Test

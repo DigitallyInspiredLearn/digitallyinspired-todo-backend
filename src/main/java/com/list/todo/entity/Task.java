@@ -33,6 +33,11 @@ public class Task extends BaseEntity {
 
 	private Long realizationTime;
 
+	@NotNull
+	@Column(nullable = false)
+	@Enumerated(EnumType.ORDINAL)
+	private Priority priority;
+
 	@ManyToOne
 	@JoinColumn(name = "todolist_id")
 	@JsonIgnore

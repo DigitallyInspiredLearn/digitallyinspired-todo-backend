@@ -26,7 +26,7 @@ public class TaskService {
         Iterable<Task> tasks = null;
 
         if (todoList.isPresent()) {
-            tasks = taskRepository.findTasksByTodoListId(todoListId);
+            tasks = taskRepository.findTasksByTodoListIdOrderByPriority(todoListId);
         }
 
         return tasks;
@@ -41,6 +41,7 @@ public class TaskService {
             Task task = Task.builder()
                     .body(taskInput.getBody())
                     .isComplete(taskInput.getIsComplete())
+                    .priority(taskInput.getPriority())
                     .todoList(todoList.get())
                     .build();
             newTask = Optional.of(taskRepository.save(task));
@@ -60,6 +61,7 @@ public class TaskService {
                         task.setCompletedDate(System.currentTimeMillis());
                         task.setRealizationTime(task.getCompletedDate()-task.getCreatedDate());
                     }
+                    task.setPriority(taskInput.getPriority());
                     return taskRepository.save(task);
                 });
     }
