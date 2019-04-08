@@ -36,7 +36,6 @@ public class TaskServiceTest {
     @Test
     public void getAllTasksOnTodoList_OnExistentTodoList_ReturnsAListOfTasks() {
         // arrange
-        Long userId = 1L;
         Long todoListId = 2L;
         Long task1Id = 3L;
         Long task2Id = 4L;
@@ -88,17 +87,12 @@ public class TaskServiceTest {
     public void addTask_OnExistentTodoList_ReturnsAnObjectOfNewTask() {
         // arrange
         Long todoListId = 1L;
-        TodoList todoList = new TodoList();
-        todoList.setId(todoListId);
-        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
-        Task newTask = Task.builder()
-                .body(taskInput.getBody())
-                .isComplete(taskInput.getIsComplete())
-                .todoList(todoList)
-                .build();
 
-        when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(todoList));
-        when(taskRepositoryMock.save(any(Task.class))).thenReturn(newTask);
+        when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(new TodoList()));
+        when(taskRepositoryMock.save(any(Task.class))).thenReturn(new Task());
+
+        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
+        Task newTask = new Task();
 
         // act
         Optional<Task> addedTask = taskService.addTask(taskInput);
