@@ -13,5 +13,6 @@ import java.util.Set;
 @NoArgsConstructor
 public class TodoListInput {
     private String todoListName;
+    private String comment;
     private Set<Task> tasks = new LinkedHashSet<>();
 }

@@ -3,9 +3,7 @@ package com.list.todo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -22,6 +20,11 @@ public class Task extends BaseEntity {
 	
 	@NotNull
 	private Boolean isComplete;
+
+	@NotNull
+	@Column(nullable = false)
+	@Enumerated(EnumType.ORDINAL)
+	private Priority priority;
 
 	@ManyToOne
 	@JoinColumn(name = "todolist_id")
