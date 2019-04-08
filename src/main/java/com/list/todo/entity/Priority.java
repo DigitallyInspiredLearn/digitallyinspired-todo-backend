@@ -2,7 +2,7 @@ package com.list.todo.entity;
 
 public enum Priority {
     HIGH,
-    MIDDLE,
+    MEDIUM,
     LOW,
-    EMPTY
+    NOT_SPECIFIED
 }

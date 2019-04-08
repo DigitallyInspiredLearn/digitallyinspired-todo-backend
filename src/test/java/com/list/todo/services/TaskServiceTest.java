@@ -44,8 +44,8 @@ public class TaskServiceTest {
 
         todoList.setId(todoListId);
 
-        Task task1 = new Task("ggggg", false, Priority.EMPTY, todoList);
-        Task task2 = new Task("zzzzz", false, Priority.EMPTY, todoList);
+        Task task1 = new Task("ggggg", false, Priority.NOT_SPECIFIED, todoList);
+        Task task2 = new Task("zzzzz", false, Priority.NOT_SPECIFIED, todoList);
         task1.setId(task1Id);
         task2.setId(task2Id);
 
@@ -91,7 +91,7 @@ public class TaskServiceTest {
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(new TodoList()));
         when(taskRepositoryMock.save(any(Task.class))).thenReturn(new Task());
 
-        TaskInput taskInput = new TaskInput("task 1", false, Priority.EMPTY, 1L);
+        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
         Task newTask = new Task();
 
         // act
@@ -108,7 +108,7 @@ public class TaskServiceTest {
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
-        TaskInput taskInput = new TaskInput("task 1", false, Priority.EMPTY, 1L);
+        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
 
         // act
         Optional<Task> addedTask = taskService.addTask(taskInput);
@@ -149,7 +149,7 @@ public class TaskServiceTest {
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.of(oldTask));
         when(taskRepositoryMock.save(oldTask)).thenReturn(updatedTask);
 
-        TaskInput taskInput = new TaskInput("task", false, Priority.EMPTY, todoListId);
+        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
 
         // act
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
@@ -182,7 +182,7 @@ public class TaskServiceTest {
 
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.empty());
 
-        TaskInput taskInput = new TaskInput("task", false, Priority.EMPTY, todoListId);
+        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
 
         // act
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
