@@ -12,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -34,7 +36,6 @@ public class TaskServiceTest {
     @Test
     public void getAllTasksOnTodoList_OnExistentTodoList_ReturnsAListOfTasks() {
         // arrange
-        Long userId = 1L;
         Long todoListId = 2L;
         Long task1Id = 3L;
         Long task2Id = 4L;
@@ -43,8 +44,8 @@ public class TaskServiceTest {
 
         todoList.setId(todoListId);
 
-        Task task1 = new Task("ggggg", false, todoList);
-        Task task2 = new Task("zzzzz", false, todoList);
+        Task task1 = new Task("ggggg", false, 0L, 0L, 0L, todoList);
+        Task task2 = new Task("zzzzz", false, 0L, 0L, 0L, todoList);
         task1.setId(task1Id);
         task2.setId(task2Id);
 

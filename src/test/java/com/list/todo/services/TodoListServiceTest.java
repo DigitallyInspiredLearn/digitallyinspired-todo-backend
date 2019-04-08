@@ -1,6 +1,5 @@
 package com.list.todo.services;
 
-
 import com.list.todo.entity.Share;
 import com.list.todo.entity.User;
 import com.list.todo.payload.TodoListInput;
@@ -73,10 +72,10 @@ public class TodoListServiceTest {
         todoLists.add(todoList2);
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
 
-        when(todoListRepository.findTodoListsByCreatedBy(username, pageable)).thenReturn(todoListPage);
+        when(todoListRepository.findByCreatedBy(username, pageable)).thenReturn(todoListPage);
 
         //act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(username, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(username, TodoListStatus.ACTIVE, pageable);
 
         //assert
         Assert.assertEquals(todoListPage, returnedTodoLists);
@@ -115,6 +114,7 @@ public class TodoListServiceTest {
 
         //assert
         verify(todoList).setTodoListName(newTodoListName);
+    }
 
     @Test
     public void getTodoListsByUser_getAllTodoListsByExistentUser_ListOfTodoListsByUser() {
@@ -231,7 +231,7 @@ public class TodoListServiceTest {
         //assert
         verify(todoListRepository).findById(sharedTodoListId);
         verify(shareService).addShare(share);
-
+    }
       
     public void changeTodoListStatus_OnNonExistentTodoList_Null() {
         // arrange
