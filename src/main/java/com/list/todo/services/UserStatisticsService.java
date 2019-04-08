@@ -20,24 +20,24 @@ public class UserStatisticsService {
 
     public UserStatistics getUserStatisticsByUserId(Long userId){
         Optional<User> user = userService.getUserById(userId);
-        Long todolistsAmount = 0L;
-        Long tasksAmount = 0L;
-        Long completedTaskAmount = 0L;
-        int followersAmount = 0;
-        int followedUsersAmount = 0;
+        Long todoListsNumber = 0L;
+        Long tasksNumber = 0L;
+        Long completedTaskNumber = 0L;
+        int followersNumber = 0;
+        int followedUsersNumber = 0;
 
         if (user.isPresent()){
-            todolistsAmount = todoListService.countTodolistsByCreatedBy(user.get().getUsername());
-            tasksAmount = taskService.countTasksByCreatedBy(user.get().getUsername());
-            completedTaskAmount =
+            todoListsNumber = todoListService.countTodolistsByCreatedBy(user.get().getUsername());
+            tasksNumber = taskService.countTasksByCreatedBy(user.get().getUsername());
+            completedTaskNumber =
                     taskService.countTasksByCreatedByAndIsComplete(user.get().getUsername(), true);
             List<UserSummary> followersList = followerService.getFollowersUserSummariesByUserId(userId);
             List<UserSummary> followedUsersList = followerService.getFollowedUserSummariesByUserId(userId);
 
-            followersAmount = followersList.size();
-            followedUsersAmount = followedUsersList.size();
+            followersNumber = followersList.size();
+            followedUsersNumber = followedUsersList.size();
         }
 
-        return new UserStatistics(todolistsAmount, tasksAmount, completedTaskAmount, followersAmount, followedUsersAmount);
+        return new UserStatistics(todoListsNumber, tasksNumber, completedTaskNumber, followersNumber, followedUsersNumber);
     }
 }

@@ -12,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -42,9 +44,17 @@ public class TaskServiceTest {
         TodoList todoList = this.createTodoList();
 
         todoList.setId(todoListId);
+        Task task1 = Task.builder()
+                .body("ggggg")
+                .isComplete(false)
+                .todoList(todoList)
+                .build();
+        Task task2 = Task.builder()
+                .body("zzzzz")
+                .isComplete(false)
+                .todoList(todoList)
+                .build();
 
-        Task task1 = new Task("ggggg", false, todoList);
-        Task task2 = new Task("zzzzz", false, todoList);
         task1.setId(task1Id);
         task2.setId(task2Id);
 

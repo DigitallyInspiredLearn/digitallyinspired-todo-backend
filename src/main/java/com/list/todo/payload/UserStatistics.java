@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserStatistics {
 
-    private Long todolistsAmount;
-    private Long tasksAmount;
-    private Long completedTasksAmount;
-    private int followersAmount;
-    private int followedUsersAmount;
+    private Long todoListsNumber;
+    private Long tasksNumber;
+    private Long completedTasksNumber;
+    private int followersNumber;
+    private int followedUsersNumber;
 
 }

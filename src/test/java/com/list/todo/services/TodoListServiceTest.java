@@ -73,10 +73,10 @@ public class TodoListServiceTest {
         todoLists.add(todoList2);
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
 
-        when(todoListRepository.findTodoListsByCreatedBy(username, pageable)).thenReturn(todoListPage);
+        when(todoListRepository.findByCreatedBy(username, pageable)).thenReturn(todoListPage);
 
         //act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(username, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(username, TodoListStatus.ALL, pageable);
 
         //assert
         Assert.assertEquals(todoListPage, returnedTodoLists);
@@ -87,7 +87,8 @@ public class TodoListServiceTest {
         //arrange
         long userId = 1;
         TodoList todoList = new TodoList();
-        todoList.setTodoListName("name");
+        todoList.setTodoListName("todoListName");
+        todoList.setTodoListStatus(TodoListStatus.ACTIVE);
         when(todoListRepository.save(todoList)).thenReturn(todoList);
 
         //act
@@ -115,6 +116,7 @@ public class TodoListServiceTest {
 
         //assert
         verify(todoList).setTodoListName(newTodoListName);
+    }
 
     @Test
     public void getTodoListsByUser_getAllTodoListsByExistentUser_ListOfTodoListsByUser() {
@@ -231,7 +233,7 @@ public class TodoListServiceTest {
         //assert
         verify(todoListRepository).findById(sharedTodoListId);
         verify(shareService).addShare(share);
-
+    }
       
     public void changeTodoListStatus_OnNonExistentTodoList_Null() {
         // arrange
