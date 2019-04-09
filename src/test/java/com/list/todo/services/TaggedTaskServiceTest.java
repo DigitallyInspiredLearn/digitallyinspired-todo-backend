@@ -50,7 +50,7 @@ public class TaggedTaskServiceTest {
         when(taggedTaskRepositoryMock.save(any(TaggedTask.class))).thenReturn(new TaggedTask());
 
         //act
-        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTagToTask(taskId, tagId);
+        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTaggedTask(taggedTask);
 
         //assert
         verify(taggedTaskRepositoryMock).save(new TaggedTask(task.getId(), tag));
@@ -71,7 +71,7 @@ public class TaggedTaskServiceTest {
         when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         //act
-        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTagToTask(taskId, tagId);
+        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTaggedTask(null);
 
         //assert
         verify(taggedTaskRepositoryMock, times(0)).save(new TaggedTask(task.getId(), tag));

@@ -30,10 +30,10 @@ public class TodoListController {
 
     @GetMapping("/my")
     public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                             @RequestBody List<Long> tagsId,
+                                                             @RequestBody List<Long> tagsIds,
                                                              Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, pageable, tagsId);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, pageable, tagsIds);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }

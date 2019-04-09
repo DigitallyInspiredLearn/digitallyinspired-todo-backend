@@ -2,7 +2,6 @@ package com.list.todo.controllers;
 
 import com.list.todo.entity.Tag;
 import com.list.todo.entity.TaggedTask;
-import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.payload.TagInput;
 import com.list.todo.security.UserPrincipal;
@@ -18,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -30,7 +30,7 @@ public class TagController {
     private final TaskService taskService;
 
     @GetMapping
-    public ResponseEntity<Iterable<Tag>> getMyTags(@AuthenticationPrincipal UserPrincipal currentUser){
+    public ResponseEntity<Iterable<Tag>> getMyTags(@AuthenticationPrincipal UserPrincipal currentUser) {
         Iterable<Tag> myTags = tagService.getTagsByOwnerId(currentUser.getId());
 
         return new ResponseEntity<>(myTags, HttpStatus.OK);
@@ -60,7 +60,7 @@ public class TagController {
         Optional<Tag> tag = tagService.getTagById(tagId);
 
         if (tag.isPresent()) {
-            if (!tag.get().getOwnerId().equals(currentUser.getId())){
+            if (!tag.get().getOwnerId().equals(currentUser.getId())) {
                 responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
             } else {
                 Optional<Tag> updatedTag = tagService.updateTag(tag.get().getId(), tagInput);
@@ -97,21 +97,19 @@ public class TagController {
     public ResponseEntity<Void> removeTagFromTheTask(@PathVariable("id") Long tagId,
                                                      @RequestParam("taskId") Long taskId,
                                                      @AuthenticationPrincipal UserPrincipal currentUser) {
-        ResponseEntity<Void> responseEntity;
-        Optional<Tag> tag = tagService.getTagById(tagId);
+        AtomicReference<ResponseEntity<Void>> responseEntity =
+                new AtomicReference<>(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
-        if (tag.isPresent()) {
-            if (!tag.get().getOwnerId().equals(currentUser.getId())) {
-                responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        tagService.getTagById(tagId).ifPresent(tag -> {
+            if (!tag.getOwnerId().equals(currentUser.getId())) {
+                responseEntity.set(new ResponseEntity<>(HttpStatus.FORBIDDEN));
             } else {
-                taggedTaskService.deleteTaggedTask(taskId, tag.get());
-                responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                tagService.removeTagFromTask(taskId, tag);
+                responseEntity.set(new ResponseEntity<>(HttpStatus.NO_CONTENT));
             }
-        } else {
-            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        });
 
-        return responseEntity;
+        return responseEntity.get();
 
     }
 
@@ -120,25 +118,23 @@ public class TagController {
                                                              @RequestParam("taskId") Long taskId,
                                                              @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        ResponseEntity<Optional<TaggedTask>> responseEntity;
-        Optional<Tag> tag = tagService.getTagById(tagId);
-        Optional<Task> task = taskService.getTaskById(taskId);
+        AtomicReference<ResponseEntity<Optional<TaggedTask>>> responseEntity =
+                new AtomicReference<>(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
-        if (task.isPresent() && tag.isPresent()){
-            TodoList todoList = task.get().getTodoList();
+        tagService.getTagById(tagId).ifPresent(tag ->
+                taskService.getTaskById(taskId).ifPresent(task -> {
+                    TodoList todoList = task.getTodoList();
+                    if (todoList == null) {
+                        responseEntity.set(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                    } else if (!todoList.getCreatedBy().equals(currentUser.getUsername()) ||
+                            !tag.getOwnerId().equals(currentUser.getId())) {
+                        responseEntity.set(new ResponseEntity<>(HttpStatus.FORBIDDEN));
+                    } else {
+                        Optional<TaggedTask> taggedTask = tagService.addTagToTask(tag, taskId);
+                        responseEntity.set(new ResponseEntity<>(taggedTask, HttpStatus.OK));
+                    }
+                }));
 
-            if (todoList == null) {
-                responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else if (!todoList.getCreatedBy().equals(currentUser.getUsername()) ||
-                    !tag.get().getOwnerId().equals(currentUser.getId())) {
-                responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            } else {
-                Optional<TaggedTask> taggedTask = taggedTaskService.addTagToTask(taskId, tagId);
-                responseEntity = new ResponseEntity<>(taggedTask, HttpStatus.OK);
-            }
-        } else {
-            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return responseEntity;
+        return responseEntity.get();
     }
 }

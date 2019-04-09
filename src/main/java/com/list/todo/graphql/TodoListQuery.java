@@ -29,7 +29,7 @@ public class TodoListQuery implements GraphQLQueryResolver {
 
 	public Iterable<TodoList> getMyTodoLists() {
 		UserPrincipal currentUser = userService.getCurrentUser();
-		return null;
+		return todoListService.getTodoListsByUser(currentUser, Pageable.unpaged(), null);
 	}
 
     public Iterable<TodoList> getMySharedTodoLists() {

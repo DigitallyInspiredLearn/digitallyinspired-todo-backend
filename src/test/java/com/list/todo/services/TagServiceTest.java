@@ -142,7 +142,7 @@ public class TagServiceTest {
         tagServiceMock.updateTag(tagId, tagInput);
 
         //assert
-        verify(tag).setNameTag(tagInput.getTagName());
+        verify(tag).setTagName(tagInput.getTagName());
         verify(tagRepositoryMock, times(1)).save(tag);
 
     }

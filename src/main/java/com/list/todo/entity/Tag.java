@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 public class Tag extends BaseEntity{
 
     @NotNull
-    private String nameTag;
+    private String tagName;
 
     @NotNull
     private Long ownerId;
