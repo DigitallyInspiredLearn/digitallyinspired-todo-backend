@@ -1,16 +1,21 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Share;
+import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.TodoListStatus;
 import com.list.todo.entity.User;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
 import com.list.todo.repositories.TodoListRepository;
+import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,11 +26,23 @@ public class TodoListService {
 
     private final UserService userService;
     private final ShareService shareService;
+    private final TaggedTaskService taggedTaskService;
     private final NotificationService notificationService;
 
     public Optional<TodoList> getTodoListById(Long todoListId) {
         return todoListRepository.findById(todoListId);
     }
+
+
+    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
+
+        List<Task> tasks = new ArrayList<>(taggedTaskService.getTasksByTags(tagsId, currentUser.getId()));
+        Page<TodoList> todoLists;
+
+        if (tasks.isEmpty()) {
+            todoLists = todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername(), pageable);
+        } else {
+            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
 
     public Iterable<TodoList> getTodoListsByUser(String createdBy, TodoListStatus todoListStatus, Pageable pageable) {
         Iterable<TodoList> todoLists;

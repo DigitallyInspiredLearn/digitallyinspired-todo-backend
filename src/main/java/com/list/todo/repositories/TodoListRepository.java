@@ -1,5 +1,6 @@
 package com.list.todo.repositories;
 
+import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.TodoListStatus;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface TodoListRepository extends PagingAndSortingRepository<TodoList, Long> {
+	Page<TodoList> findDistinctByCreatedByAndTasksIn(String createdBy, Pageable pageable, List<Task> tasks);
 	List<TodoList> findByCreatedBy(String createdBy);
 	Page<TodoList> findByCreatedBy(String createdBy, Pageable pageable);
 	Page<TodoList> findByCreatedByAndTodoListStatus(String createdBy, TodoListStatus todoListStatus, Pageable pageable);
