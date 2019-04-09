@@ -1,0 +1,1 @@
+alter table todo_list add column todo_list_status varchar(15) not null;

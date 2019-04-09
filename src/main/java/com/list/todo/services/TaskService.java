@@ -26,7 +26,7 @@ public class TaskService {
         Iterable<Task> tasks = null;
 
         if (todoList.isPresent()) {
-            tasks = taskRepository.findTasksByTodoListId(todoListId);
+            tasks = taskRepository.findTasksByTodoListIdOrderByPriority(todoListId);
         }
 
         return tasks;
@@ -41,6 +41,7 @@ public class TaskService {
             Task task = Task.builder()
                     .body(taskInput.getBody())
                     .isComplete(taskInput.getIsComplete())
+                    .priority(taskInput.getPriority())
                     .todoList(todoList.get())
                     .build();
             newTask = Optional.of(taskRepository.save(task));
@@ -51,11 +52,16 @@ public class TaskService {
     }
 
     public Optional<Task> updateTask(Long currentTaskId, TaskInput taskInput) {
-
+        // Нет проверки на существование todolist у таска
         return taskRepository.findById(currentTaskId)
                 .map(task -> {
                     task.setBody(taskInput.getBody());
                     task.setIsComplete(taskInput.getIsComplete());
+                    if (taskInput.getIsComplete()){
+                        task.setCompletedDate(System.currentTimeMillis());
+                        task.setRealizationTime(task.getCompletedDate()-task.getCreatedDate());
+                    }
+                    task.setPriority(taskInput.getPriority());
                     return taskRepository.save(task);
                 });
     }

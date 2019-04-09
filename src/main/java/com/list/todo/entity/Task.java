@@ -2,10 +2,11 @@ package com.list.todo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper=true, exclude = "todoList")
 @ToString(exclude = "todoList")
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Task extends BaseEntity {
 	
 	@NotNull
@@ -22,6 +24,19 @@ public class Task extends BaseEntity {
 	
 	@NotNull
 	private Boolean isComplete;
+
+	@Column(nullable = false, updatable = false)
+	@CreatedDate
+	private Long createdDate;
+
+	private Long completedDate;
+
+	private Long realizationTime;
+
+	@NotNull
+	@Column(nullable = false)
+	@Enumerated(EnumType.ORDINAL)
+	private Priority priority;
 
 	@ManyToOne
 	@JoinColumn(name = "todolist_id")

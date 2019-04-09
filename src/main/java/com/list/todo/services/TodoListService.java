@@ -3,6 +3,7 @@ package com.list.todo.services;
 import com.list.todo.entity.Share;
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
+import com.list.todo.entity.TodoListStatus;
 import com.list.todo.entity.User;
 import com.list.todo.payload.ApiResponse;
 import com.list.todo.payload.TodoListInput;
@@ -32,6 +33,7 @@ public class TodoListService {
         return todoListRepository.findById(todoListId);
     }
 
+
     public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
 
         List<Task> tasks = new ArrayList<>(taggedTaskService.getTasksByTags(tagsId, currentUser.getId()));
@@ -41,6 +43,14 @@ public class TodoListService {
             todoLists = todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername(), pageable);
         } else {
             todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
+
+    public Iterable<TodoList> getTodoListsByUser(String createdBy, TodoListStatus todoListStatus, Pageable pageable) {
+        Iterable<TodoList> todoLists;
+
+        if (todoListStatus.equals(TodoListStatus.ALL)) {
+            todoLists = todoListRepository.findByCreatedBy(createdBy, pageable);
+        } else {
+            todoLists = todoListRepository.findByCreatedByAndTodoListStatus(createdBy, todoListStatus, pageable);
         }
 
         return todoLists;
@@ -50,6 +60,8 @@ public class TodoListService {
 
         TodoList todoList = TodoList.builder()
                 .todoListName(todoListInput.getTodoListName())
+                .todoListStatus(TodoListStatus.ACTIVE)
+                .comment(todoListInput.getComment())
                 .build();
 
         Optional<TodoList> newTodoList = Optional.of(todoListRepository.save(todoList));
@@ -71,6 +83,7 @@ public class TodoListService {
         Optional<TodoList> todoList = todoListRepository.findById(todoListId)
                 .map(tl -> {
                     tl.setTodoListName(todoListInput.getTodoListName());
+                    tl.setComment(todoListInput.getComment());
                     return todoListRepository.save(tl);
                 });
 
@@ -96,6 +109,14 @@ public class TodoListService {
         });
     }
 
+    public Optional<TodoList> changeTodoListStatus(Long todoListId, TodoListStatus todoListStatus) {
+        return todoListRepository.findById(todoListId)
+                .map(tl -> {
+                    tl.setTodoListStatus(todoListStatus);
+                    return todoListRepository.save(tl);
+                });
+    }
+
     public ApiResponse shareTodoList(String targetUsername, Long sharedTodoListId, Long userId) {
 
         ApiResponse apiResponse = new ApiResponse(false, "Something went wrong!");
@@ -116,6 +137,6 @@ public class TodoListService {
     }
 
     public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable){
-        return todoListRepository.findTodoListByTodoListNameLikeAndCreatedByEquals(todoListName, createdBy, pageable);
+        return todoListRepository.findByTodoListNameLikeAndCreatedByEqualsAndTodoListStatus(todoListName, createdBy, TodoListStatus.ACTIVE, pageable);
     }
 }

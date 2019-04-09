@@ -43,6 +43,14 @@ public class TodoList extends BaseEntity {
     @LastModifiedBy
     private String modifiedBy;
 
+    @NotNull
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TodoListStatus todoListStatus;
+
+    @NotNull
+    private String comment;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "todoList")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Set<Task> tasks = new LinkedHashSet<>();
