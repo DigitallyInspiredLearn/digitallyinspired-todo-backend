@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface TodoListRepository extends PagingAndSortingRepository<TodoList, Long> {
-	Long countByCreatedBy(String createdBy);
 	List<TodoList> findByCreatedBy(String createdBy);
 	Page<TodoList> findByCreatedBy(String createdBy, Pageable pageable);
 	Page<TodoList> findByCreatedByAndTodoListStatus(String createdBy, TodoListStatus todoListStatus, Pageable pageable);

@@ -1,11 +1,11 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Tag;
-import com.list.todo.entity.TaggedTask;
+import com.list.todo.entity.TagTaskKey;
 import com.list.todo.entity.Task;
 import com.list.todo.entity.TodoList;
 import com.list.todo.repositories.TagRepository;
-import com.list.todo.repositories.TaggedTaskRepository;
+import com.list.todo.repositories.TagTaskKeyRepository;
 import com.list.todo.repositories.TaskRepository;
 import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
@@ -21,31 +21,31 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class TaggedTaskService {
+public class TagTaskKeyService {
 
-    private final TaggedTaskRepository taggedTaskRepository;
+    private final TagTaskKeyRepository tagTaskKeyRepository;
     private final TaskRepository taskRepository;
     private final TodoListRepository todoListRepository;
     private final TagRepository tagRepository;
 
-    Optional<TaggedTask> addTaggedTask(TaggedTask taggedTask) {
-        return Optional.of(taggedTaskRepository.save(taggedTask));
+    Optional<TagTaskKey> addTaggedTask(TagTaskKey tagTaskKey) {
+        return Optional.of(tagTaskKeyRepository.save(tagTaskKey));
     }
 
-    public Set<TaggedTask> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable) {
-        Set<TaggedTask> myTaggedTask = new HashSet<>();
+    public Set<TagTaskKey> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable) {
+        Set<TagTaskKey> myTagTaskKey = new HashSet<>();
 
         Iterable<TodoList> todoListsByCreatedBy = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
 
         todoListsByCreatedBy
                 .forEach(todoList -> todoList.getTasks()
-                        .forEach(task -> myTaggedTask.addAll(taggedTaskRepository.findByTaskId(task.getId()))));
+                        .forEach(task -> myTagTaskKey.addAll(tagTaskKeyRepository.findByTaskId(task.getId()))));
 
-        return myTaggedTask;
+        return myTagTaskKey;
     }
 
-    List<TaggedTask> getTaggedTasksByTag(Tag tag) {
-        return taggedTaskRepository.findByTag(tag);
+    List<TagTaskKey> getTaggedTasksByTag(Tag tag) {
+        return tagTaskKeyRepository.findByTag(tag);
     }
 
     Set<Task> getTasksByTags(List<Long> tagsIds, Long currentUserId) {
@@ -54,7 +54,7 @@ public class TaggedTaskService {
         tagsIds.forEach(tagId -> tagRepository.findById(tagId).
                 ifPresent(tag -> {
                     if (tag.getOwnerId().equals(currentUserId)) {
-                        tasksByTags.addAll(taggedTaskRepository.findByTag(tag)
+                        tasksByTags.addAll(tagTaskKeyRepository.findByTag(tag)
                                 .stream()
                                 .map(taggedTask -> taskRepository.getOne(taggedTask.getTaskId()))
                                 .collect(Collectors.toSet()));
@@ -65,12 +65,12 @@ public class TaggedTaskService {
     }
 
     void deleteTaggedTask(Long taskId, Tag tag) {
-        taggedTaskRepository.findByTaskIdAndTag(taskId, tag)
-                .ifPresent(taggedTaskRepository::delete);
+        tagTaskKeyRepository.findByTaskIdAndTag(taskId, tag)
+                .ifPresent(tagTaskKeyRepository::delete);
     }
 
-    void deleteTaggedTask(TaggedTask taggedTask) {
-        taggedTaskRepository.delete(taggedTask);
+    void deleteTaggedTask(TagTaskKey tagTaskKey) {
+        tagTaskKeyRepository.delete(tagTaskKey);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Tag;
-import com.list.todo.entity.TaggedTask;
+import com.list.todo.entity.TagTaskKey;
 import com.list.todo.payload.TagInput;
 import com.list.todo.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class TagService {
 
     private final TagRepository tagRepository;
 
-    private final TaggedTaskService taggedTaskService;
+    private final TagTaskKeyService tagTaskKeyService;
 
     public Optional<Tag> getTagById(Long tagId) {
         return tagRepository.findById(tagId);
@@ -25,12 +25,12 @@ public class TagService {
         return tagRepository.getByOwnerId(ownerId);
     }
 
-    public Optional<TaggedTask> addTagToTask(Tag tag, Long taskId) {
-        return taggedTaskService.addTaggedTask(new TaggedTask(taskId, tag));
+    public Optional<TagTaskKey> addTagToTask(Tag tag, Long taskId) {
+        return tagTaskKeyService.addTaggedTask(new TagTaskKey(taskId, tag));
     }
 
     public void removeTagFromTask(Long taskId, Tag tag) {
-        taggedTaskService.deleteTaggedTask(taskId, tag);
+        tagTaskKeyService.deleteTaggedTask(taskId, tag);
     }
 
     public Optional<Tag> addTag(TagInput tagInput, Long currentUserId) {
@@ -53,8 +53,8 @@ public class TagService {
     public void deleteTag(Long tagId) {
         Optional<Tag> tag = tagRepository.findById(tagId);
 
-        tag.ifPresent(value -> taggedTaskService.getTaggedTasksByTag(value)
-                .forEach(taggedTaskService::deleteTaggedTask));
+        tag.ifPresent(value -> tagTaskKeyService.getTaggedTasksByTag(value)
+                .forEach(tagTaskKeyService::deleteTaggedTask));
 
         tagRepository.deleteById(tagId);
     }

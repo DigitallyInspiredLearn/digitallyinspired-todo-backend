@@ -1,12 +1,12 @@
 package com.list.todo.controllers;
 
 import com.list.todo.entity.Tag;
-import com.list.todo.entity.TaggedTask;
+import com.list.todo.entity.TagTaskKey;
 import com.list.todo.entity.TodoList;
 import com.list.todo.payload.TagInput;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.TagService;
-import com.list.todo.services.TaggedTaskService;
+import com.list.todo.services.TagTaskKeyService;
 import com.list.todo.services.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TagController {
 
     private final TagService tagService;
-    private final TaggedTaskService taggedTaskService;
+    private final TagTaskKeyService tagTaskKeyService;
     private final TaskService taskService;
 
     @GetMapping
@@ -36,10 +36,10 @@ public class TagController {
         return new ResponseEntity<>(myTags, HttpStatus.OK);
     }
 
-    @GetMapping("/myTaggedTask")
-    public ResponseEntity<Iterable<TaggedTask>> getMyTagsWithTodoListId(@AuthenticationPrincipal UserPrincipal currentUser,
+    @GetMapping("/myTagTaskKeys")
+    public ResponseEntity<Iterable<TagTaskKey>> getMyTagsWithTodoListId(@AuthenticationPrincipal UserPrincipal currentUser,
                                                                         Pageable pageable) {
-        Iterable<TaggedTask> myTaggedTask = taggedTaskService.getMyTaggedTask(currentUser, pageable);
+        Iterable<TagTaskKey> myTaggedTask = tagTaskKeyService.getMyTaggedTask(currentUser, pageable);
 
         return new ResponseEntity<>(myTaggedTask, HttpStatus.OK);
     }
@@ -114,11 +114,11 @@ public class TagController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<Optional<TaggedTask>> addTagToTask(@PathVariable("id") Long tagId,
+    public ResponseEntity<Optional<TagTaskKey>> addTagToTask(@PathVariable("id") Long tagId,
                                                              @RequestParam("taskId") Long taskId,
                                                              @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        AtomicReference<ResponseEntity<Optional<TaggedTask>>> responseEntity =
+        AtomicReference<ResponseEntity<Optional<TagTaskKey>>> responseEntity =
                 new AtomicReference<>(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         tagService.getTagById(tagId).ifPresent(tag ->
@@ -130,7 +130,7 @@ public class TagController {
                             !tag.getOwnerId().equals(currentUser.getId())) {
                         responseEntity.set(new ResponseEntity<>(HttpStatus.FORBIDDEN));
                     } else {
-                        Optional<TaggedTask> taggedTask = tagService.addTagToTask(tag, taskId);
+                        Optional<TagTaskKey> taggedTask = tagService.addTagToTask(tag, taskId);
                         responseEntity.set(new ResponseEntity<>(taggedTask, HttpStatus.OK));
                     }
                 }));

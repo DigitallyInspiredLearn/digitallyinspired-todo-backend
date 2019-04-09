@@ -27,7 +27,7 @@ public class UserStatisticsService {
         int followedUsersNumber = 0;
 
         if (user.isPresent()){
-            todoListsNumber = todoListService.countTodolistsByCreatedBy(user.get().getUsername());
+            todoListsNumber = todoListService.countTodoListsByCreatedBy(user.get().getUsername());
             tasksNumber = taskService.countTasksByCreatedBy(user.get().getUsername());
             completedTaskNumber =
                     taskService.countTasksByCreatedByAndIsComplete(user.get().getUsername(), true);
