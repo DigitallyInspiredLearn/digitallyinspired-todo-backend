@@ -75,7 +75,7 @@ public class TodoListServiceTest {
         when(todoListRepository.findByCreatedBy(username, pageable)).thenReturn(todoListPage);
 
         //act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(username, TodoListStatus.ACTIVE, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(null, TodoListStatus.ACTIVE, pageable, null);
 
         //assert
         Assert.assertEquals(todoListPage, returnedTodoLists);
@@ -128,7 +128,7 @@ public class TodoListServiceTest {
         when(todoListRepository.findByCreatedBy(userName, pageable)).thenReturn(page);
 
         // act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.ALL, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(null, TodoListStatus.ALL, pageable, null);
 
         // assert
         verify(todoListRepository).findByCreatedBy(userName, pageable);
@@ -147,7 +147,7 @@ public class TodoListServiceTest {
         when(todoListRepository.findByCreatedByAndTodoListStatus(userName, TodoListStatus.ACTIVE, pageable)).thenReturn(page);
 
         // act
-        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable);
+        Iterable<TodoList> returnedTodoLists = todoListService.getTodoListsByUser(null, TodoListStatus.ACTIVE, pageable, null);
 
         // assert
         verify(todoListRepository).findByCreatedByAndTodoListStatus(userName, TodoListStatus.ACTIVE, pageable);

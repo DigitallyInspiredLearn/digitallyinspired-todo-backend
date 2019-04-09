@@ -41,15 +41,15 @@ public class TodoListControllerTest {
         UserPrincipal currentUser = new UserPrincipal();
         currentUser.setUsername(userName);
 
-        when(todoListService.getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable)).thenReturn(todoLists);
+        when(todoListService.getTodoListsByUser(currentUser, TodoListStatus.ACTIVE, pageable, null)).thenReturn(todoLists);
 
         // act
-        ResponseEntity<Iterable<TodoList>> response = todoListController.getTodoLists(currentUser, pageable, TodoListStatus.ACTIVE);
+        ResponseEntity<Iterable<TodoList>> response = todoListController.getTodoLists(currentUser, TodoListStatus.ACTIVE,null, pageable);
 
         // assert
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(todoLists, response.getBody());
-        verify(todoListService).getTodoListsByUser(userName, TodoListStatus.ACTIVE, pageable);
+        verify(todoListService).getTodoListsByUser(currentUser, TodoListStatus.ACTIVE, pageable, null);
       
     }
 

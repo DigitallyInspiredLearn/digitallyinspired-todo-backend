@@ -34,27 +34,20 @@ public class TodoListService {
     }
 
 
-    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
+    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, TodoListStatus todoListStatus, Pageable pageable, List<Long> tagsId) {
 
         List<Task> tasks = new ArrayList<>(taggedTaskService.getTasksByTags(tagsId, currentUser.getId()));
         Page<TodoList> todoLists;
 
-        if (tasks.isEmpty()) {
-            todoLists = todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername(), pageable);
+        if (tasks.isEmpty() || todoListStatus.equals(TodoListStatus.ALL)) {
+            todoLists = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
         } else {
-            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
-
-    public Iterable<TodoList> getTodoListsByUser(String createdBy, TodoListStatus todoListStatus, Pageable pageable) {
-        Iterable<TodoList> todoLists;
-
-        if (todoListStatus.equals(TodoListStatus.ALL)) {
-            todoLists = todoListRepository.findByCreatedBy(createdBy, pageable);
-        } else {
-            todoLists = todoListRepository.findByCreatedByAndTodoListStatus(createdBy, todoListStatus, pageable);
+            todoLists = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(), todoListStatus, pageable, tasks);
         }
 
         return todoLists;
     }
+
 
     public Optional<TodoList> addTodoList(TodoListInput todoListInput, Long userId) {
 

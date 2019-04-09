@@ -29,12 +29,13 @@ public class TodoListController {
     private final UserService userService;
     private final ShareService shareService;
 
-    @GetMapping("/my")
-    public ResponseEntity<Iterable<TodoList>> getMyTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                             @RequestBody List<Long> tagsIds,
-                                                             Pageable pageable) {
+    @GetMapping()
+    public ResponseEntity<Iterable<TodoList>> getTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                           @RequestParam("status") TodoListStatus status,
+                                                           @RequestBody List<Long> tagsIds,
+                                                           Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, pageable, tagsIds);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, status, pageable, tagsIds);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }

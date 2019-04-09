@@ -35,7 +35,7 @@ public class TaggedTaskService {
     public Set<TaggedTask> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable) {
         Set<TaggedTask> myTaggedTask = new HashSet<>();
 
-        Iterable<TodoList> todoListsByCreatedBy = todoListRepository.findTodoListsByCreatedBy(currentUser.getUsername(), pageable);
+        Iterable<TodoList> todoListsByCreatedBy = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
 
         todoListsByCreatedBy
                 .forEach(todoList -> todoList.getTasks()
