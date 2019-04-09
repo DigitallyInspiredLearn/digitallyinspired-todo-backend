@@ -180,7 +180,7 @@ public class TaskServiceTest {
         // assert
         verify(task).setBody(taskInput.getBody());
         verify(task).setIsComplete(taskInput.getIsComplete());
-        verify(task).setRealizationTime(anyLong());
+        verify(task).setDurationTime(anyLong());
         verify(task).setCompletedDate(anyLong());
         verify(taskRepositoryMock, times(1)).save(task);
     }

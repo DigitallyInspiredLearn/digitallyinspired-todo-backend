@@ -36,7 +36,7 @@ public class Task extends BaseEntity {
 
 	private Long completedDate;
 
-	private Long realizationTime;
+	private Long durationTime;
 
 	@ManyToOne
 	@JoinColumn(name = "todolist_id")
