@@ -43,9 +43,17 @@ public class TaskServiceTest {
         TodoList todoList = this.createTodoList();
 
         todoList.setId(todoListId);
+        Task task1 = Task.builder()
+                .body("ggggg")
+                .isComplete(false)
+                .todoList(todoList)
+                .build();
+        Task task2 = Task.builder()
+                .body("zzzzz")
+                .isComplete(false)
+                .todoList(todoList)
+                .build();
 
-        Task task1 = new Task("ggggg", false, 0L, 0L, 0L, Priority.NOT_SPECIFIED, todoList);
-        Task task2 = new Task("zzzzz", false, 0L, 0L, 0L, Priority.NOT_SPECIFIED, todoList);
         task1.setId(task1Id);
         task2.setId(task2Id);
 
@@ -188,9 +196,11 @@ public class TaskServiceTest {
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
 
         // assert
-        assertEquals(taskFromService, Optional.empty());
-
-        verify(taskRepositoryMock, times(0)).save(any(Task.class));
+        verify(task).setBody(taskInput.getBody());
+        verify(task).setIsComplete(taskInput.getIsComplete());
+        verify(task).setDurationTime(anyLong());
+        verify(task).setCompletedDate(anyLong());
+        verify(taskRepositoryMock, times(1)).save(task);
     }
 
     @Test

@@ -21,6 +21,14 @@ public class TaskService {
         return taskRepository.findById(currentTaskId);
     }
 
+    public Long countTasksByCreatedBy(String createdBy) {
+        return taskRepository.countByCreatedBy(createdBy);
+    }
+
+    public Long countTasksByCreatedByAndIsComplete(String createdBy, Boolean isComplete) {
+        return taskRepository.countByCreatedByAndIsComplete(createdBy, isComplete);
+    }
+
     public Iterable<Task> getAllTasksOnTodoList(Long todoListId) {
         Optional<TodoList> todoList = todoListService.getTodoListById(todoListId);
         Iterable<Task> tasks = null;
@@ -59,7 +67,7 @@ public class TaskService {
                     task.setIsComplete(taskInput.getIsComplete());
                     if (taskInput.getIsComplete()){
                         task.setCompletedDate(System.currentTimeMillis());
-                        task.setRealizationTime(task.getCompletedDate()-task.getCreatedDate());
+                        task.setDurationTime(task.getCompletedDate()-task.getCreatedDate());
                     }
                     task.setPriority(taskInput.getPriority());
                     return taskRepository.save(task);

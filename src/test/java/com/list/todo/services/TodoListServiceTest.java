@@ -86,7 +86,8 @@ public class TodoListServiceTest {
         //arrange
         long userId = 1;
         TodoList todoList = new TodoList();
-        todoList.setTodoListName("name");
+        todoList.setTodoListName("todoListName");
+        todoList.setTodoListStatus(TodoListStatus.ACTIVE);
         when(todoListRepository.save(todoList)).thenReturn(todoList);
 
         //act
