@@ -36,7 +36,7 @@ public class Task extends BaseEntity {
 
 	private Long completedDate;
 
-	private Long realizationTime;
+	private Long durationTime;
 
 	@NotNull
 	@Column(nullable = false)

@@ -196,9 +196,11 @@ public class TaskServiceTest {
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
 
         // assert
-        assertEquals(taskFromService, Optional.empty());
-
-        verify(taskRepositoryMock, times(0)).save(any(Task.class));
+        verify(task).setBody(taskInput.getBody());
+        verify(task).setIsComplete(taskInput.getIsComplete());
+        verify(task).setDurationTime(anyLong());
+        verify(task).setCompletedDate(anyLong());
+        verify(taskRepositoryMock, times(1)).save(task);
     }
 
     @Test
