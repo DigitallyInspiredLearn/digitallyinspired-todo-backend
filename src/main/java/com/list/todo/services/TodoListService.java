@@ -26,7 +26,7 @@ public class TodoListService {
 
     private final UserService userService;
     private final ShareService shareService;
-    private final TaggedTaskService taggedTaskService;
+    private final TagTaskKeyService tagTaskKeyService;
     private final NotificationService notificationService;
 
     public Optional<TodoList> getTodoListById(Long todoListId) {
@@ -36,7 +36,7 @@ public class TodoListService {
 
     public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, TodoListStatus todoListStatus, Pageable pageable, List<Long> tagsId) {
 
-        List<Task> tasks = new ArrayList<>(taggedTaskService.getTasksByTags(tagsId, currentUser.getId()));
+        List<Task> tasks = new ArrayList<>(tagTaskKeyService.getTasksByTags(tagsId, currentUser.getId()));
         Page<TodoList> todoLists;
 
         if (tasks.isEmpty() || todoListStatus.equals(TodoListStatus.ALL)) {
@@ -48,7 +48,7 @@ public class TodoListService {
         return todoLists;
     }
 
-    public Long countTodolistsByCreatedBy(String createdBy) {
+    public Long countTodoListsByCreatedBy(String createdBy) {
         return todoListRepository.countByCreatedBy(createdBy);
     }
 

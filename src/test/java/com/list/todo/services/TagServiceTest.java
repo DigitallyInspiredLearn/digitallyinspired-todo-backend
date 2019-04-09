@@ -1,10 +1,10 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Tag;
-import com.list.todo.entity.TaggedTask;
+import com.list.todo.entity.TagTaskKey;
 import com.list.todo.payload.TagInput;
 import com.list.todo.repositories.TagRepository;
-import com.list.todo.repositories.TaggedTaskRepository;
+import com.list.todo.repositories.TagTaskKeyRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -26,7 +26,7 @@ public class TagServiceTest {
     private TagRepository tagRepositoryMock;
 
     @Mock
-    private TaggedTaskRepository taggedTaskRepositoryMock;
+    private TagTaskKeyRepository tagTaskKeyRepositoryMock;
 
     @InjectMocks
     private TagService tagServiceMock;
@@ -157,7 +157,7 @@ public class TagServiceTest {
         tagServiceMock.deleteTag(tagId);
 
         //assert
-        verify(taggedTaskRepositoryMock, times(0)).findByTag(tag);
+        verify(tagTaskKeyRepositoryMock, times(0)).findByTag(tag);
         verify(tagRepositoryMock).deleteById(tagId);
     }
 
@@ -168,16 +168,16 @@ public class TagServiceTest {
         Long tagId = 1L;
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
-        when(taggedTaskRepositoryMock.findByTag(tag)).thenReturn(getListOfTaggedTask());
+        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(getListOfTaggedTask());
 
         //act
         tagServiceMock.deleteTag(tagId);
 
         //arrange
         verify(tagRepositoryMock).findById(tagId);
-        verify(taggedTaskRepositoryMock).findByTag(tag);
+        verify(tagTaskKeyRepositoryMock).findByTag(tag);
         getListOfTaggedTask()
-                .forEach(taggedTask -> verify(taggedTaskRepositoryMock).delete(taggedTask));
+                .forEach(taggedTask -> verify(tagTaskKeyRepositoryMock).delete(taggedTask));
         verify(tagRepositoryMock).deleteById(tagId);
 
     }
@@ -202,7 +202,7 @@ public class TagServiceTest {
         }};
     }
 
-    private List<TaggedTask> getListOfTaggedTask() {
+    private List<TagTaskKey> getListOfTaggedTask() {
         Long tagId = 1L;
         String nameTag = "Home";
         Long ownerId = 1L;
@@ -213,9 +213,9 @@ public class TagServiceTest {
         Long taskId = 3L;
         Long task2Id = 4L;
 
-        return new ArrayList<TaggedTask>() {{
-            new TaggedTask(taskId, tag);
-            new TaggedTask(task2Id, tag);
+        return new ArrayList<TagTaskKey>() {{
+            new TagTaskKey(taskId, tag);
+            new TagTaskKey(task2Id, tag);
         }};
     }
 }

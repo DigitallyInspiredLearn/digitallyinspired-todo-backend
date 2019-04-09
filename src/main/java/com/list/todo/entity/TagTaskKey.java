@@ -14,13 +14,13 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @ToString
 @Builder
-public class TaggedTask extends BaseEntity {
+public class TagTaskKey extends BaseEntity {
 
     @NotNull
     private Long taskId;
 
     @ManyToOne
-    @JoinColumn(name = "taggedTask_tag_id")
+    @JoinColumn(name = "tag_id")
     @NotNull
     private Tag tag;
     

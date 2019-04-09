@@ -6,16 +6,16 @@ create table tag
     primary key (id)
 ) engine = MyISAM;
 
-create table tagged_task
+create table tag_task_key
 (
     id                 bigint not null,
     task_id            bigint not null,
-    tagged_task_tag_id bigint not null,
+    tag_id bigint not null,
     primary key (id)
 ) engine = MyISAM;
 
-alter table tagged_task
-    add constraint tagged_task_tag_id_fk foreign key (tagged_task_tag_id) references tag (id);
+alter table tag_task_key
+    add constraint tag_id_fk foreign key (tag_id) references tag (id);
 alter table task
     add constraint todolist_id_fk foreign key (todolist_id) references todo_list (id);
 

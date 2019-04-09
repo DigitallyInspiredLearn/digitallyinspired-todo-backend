@@ -11,7 +11,6 @@ import com.list.todo.entity.Task;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 	List<Task> findTasksByTodoListIdOrderByPriority(Long todoListId);
-	List<Task> findTasksByTodoListId(Long todoListId);
 	Long countByCreatedBy(String createdBy);
 	Long countByCreatedByAndIsComplete(String createdBy, Boolean isComplete);
 }

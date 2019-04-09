@@ -1,9 +1,9 @@
 package com.list.todo.services;
 
 import com.list.todo.entity.Tag;
-import com.list.todo.entity.TaggedTask;
+import com.list.todo.entity.TagTaskKey;
 import com.list.todo.entity.Task;
-import com.list.todo.repositories.TaggedTaskRepository;
+import com.list.todo.repositories.TagTaskKeyRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -14,17 +14,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
-public class TaggedTaskServiceTest {
+public class TagTaskKeyServiceTest {
 
     @Mock
-    private TaggedTaskRepository taggedTaskRepositoryMock;
+    private TagTaskKeyRepository tagTaskKeyRepositoryMock;
 
     @Mock
     private TaskService taskServiceMock;
@@ -33,7 +32,7 @@ public class TaggedTaskServiceTest {
     private TagService tagServiceMock;
 
     @InjectMocks
-    private TaggedTaskService taggedTaskServiceMock;
+    private TagTaskKeyService tagTaskKeyServiceMock;
 
     @Test
     public void addTagToTask_OnExistentTaskAndTag_ReturnsAnObjectOfNewTaggedTask() {
@@ -43,18 +42,18 @@ public class TaggedTaskServiceTest {
 
         Tag tag = Mockito.mock(Tag.class);
         Task task = Mockito.mock(Task.class);
-        TaggedTask taggedTask = new TaggedTask();
+        TagTaskKey tagTaskKey = new TagTaskKey();
 
         when(taskServiceMock.getTaskById(taskId)).thenReturn(Optional.of(task));
         when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
-        when(taggedTaskRepositoryMock.save(any(TaggedTask.class))).thenReturn(new TaggedTask());
+        when(tagTaskKeyRepositoryMock.save(any(TagTaskKey.class))).thenReturn(new TagTaskKey());
 
         //act
-        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTaggedTask(taggedTask);
+        Optional<TagTaskKey> addedTaggedTask = tagTaskKeyServiceMock.addTaggedTask(tagTaskKey);
 
         //assert
-        verify(taggedTaskRepositoryMock).save(new TaggedTask(task.getId(), tag));
-        assertEquals(addedTaggedTask, Optional.of(taggedTask));
+        verify(tagTaskKeyRepositoryMock).save(new TagTaskKey(task.getId(), tag));
+        assertEquals(addedTaggedTask, Optional.of(tagTaskKey));
 
     }
 
@@ -71,10 +70,10 @@ public class TaggedTaskServiceTest {
         when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         //act
-        Optional<TaggedTask> addedTaggedTask = taggedTaskServiceMock.addTaggedTask(null);
+        Optional<TagTaskKey> addedTaggedTask = tagTaskKeyServiceMock.addTaggedTask(null);
 
         //assert
-        verify(taggedTaskRepositoryMock, times(0)).save(new TaggedTask(task.getId(), tag));
+        verify(tagTaskKeyRepositoryMock, times(0)).save(new TagTaskKey(task.getId(), tag));
         assertEquals(addedTaggedTask, Optional.empty());
     }
 
@@ -85,10 +84,10 @@ public class TaggedTaskServiceTest {
 //        Tag tag = Mockito.mock(Tag.class);
 //
 //        when(tagServiceMock.getTagsByOwnerId(currentUserId)).thenReturn(getListOfTags());
-//        when(taggedTaskServiceMock.getTaggedTaskByTag(tag)).thenReturn(getListOfTaggedTask());
+//        when(tagTaskKeyServiceMock.getTaggedTaskByTag(tag)).thenReturn(getListOfTaggedTask());
 //
 //        //act
-//        Iterable<TaggedTask> taggedTasksFromService = taggedTaskServiceMock.getMyTaggedTask(currentUserId);
+//        Iterable<TagTaskKey> taggedTasksFromService = tagTaskKeyServiceMock.getMyTaggedTask(currentUserId);
 //
 //        //assert
 //        assertEquals(getListOfTaggedTask(), taggedTasksFromService);
@@ -114,7 +113,7 @@ public class TaggedTaskServiceTest {
         }};
     }
 
-    private List<TaggedTask> getListOfTaggedTask() {
+    private List<TagTaskKey> getListOfTaggedTask() {
         Long tagId = 1L;
         String nameTag = "Home";
         Long ownerId = 1L;
@@ -125,9 +124,9 @@ public class TaggedTaskServiceTest {
         Long taskId = 3L;
         Long task2Id = 4L;
 
-        return new ArrayList<TaggedTask>() {{
-            new TaggedTask(taskId, tag);
-            new TaggedTask(task2Id, tag);
+        return new ArrayList<TagTaskKey>() {{
+            new TagTaskKey(taskId, tag);
+            new TagTaskKey(task2Id, tag);
         }};
     }
 }

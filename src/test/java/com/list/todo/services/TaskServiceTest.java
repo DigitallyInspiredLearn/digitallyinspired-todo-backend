@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -173,7 +174,7 @@ public class TaskServiceTest {
 
         // arrange
         Long todoListId = 1L;
-
+        Task task = Mockito.mock(Task.class);
         TodoList todoList = TodoList.builder()
                 .todoListName("todoList")
                 .tasks(new LinkedHashSet<>())
