@@ -37,6 +37,7 @@ public class TagService {
         Tag newTag = Tag.builder()
                 .tagName(tagInput.getTagName())
                 .ownerId(currentUserId)
+                .color(tagInput.getColor())
                 .build();
 
         return Optional.of(tagRepository.save(newTag));
@@ -46,6 +47,7 @@ public class TagService {
         return tagRepository.findById(currentTagId)
                 .map(tag -> {
                     tag.setTagName(tagInput.getTagName());
+                    tag.setColor(tagInput.getColor());
                     return tagRepository.save(tag);
                 });
     }

@@ -98,13 +98,13 @@ public class TagTaskKeyServiceTest {
         String nameTag = "Home";
         Long ownerId = 1L;
 
-        Tag tag = new Tag(nameTag, ownerId);
+        Tag tag = new Tag(nameTag, ownerId, "ff");
         tag.setId(tagId);
 
         Long tag2Id = 2L;
         String name2Tag = "Home";
 
-        Tag tag2 = new Tag(name2Tag, ownerId);
+        Tag tag2 = new Tag(name2Tag, ownerId, "ff");
         tag2.setId(tag2Id);
 
         return new ArrayList<Tag>() {{
@@ -118,7 +118,7 @@ public class TagTaskKeyServiceTest {
         String nameTag = "Home";
         Long ownerId = 1L;
 
-        Tag tag = new Tag(nameTag, ownerId);
+        Tag tag = new Tag(nameTag, ownerId, "ff");
         tag.setId(tagId);
 
         Long taskId = 3L;

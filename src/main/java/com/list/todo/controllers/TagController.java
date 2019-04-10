@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,8 +39,9 @@ public class TagController {
 
     @GetMapping("/myTagTaskKeys")
     public ResponseEntity<Iterable<TagTaskKey>> getMyTagsWithTodoListId(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                        @RequestParam("tagId") List<Long> tagsId,
                                                                         Pageable pageable) {
-        Iterable<TagTaskKey> myTaggedTask = tagTaskKeyService.getMyTaggedTask(currentUser, pageable);
+        Iterable<TagTaskKey> myTaggedTask = tagTaskKeyService.getMyTaggedTask(currentUser, pageable, tagsId);
 
         return new ResponseEntity<>(myTaggedTask, HttpStatus.OK);
     }

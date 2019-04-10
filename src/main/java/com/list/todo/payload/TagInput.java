@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TagInput {
     private String tagName;
+    private String color;
 }

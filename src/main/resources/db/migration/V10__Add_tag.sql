@@ -18,4 +18,6 @@ alter table tag_task_key
     add constraint tag_id_fk foreign key (tag_id) references tag (id);
 alter table task
     add constraint todolist_id_fk foreign key (todolist_id) references todo_list (id);
+alter table tag
+    add column color varchar(20) not null after owner_id;
 

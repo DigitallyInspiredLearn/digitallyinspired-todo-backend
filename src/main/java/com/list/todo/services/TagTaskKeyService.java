@@ -1,9 +1,6 @@
 package com.list.todo.services;
 
-import com.list.todo.entity.Tag;
-import com.list.todo.entity.TagTaskKey;
-import com.list.todo.entity.Task;
-import com.list.todo.entity.TodoList;
+import com.list.todo.entity.*;
 import com.list.todo.repositories.TagRepository;
 import com.list.todo.repositories.TagTaskKeyRepository;
 import com.list.todo.repositories.TaskRepository;
@@ -13,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,10 +26,17 @@ public class TagTaskKeyService {
         return Optional.of(tagTaskKeyRepository.save(tagTaskKey));
     }
 
-    public Set<TagTaskKey> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable) {
+    public Set<TagTaskKey> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
         Set<TagTaskKey> myTagTaskKey = new HashSet<>();
 
         Iterable<TodoList> todoListsByCreatedBy = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
+
+        List<Task> tasks = new ArrayList<>(getTasksByTags(tagsId, currentUser.getId()));
+
+        if (!tagsId.isEmpty() && !tasks.isEmpty()) {
+            todoListsByCreatedBy = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(),
+                    TodoListStatus.ACTIVE, pageable, tasks);
+        }
 
         todoListsByCreatedBy
                 .forEach(todoList -> todoList.getTasks()

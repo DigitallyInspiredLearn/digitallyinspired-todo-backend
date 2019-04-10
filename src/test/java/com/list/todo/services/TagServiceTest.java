@@ -39,7 +39,7 @@ public class TagServiceTest {
         String nameTag = "Home";
         Long ownerId = 1L;
 
-        Tag tag = new Tag(nameTag, ownerId);
+        Tag tag = new Tag(nameTag, ownerId, "ff");
         tag.setId(tagId);
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
@@ -103,7 +103,7 @@ public class TagServiceTest {
 
         when(tagRepositoryMock.save(any(Tag.class))).thenReturn(new Tag());
 
-        TagInput tagInput = new TagInput("Home");
+        TagInput tagInput = new TagInput("Home", "jg");
         Tag newTag = new Tag();
 
         //act
@@ -118,7 +118,7 @@ public class TagServiceTest {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
         Long tagId = 1000L;
-        TagInput tagInput = new TagInput("Home");
+        TagInput tagInput = new TagInput("Home", "ff");
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.empty());
 
@@ -134,7 +134,7 @@ public class TagServiceTest {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
         Long tagId = 1000L;
-        TagInput tagInput = new TagInput("Home");
+        TagInput tagInput = new TagInput("Home", "ff");
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
 
@@ -187,13 +187,13 @@ public class TagServiceTest {
         String nameTag = "Home";
         Long ownerId = 1L;
 
-        Tag tag = new Tag(nameTag, ownerId);
+        Tag tag = new Tag(nameTag, ownerId, "fg");
         tag.setId(tagId);
 
         Long tag2Id = 2L;
         String name2Tag = "Home";
 
-        Tag tag2 = new Tag(name2Tag, ownerId);
+        Tag tag2 = new Tag(name2Tag, ownerId, "ff");
         tag2.setId(tag2Id);
 
         return new ArrayList<Tag>() {{
@@ -207,7 +207,7 @@ public class TagServiceTest {
         String nameTag = "Home";
         Long ownerId = 1L;
 
-        Tag tag = new Tag(nameTag, ownerId);
+        Tag tag = new Tag(nameTag, ownerId, "ff");
         tag.setId(tagId);
 
         Long taskId = 3L;

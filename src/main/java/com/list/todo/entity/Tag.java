@@ -19,4 +19,7 @@ public class Tag extends BaseEntity{
 
     @NotNull
     private Long ownerId;
+
+    @NotNull
+    private String color;
 }
