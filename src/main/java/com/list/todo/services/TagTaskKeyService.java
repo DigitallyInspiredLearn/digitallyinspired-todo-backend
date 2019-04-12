@@ -22,7 +22,7 @@ public class TagTaskKeyService {
     private final TodoListRepository todoListRepository;
     private final TagRepository tagRepository;
 
-    Optional<TagTaskKey> addTaggedTask(TagTaskKey tagTaskKey) {
+    Optional<TagTaskKey> addTagTaskKey(TagTaskKey tagTaskKey) {
         return Optional.of(tagTaskKeyRepository.save(tagTaskKey));
     }
 
@@ -45,7 +45,7 @@ public class TagTaskKeyService {
         return myTagTaskKey;
     }
 
-    List<TagTaskKey> getTaggedTasksByTag(Tag tag) {
+    List<TagTaskKey> getTagTaskKeyByTag(Tag tag) {
         return tagTaskKeyRepository.findByTag(tag);
     }
 
