@@ -28,6 +28,9 @@ public class TagServiceTest {
     @Mock
     private TagTaskKeyRepository tagTaskKeyRepositoryMock;
 
+    @Mock
+    private TagTaskKeyService tagTaskKeyServiceMock;
+
     @InjectMocks
     private TagService tagServiceMock;
 
@@ -38,8 +41,9 @@ public class TagServiceTest {
         Long tagId = 1L;
         String nameTag = "Home";
         Long ownerId = 1L;
+        String color = "#1234";
 
-        Tag tag = new Tag(nameTag, ownerId, "ff");
+        Tag tag = new Tag(nameTag, ownerId, color);
         tag.setId(tagId);
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
@@ -114,6 +118,36 @@ public class TagServiceTest {
     }
 
     @Test
+    public void addTagToTask_ReturnsAnObjectOfNewTagTaskKey() {
+        //arrange
+        Long taskId = 1L;
+        Tag tag = new Tag("Home", 1L, "cc");
+
+        when(tagTaskKeyServiceMock.addTagTaskKey(any(TagTaskKey.class))).thenReturn(Optional.of(new TagTaskKey()));
+
+        Optional<TagTaskKey> newTagTaskKey = Optional.of(new TagTaskKey());
+
+        //act
+        Optional<TagTaskKey> addedTagTaskKey = tagServiceMock.addTagToTask(tag, taskId);
+
+        //assert
+        assertEquals(addedTagTaskKey, newTagTaskKey);
+    }
+
+    @Test
+    public void removeTagFromTask_SuccessfulDelete() {
+        //arrange
+        Long taskId = 1L;
+        Tag tag = new Tag("Home", 1L, "cc");
+
+        //act
+        tagServiceMock.removeTagFromTask(taskId, tag);
+
+        //assert
+        verify(tagTaskKeyServiceMock).deleteTaggedTask(taskId, tag);
+    }
+
+    @Test
     public void updateTag_updateNonExistentTag_ReturnsAnEmptyOptional() {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
@@ -168,16 +202,16 @@ public class TagServiceTest {
         Long tagId = 1L;
 
         when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
-        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(getListOfTaggedTask());
+        when(tagTaskKeyServiceMock.getTagTaskKeyByTag(tag)).thenReturn(getListOfTaggedTask());
 
         //act
         tagServiceMock.deleteTag(tagId);
 
         //arrange
         verify(tagRepositoryMock).findById(tagId);
-        verify(tagTaskKeyRepositoryMock).findByTag(tag);
+        verify(tagTaskKeyServiceMock).getTagTaskKeyByTag(tag);
         getListOfTaggedTask()
-                .forEach(taggedTask -> verify(tagTaskKeyRepositoryMock).delete(taggedTask));
+                .forEach(taggedTask -> verify(tagTaskKeyServiceMock).deleteTaggedTask(taggedTask));
         verify(tagRepositoryMock).deleteById(tagId);
 
     }
