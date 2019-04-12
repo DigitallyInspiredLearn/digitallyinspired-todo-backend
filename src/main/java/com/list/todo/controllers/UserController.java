@@ -77,16 +77,16 @@ public class UserController {
     @PostMapping("/followUser")
     public ResponseEntity<Void> followUser(@AuthenticationPrincipal UserPrincipal currentUser,
                                                   @RequestParam("username") String userNameOfFollowedUser) {
-        ResponseEntity<Void> responseEntity;
+        ResponseEntity<Void> responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         if (currentUser.getUsername().equals(userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else if (followerService.isAlreadyFollowed(currentUser.getId(), userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } else if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)) {
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } else {
-            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (followerService.followUser(currentUser.getId(), userNameOfFollowedUser)){
+                responseEntity = new ResponseEntity<>(HttpStatus.OK);
+            }
         }
 
         return responseEntity;
@@ -95,16 +95,16 @@ public class UserController {
     @PostMapping("/unfollowUser")
     public ResponseEntity<ApiResponse> unfollowUser(@AuthenticationPrincipal UserPrincipal currentUser,
                                                   @RequestParam("username") String userNameOfFollowedUser) {
-        ResponseEntity<ApiResponse> responseEntity;
+        ResponseEntity<ApiResponse> responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         if (currentUser.getUsername().equals(userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } else if (!followerService.isAlreadyFollowed(currentUser.getId(), userNameOfFollowedUser)) {
             responseEntity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } else if (followerService.unfollowUser(currentUser.getId(), userNameOfFollowedUser)) {
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } else {
-            responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (followerService.unfollowUser(currentUser.getId(), userNameOfFollowedUser)){
+                responseEntity = new ResponseEntity<>(HttpStatus.OK);
+            }
         }
 
         return responseEntity;
