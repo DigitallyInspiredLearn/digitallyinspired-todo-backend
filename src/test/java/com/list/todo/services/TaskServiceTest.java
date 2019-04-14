@@ -100,7 +100,7 @@ public class TaskServiceTest {
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.of(new TodoList()));
         when(taskRepositoryMock.save(any(Task.class))).thenReturn(new Task());
 
-        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
+        TaskInput taskInput = new TaskInput("task 1", false, 100L, Priority.NOT_SPECIFIED, 1L);
         Task newTask = new Task();
 
         // act
@@ -117,7 +117,7 @@ public class TaskServiceTest {
 
         when(todoListService.getTodoListById(todoListId)).thenReturn(Optional.empty());
 
-        TaskInput taskInput = new TaskInput("task 1", false, Priority.NOT_SPECIFIED, 1L);
+        TaskInput taskInput = new TaskInput("task 1", false, 100L, Priority.NOT_SPECIFIED, 1L);
 
         // act
         Optional<Task> addedTask = taskService.addTask(taskInput);
@@ -158,7 +158,7 @@ public class TaskServiceTest {
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.of(oldTask));
         when(taskRepositoryMock.save(oldTask)).thenReturn(updatedTask);
 
-        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
+        TaskInput taskInput = new TaskInput("task", false, 100L,  Priority.NOT_SPECIFIED, todoListId);
 
         // act
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
@@ -191,7 +191,7 @@ public class TaskServiceTest {
 
         when(taskRepositoryMock.findById(taskId)).thenReturn(Optional.empty());
 
-        TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
+        TaskInput taskInput = new TaskInput("task", false, 100L,  Priority.NOT_SPECIFIED, todoListId);
 
         // act
         Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);

@@ -64,11 +64,14 @@ public class TaskService {
         return taskRepository.findById(currentTaskId)
                 .map(task -> {
                     task.setBody(taskInput.getBody());
-                    task.setIsComplete(taskInput.getIsComplete());
-                    if (taskInput.getIsComplete()){
+                    if (taskInput.getIsComplete() && !task.getIsComplete()){
                         task.setCompletedDate(System.currentTimeMillis());
                         task.setDurationTime(task.getCompletedDate()-task.getCreatedDate());
                     }
+                    else if (taskInput.getDurationTime()!=null){
+                        task.setDurationTime(taskInput.getDurationTime());
+                    }
+                    task.setIsComplete(taskInput.getIsComplete());
                     task.setPriority(taskInput.getPriority());
                     return taskRepository.save(task);
                 });
