@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class TaskInput {
     private String body;
     private Boolean isComplete;
+    private Long durationTime;
     private Priority priority;
     private Long todoListId;
 }
