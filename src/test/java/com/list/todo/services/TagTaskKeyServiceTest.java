@@ -6,18 +6,19 @@ import com.list.todo.repositories.TagTaskKeyRepository;
 import com.list.todo.repositories.TaskRepository;
 import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -42,8 +43,13 @@ public class TagTaskKeyServiceTest {
     @Mock
     private Pageable pageable;
 
-    @InjectMocks
     private TagTaskKeyService tagTaskKeyServiceMock;
+
+    @Before
+    public void init() {
+        tagTaskKeyServiceMock = Mockito.spy(new TagTaskKeyService(tagTaskKeyRepositoryMock,
+                taskRepositoryMock, todoListRepositoryMock, tagRepositoryMock));
+    }
 
     @Test
     public void addTagTaskKey_ReturnsAnObjectOfNewTagTaskKey() {
@@ -69,7 +75,7 @@ public class TagTaskKeyServiceTest {
 
         Page<TodoList> todoListPage = new PageImpl<>(getTodoListByCreatedBy(), pageable, getTodoListByCreatedBy().size());
 
-        when(tagTaskKeyServiceMock.getTasksByTags(tagsIds, currentUser.getId())).thenReturn(getTask());
+        doReturn(getTask()).when(tagTaskKeyServiceMock).getTasksByTags(tagsIds, currentUser.getId());
         when(todoListRepositoryMock.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(), TodoListStatus.ACTIVE,
                 pageable, new ArrayList<>(getTask()))).thenReturn(todoListPage);
         when(tagTaskKeyRepositoryMock.findByTaskId(any())).thenReturn(getListOfTaggedTask());
@@ -168,24 +174,69 @@ public class TagTaskKeyServiceTest {
 
     }
 
-    private List<Tag> getListOfTags() {
-        Long tagId = 1L;
-        String nameTag = "Home";
-        Long ownerId = 1L;
+    @Test
+    public void getTasksByTags_OnNonExistentTagsIdsList_ReturnsNull() {
+        //arrange
 
-        Tag tag = new Tag(nameTag, ownerId, "ff");
-        tag.setId(tagId);
-
-        Long tag2Id = 2L;
-        String name2Tag = "Home";
-
-        Tag tag2 = new Tag(name2Tag, ownerId, "ff");
-        tag2.setId(tag2Id);
-
-        return new ArrayList<Tag>() {{
-            add(tag);
-            add(tag2);
+        List<Long> tagsIds = new ArrayList<Long>() {{
         }};
+
+        Tag tag = Mockito.mock(Tag.class);
+
+        when(tagRepositoryMock.findById(any())).thenReturn(Optional.ofNullable(tag));
+        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(new ArrayList<>());
+        when(taskRepositoryMock.getOne(any())).thenReturn(null);
+
+        //act
+        Set<Task> tasksFromService = tagTaskKeyServiceMock.getTasksByTags(tagsIds, 1L);
+
+        //assert
+        assertEquals(new HashSet<>(), tasksFromService);
+
+    }
+
+    @Test
+    public void deleteTaggedTask_DeleteNonExistentTaggedTask_Void() {
+        //arrange
+        Tag tag = Mockito.mock(Tag.class);
+        Long taskId = 1L;
+        TagTaskKey tagTaskKey = mock(TagTaskKey.class);
+
+        //act
+        tagTaskKeyServiceMock.deleteTaggedTask(taskId, tag);
+
+        //assert
+        verify(tagTaskKeyRepositoryMock, times(1)).findByTaskIdAndTag(taskId, tag);
+        verify(tagTaskKeyRepositoryMock, times(0)).delete(tagTaskKey);
+    }
+
+    @Test
+    public void deleteTaggedTask_DeleteExistentTaggedTask_Void() {
+        //arrange
+        Tag tag = Mockito.mock(Tag.class);
+        Long taskId = 1L;
+        TagTaskKey tagTaskKey = new TagTaskKey(taskId, tag);
+
+        when(tagTaskKeyRepositoryMock.findByTaskIdAndTag(taskId, tag)).thenReturn(Optional.of(tagTaskKey));
+
+        //act
+        tagTaskKeyServiceMock.deleteTaggedTask(taskId, tag);
+
+        //assert
+        verify(tagTaskKeyRepositoryMock, times(1)).findByTaskIdAndTag(taskId, tag);
+        verify(tagTaskKeyRepositoryMock, times(1)).delete(tagTaskKey);
+    }
+
+    @Test
+    public void deleteTaggedTask_DeleteExistentTagTaskKey_Void() {
+        //arrange
+        TagTaskKey tagTaskKey = mock(TagTaskKey.class);
+
+        //act
+        tagTaskKeyServiceMock.deleteTaggedTask(tagTaskKey);
+
+        //assert
+        verify(tagTaskKeyRepositoryMock, times(1)).delete(tagTaskKey);
     }
 
     private List<TagTaskKey> getListOfTaggedTask() {
