@@ -194,7 +194,7 @@ public class TaskServiceTest {
         TaskInput taskInput = new TaskInput("task", false, Priority.NOT_SPECIFIED, todoListId);
 
         // act
-        Optional<Task> taskFromService = taskService.updateTask(2L, taskInput);
+        taskService.updateTask(2L, taskInput);
 
         // assert
         verify(task).setBody(taskInput.getBody());

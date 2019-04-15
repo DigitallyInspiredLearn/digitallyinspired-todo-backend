@@ -39,9 +39,9 @@ public class TagController {
 
     @GetMapping("/myTagTaskKeys")
     public ResponseEntity<Iterable<TagTaskKey>> getMyTagsWithTodoListId(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                                        @RequestParam("tagId") List<Long> tagsId,
+                                                                        @RequestParam("tagId") List<Long> tagsIds,
                                                                         Pageable pageable) {
-        Iterable<TagTaskKey> myTaggedTask = tagTaskKeyService.getMyTaggedTask(currentUser, pageable, tagsId);
+        Iterable<TagTaskKey> myTaggedTask = tagTaskKeyService.getMyTaggedTask(currentUser, pageable, tagsIds);
 
         return new ResponseEntity<>(myTaggedTask, HttpStatus.OK);
     }
