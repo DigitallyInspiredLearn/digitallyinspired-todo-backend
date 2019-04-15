@@ -45,11 +45,12 @@ public class TodoListServiceTest {
     private TodoListService todoListService;
 
     @Test
-    public void getTodoListById_Successful_ReturnsOptionalOfTodolist() {
+    public void getTodoListById_GetExistentTodoList_ReturnsOptionalOfTodolist() {
         // arrange
         long todoListId = 1;
         TodoList todoList = new TodoList();
         todoList.setTodoListName("name");
+
         when(todoListRepository.findById(todoListId)).thenReturn(Optional.of(todoList));
 
         // act
