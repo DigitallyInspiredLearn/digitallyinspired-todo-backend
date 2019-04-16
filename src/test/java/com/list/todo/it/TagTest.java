@@ -12,9 +12,6 @@ import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.TagService;
 import com.list.todo.services.TagTaskKeyService;
 import com.list.todo.services.TaskService;
-import com.list.todo.utils.TestPageable;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,8 +39,8 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -113,7 +110,7 @@ public class TagTest {
     @Test
     public void getMyTags_ReturnsAListOfTags() throws Exception {
         //arrange
-        when(tagServiceMock.getTagsByOwnerId(1L)).thenReturn(getListOfTags());
+        when(tagServiceMock.getTagsByOwnerId(CURRENT_USER_ID)).thenReturn(getListOfTags());
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/tags"))
@@ -123,13 +120,18 @@ public class TagTest {
         //assert
         assertEquals(getTagsFromJsonResponse(result.getResponse().getContentAsString()), getListOfTags());
 
+        verify(tagServiceMock, times(1)).getTagsByOwnerId(CURRENT_USER_ID);
+
     }
 
     @Test
     public void getMyTagsWithTodoListId_OnExistentTagsIds_ReturnsAListOfTagTaskKeys() throws Exception {
         //arrange
+        List<Long> tagsIds = new ArrayList<Long>() {{
+            add(6L);
+        }};
 
-        when(tagTaskKeyServiceMock.getMyTaggedTask(any(UserPrincipal.class), any(Pageable.class), any()))
+        when(tagTaskKeyServiceMock.getMyTaggedTask(any(UserPrincipal.class), any(Pageable.class), eq(tagsIds)))
                 .thenReturn(getListOfTaggedTask());
 
         //act
@@ -140,15 +142,17 @@ public class TagTest {
 
         //assert
         assertEquals(new HashSet<>(getTagTaskKeyFromJsonResponse(result.getResponse().getContentAsString())), getListOfTaggedTask());
+
+        verify(tagTaskKeyServiceMock, times(1)).getMyTaggedTask(any(UserPrincipal.class), any(Pageable.class), eq(tagsIds));
     }
 
     @Test
     public void addTag_ReturnsAObjectOfTag() throws Exception {
         //arrange
-        when(tagServiceMock.addTag(any(), any())).thenReturn(Optional.of(new Tag("Home", CURRENT_USER_ID, "ff")));
-
         TagInput tagInput = new TagInput("Home", "ff");
         ObjectMapper objectMapper = new ObjectMapper();
+
+        when(tagServiceMock.addTag(tagInput, CURRENT_USER_ID)).thenReturn(Optional.of(new Tag("Home", CURRENT_USER_ID, "ff")));
 
         //act, assert
         this.mockMvc.perform(post("/api/tags")
@@ -158,6 +162,8 @@ public class TagTest {
                 .andExpect(jsonPath("tagName").value(tagInput.getTagName()))
                 .andExpect(jsonPath("ownerId").value(CURRENT_USER_ID))
                 .andExpect(status().isOk());
+
+        verify(tagServiceMock, times(1)).addTag(tagInput, CURRENT_USER_ID);
     }
 
     @Test
@@ -169,11 +175,11 @@ public class TagTest {
         Tag updatedTag = new Tag("Job", CURRENT_USER_ID, "ff");
         updatedTag.setId(2L);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
-        when(tagServiceMock.updateTag(any(), any())).thenReturn(Optional.of(updatedTag));
-
         TagInput tagInput = new TagInput("Job", "ff");
         ObjectMapper objectMapper = new ObjectMapper();
+
+        when(tagServiceMock.getTagById(tag.getId())).thenReturn(Optional.of(tag));
+        when(tagServiceMock.updateTag(tag.getId(), tagInput)).thenReturn(Optional.of(updatedTag));
 
         //act, assert
         this.mockMvc.perform(put("/api/tags/{id}", "2")
@@ -184,117 +190,147 @@ public class TagTest {
                 .andExpect(jsonPath("tagName").value(tagInput.getTagName()))
                 .andExpect(jsonPath("ownerId").value(CURRENT_USER_ID))
                 .andExpect(status().isOk());
+
+        verify(tagServiceMock, times(1)).getTagById(tag.getId());
+        verify(tagServiceMock, times(1)).updateTag(tag.getId(), tagInput);
     }
 
     @Test
     public void updateTag_OnNonExistentTag_ReturnsANotFound() throws Exception {
         //arrange
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.empty());
+        Long tagId = 1000L;
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         TagInput tagInput = new TagInput("Job", "ff");
         ObjectMapper objectMapper = new ObjectMapper();
 
         //act, assert
-        this.mockMvc.perform(put("/api/tags/{id}", "1000")
+        this.mockMvc.perform(put("/api/tags/{id}", tagId)
                 .content(objectMapper.writeValueAsString(tagInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void updateTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
         Long ownerId = 10L;
+
+        Long tagId = 11L;
         Tag tag = new Tag("Home", ownerId, "ff");
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
+
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
 
         TagInput tagInput = new TagInput("Job", "ff");
         ObjectMapper objectMapper = new ObjectMapper();
 
         //act, assert
-        this.mockMvc.perform(put("/api/tags/{id}", "11")
+        this.mockMvc.perform(put("/api/tags/{id}", tagId)
                 .content(objectMapper.writeValueAsString(tagInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void deleteTag_successfulDelete() throws Exception {
         //arrange
+        Long tagId = 2L;
         Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(2L);
+        tag.setId(tagId);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/{id}", "2"))
+        this.mockMvc.perform(delete("/api/tags/{id}", tagId))
                 .andDo(print())
                 .andExpect(status().isNoContent());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void deleteTag_OnNonExistentTag_ReturnsAIsNotFound() throws Exception {
         //arrange
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.empty());
+        Long tagId = 2L;
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/{id}", "2"))
+        this.mockMvc.perform(delete("/api/tags/{id}", tagId))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void deleteTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
         Long ownerId = 10L;
+        Long tagId = 2L;
         Tag tag = new Tag("Home", ownerId, "ff");
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
+
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/{id}", "2"))
+        this.mockMvc.perform(delete("/api/tags/{id}", tagId))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void removeTagFromTheTask_OnExistentTag_SuccessfulDelete() throws Exception {
         //arrange
+        Long tagId = 2L;
         Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(2L);
+        tag.setId(tagId);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", "2"))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", tagId))
                 .andDo(print())
                 .andExpect(status().isNoContent());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void removeTagFromTheTask_OnNonExistentTag_ReturnsAIsNotFound() throws Exception {
         //arrange
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.empty());
+        Long tagId = 2L;
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", "2"))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", tagId))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
     public void removeTagFromTheTask_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
+        Long tagId = 2L;
         Long ownerId = 10L;
         Tag tag = new Tag("Home", ownerId, "ff");
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", "2"))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", tagId))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
     }
 
     @Test
@@ -313,27 +349,36 @@ public class TagTest {
                 .build();
         task.setId(2L);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
-        when(taskServiceMock.getTaskById(any())).thenReturn(Optional.of(task));
-        when(tagServiceMock.addTagToTask(any(), any())).thenReturn(Optional.of(new TagTaskKey(task.getId(), tag)));
+        when(tagServiceMock.getTagById(tag.getId())).thenReturn(Optional.of(tag));
+        when(taskServiceMock.getTaskById(task.getId())).thenReturn(Optional.of(task));
+        when(tagServiceMock.addTagToTask(tag, task.getId())).thenReturn(Optional.of(new TagTaskKey(task.getId(), tag)));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", "5"))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", tag.getId()))
                 .andDo(print())
-                .andExpect(jsonPath("$.tag.id").value("5"))
-                .andExpect(jsonPath("taskId").value("2"))
+                .andExpect(jsonPath("$.tag.id").value(tag.getId()))
+                .andExpect(jsonPath("taskId").value(task.getId()))
                 .andExpect(status().isOk());
+
+        verify(tagServiceMock, times(1)).getTagById(tag.getId());
+        verify(taskServiceMock, times(1)).getTaskById(task.getId());
+        verify(tagServiceMock, times(1)).addTagToTask(tag, task.getId());
     }
 
     @Test
     public void addTagToTask_OnNonExistentTagAndTask_ReturnsAIsNotFound() throws Exception {
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.empty());
-        when(taskServiceMock.getTaskById(any())).thenReturn(Optional.empty());
+        Long tagId = 5L;
+        Long taskId = 2L;
+        when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
+        when(taskServiceMock.getTaskById(taskId)).thenReturn(Optional.empty());
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", "5"))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", tagId))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(taskServiceMock, times(0)).getTaskById(taskId);
     }
 
     @Test
@@ -349,13 +394,16 @@ public class TagTest {
                 .build();
         task.setId(2L);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
-        when(taskServiceMock.getTaskById(any())).thenReturn(Optional.of(task));
+        when(tagServiceMock.getTagById(tag.getId())).thenReturn(Optional.of(tag));
+        when(taskServiceMock.getTaskById(task.getId())).thenReturn(Optional.of(task));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", "5"))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", tag.getId()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        verify(tagServiceMock, times(1)).getTagById(tag.getId());
+        verify(taskServiceMock, times(1)).getTaskById(task.getId());
     }
 
     @Test
@@ -375,13 +423,16 @@ public class TagTest {
                 .build();
         task.setId(2L);
 
-        when(tagServiceMock.getTagById(any())).thenReturn(Optional.of(tag));
-        when(taskServiceMock.getTaskById(any())).thenReturn(Optional.of(task));
+        when(tagServiceMock.getTagById(tag.getId())).thenReturn(Optional.of(tag));
+        when(taskServiceMock.getTaskById(task.getId())).thenReturn(Optional.of(task));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", "5"))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", tag.getId()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        verify(tagServiceMock, times(1)).getTagById(tag.getId());
+        verify(taskServiceMock, times(1)).getTaskById(task.getId());
     }
 
     private List<Tag> getTagsFromJsonResponse(String response) throws IOException {
