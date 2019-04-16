@@ -212,6 +212,7 @@ public class TagTest {
                 .andExpect(status().isNotFound());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).updateTag(tagId, tagInput);
     }
 
     @Test
@@ -235,6 +236,7 @@ public class TagTest {
                 .andExpect(status().isForbidden());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).updateTag(tagId, tagInput);
     }
 
     @Test
@@ -252,6 +254,7 @@ public class TagTest {
                 .andExpect(status().isNoContent());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(1)).deleteTag(tagId);
     }
 
     @Test
@@ -266,6 +269,7 @@ public class TagTest {
                 .andExpect(status().isNotFound());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).deleteTag(tagId);
     }
 
     @Test
@@ -283,12 +287,14 @@ public class TagTest {
                 .andExpect(status().isForbidden());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).deleteTag(tagId);
     }
 
     @Test
     public void removeTagFromTheTask_OnExistentTag_SuccessfulDelete() throws Exception {
         //arrange
         Long tagId = 2L;
+        Long taskId = 15L;
         Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
         tag.setId(tagId);
 
@@ -300,12 +306,14 @@ public class TagTest {
                 .andExpect(status().isNoContent());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(1)).removeTagFromTask(taskId, tag);
     }
 
     @Test
     public void removeTagFromTheTask_OnNonExistentTag_ReturnsAIsNotFound() throws Exception {
         //arrange
         Long tagId = 2L;
+        Long taskId = 15L;
         when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.empty());
 
         //act, assert
@@ -314,6 +322,7 @@ public class TagTest {
                 .andExpect(status().isNotFound());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).removeTagFromTask(taskId, eq(any(Tag.class)));
     }
 
     @Test
@@ -321,6 +330,8 @@ public class TagTest {
         //arrange
         Long tagId = 2L;
         Long ownerId = 10L;
+        Long taskId = 15L;
+
         Tag tag = new Tag("Home", ownerId, "ff");
 
         when(tagServiceMock.getTagById(tagId)).thenReturn(Optional.of(tag));
@@ -331,6 +342,7 @@ public class TagTest {
                 .andExpect(status().isForbidden());
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
+        verify(tagServiceMock, times(0)).removeTagFromTask(taskId, eq(any(Tag.class)));
     }
 
     @Test
@@ -379,6 +391,7 @@ public class TagTest {
 
         verify(tagServiceMock, times(1)).getTagById(tagId);
         verify(taskServiceMock, times(0)).getTaskById(taskId);
+        verify(tagServiceMock, times(0)).addTagToTask(eq(any(Tag.class)), taskId);
     }
 
     @Test
@@ -404,6 +417,7 @@ public class TagTest {
 
         verify(tagServiceMock, times(1)).getTagById(tag.getId());
         verify(taskServiceMock, times(1)).getTaskById(task.getId());
+        verify(tagServiceMock, times(0)).addTagToTask(tag, task.getId());
     }
 
     @Test
@@ -433,6 +447,7 @@ public class TagTest {
 
         verify(tagServiceMock, times(1)).getTagById(tag.getId());
         verify(taskServiceMock, times(1)).getTaskById(task.getId());
+        verify(tagServiceMock, times(0)).addTagToTask(tag, task.getId());
     }
 
     private List<Tag> getTagsFromJsonResponse(String response) throws IOException {
