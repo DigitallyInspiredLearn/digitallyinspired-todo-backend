@@ -26,7 +26,7 @@ public class TagService {
     }
 
     public Optional<TagTaskKey> addTagToTask(Tag tag, Long taskId) {
-        return tagTaskKeyService.addTaggedTask(new TagTaskKey(taskId, tag));
+        return tagTaskKeyService.addTagTaskKey(new TagTaskKey(taskId, tag));
     }
 
     public void removeTagFromTask(Long taskId, Tag tag) {
@@ -55,7 +55,7 @@ public class TagService {
     public void deleteTag(Long tagId) {
         Optional<Tag> tag = tagRepository.findById(tagId);
 
-        tag.ifPresent(value -> tagTaskKeyService.getTaggedTasksByTag(value)
+        tag.ifPresent(value -> tagTaskKeyService.getTagTaskKeyByTag(value)
                 .forEach(tagTaskKeyService::deleteTaggedTask));
 
         tagRepository.deleteById(tagId);
