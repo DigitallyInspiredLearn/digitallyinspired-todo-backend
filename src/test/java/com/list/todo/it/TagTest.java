@@ -50,6 +50,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class TagTest {
+
+    private final static Long CURRENT_USER_ID = 1L;
+    private final static String CURRENT_USERNAME = "username";
+    private final static String ANOTHER_USERNAME = "username2";
+    private final static Long TAG_ID = 6L;
+    private final static Long ANOTHER_USER_ID = 10L;
+    private final static Long TASK_ID = 15L;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -67,11 +75,6 @@ public class TagTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private final static Long CURRENT_USER_ID = 1L;
-    private final static Long TAG_ID = 6L;
-    private final static Long ANOTHER_USER_ID = 10L;
-    private final static Long TASK_ID = 15L;
-
     private HandlerMethodArgumentResolver putAuthenticationPrincipal = new HandlerMethodArgumentResolver() {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
@@ -80,10 +83,10 @@ public class TagTest {
 
         @Override
         public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
             UserPrincipal userPrincipal = new UserPrincipal();
             userPrincipal.setId(CURRENT_USER_ID);
-            userPrincipal.setUsername("username");
+            userPrincipal.setUsername(CURRENT_USERNAME);
             userPrincipal.setPassword(new BCryptPasswordEncoder().encode("password"));
 
             return userPrincipal;
@@ -140,7 +143,7 @@ public class TagTest {
                 .thenReturn(getListOfTaggedTask());
 
         //act
-        MvcResult result = this.mockMvc.perform(get("/api/tags/myTagTaskKeys?tagId=6"))
+        MvcResult result = this.mockMvc.perform(get("/api/tags/myTagTaskKeys?tagId=" + TAG_ID))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -154,10 +157,9 @@ public class TagTest {
     @Test
     public void addTag_ReturnsAObjectOfTag() throws Exception {
         //arrange
-        TagInput tagInput = new TagInput("Home", "ff");
+        TagInput tagInput = getTagInput();
 
-
-        when(tagServiceMock.addTag(tagInput, CURRENT_USER_ID)).thenReturn(Optional.of(new Tag("Home", CURRENT_USER_ID, "ff")));
+        when(tagServiceMock.addTag(tagInput, CURRENT_USER_ID)).thenReturn(Optional.of(new Tag("Job", CURRENT_USER_ID, "ff")));
 
         //act, assert
         this.mockMvc.perform(post("/api/tags")
@@ -174,13 +176,12 @@ public class TagTest {
     @Test
     public void updateTag_OnExistentTag_ReturnsAObjectOfTag() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(CURRENT_USER_ID);
 
         Tag updatedTag = new Tag("Job", CURRENT_USER_ID, "ff");
         updatedTag.setId(TAG_ID);
 
-        TagInput tagInput = new TagInput("Job", "ff");
+        TagInput tagInput = getTagInput();
 
         when(tagServiceMock.getTagById(tag.getId())).thenReturn(Optional.of(tag));
         when(tagServiceMock.updateTag(tag.getId(), tagInput)).thenReturn(Optional.of(updatedTag));
@@ -204,7 +205,7 @@ public class TagTest {
         //arrange
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.empty());
 
-        TagInput tagInput = new TagInput("Job", "ff");
+        TagInput tagInput = getTagInput();
 
         //act, assert
         this.mockMvc.perform(put("/api/tags/{id}", TAG_ID)
@@ -220,11 +221,11 @@ public class TagTest {
     @Test
     public void updateTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", ANOTHER_USER_ID, "ff");
+        Tag tag = createTag(ANOTHER_USER_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
-        TagInput tagInput = new TagInput("Job", "ff");
+        TagInput tagInput = getTagInput();
 
         //act, assert
         this.mockMvc.perform(put("/api/tags/{id}", TAG_ID)
@@ -240,8 +241,7 @@ public class TagTest {
     @Test
     public void deleteTag_successfulDelete() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(CURRENT_USER_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -271,7 +271,7 @@ public class TagTest {
     @Test
     public void deleteTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", ANOTHER_USER_ID, "ff");
+        Tag tag = createTag(ANOTHER_USER_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -287,13 +287,12 @@ public class TagTest {
     @Test
     public void removeTagFromTheTask_OnExistentTag_SuccessfulDelete() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(CURRENT_USER_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", TAG_ID))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
@@ -307,7 +306,7 @@ public class TagTest {
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.empty());
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", TAG_ID))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -318,12 +317,12 @@ public class TagTest {
     @Test
     public void removeTagFromTheTask_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", ANOTHER_USER_ID, "ff");
+        Tag tag = createTag(ANOTHER_USER_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
         //act, assert
-        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=15", TAG_ID))
+        this.mockMvc.perform(delete("/api/tags/removeTagFromTask/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -334,25 +333,16 @@ public class TagTest {
     @Test
     public void addTagToTask_OnExistentTagAndTask_ReturnsAObjectOfTagTaskKey() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(CURRENT_USER_ID);
 
-        Task task = Task.builder()
-                .body("task")
-                .todoList(TodoList.builder()
-                        .todoListName("ff")
-                        .createdBy("username")
-                        .build())
-                .createdBy("username")
-                .build();
-        task.setId(TASK_ID);
+        Task task = createTask(CURRENT_USERNAME, createTodoList(CURRENT_USERNAME));
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
         when(tagServiceMock.addTagToTask(tag, TASK_ID)).thenReturn(Optional.of(new TagTaskKey(TASK_ID, tag)));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=15", tag.getId()))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=" + TASK_ID, tag.getId()))
                 .andDo(print())
                 .andExpect(jsonPath("$.tag.id").value(tag.getId()))
                 .andExpect(jsonPath("taskId").value(task.getId()))
@@ -369,7 +359,7 @@ public class TagTest {
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.empty());
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=2", TAG_ID))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -381,21 +371,15 @@ public class TagTest {
     @Test
     public void addTagToTask_OnNonExistentTodoList_ReturnsAIsNotFound() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", CURRENT_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(CURRENT_USER_ID);
 
-        Task task = Task.builder()
-                .body("task")
-                .todoList(null)
-                .createdBy("username")
-                .build();
-        task.setId(TASK_ID);
+        Task task = createTask(CURRENT_USERNAME, null);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=15", TAG_ID))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -407,24 +391,15 @@ public class TagTest {
     @Test
     public void addTagToTask_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = new Tag("Home", ANOTHER_USER_ID, "ff");
-        tag.setId(TAG_ID);
+        Tag tag = createTag(ANOTHER_USER_ID);
 
-        Task task = Task.builder()
-                .body("task")
-                .todoList(TodoList.builder()
-                        .todoListName("ff")
-                        .createdBy("username2")
-                        .build())
-                .createdBy("username2")
-                .build();
-        task.setId(TASK_ID);
+        Task task = createTask(ANOTHER_USERNAME, createTodoList(ANOTHER_USERNAME));
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
 
         //act, assert
-        this.mockMvc.perform(post("/api/tags/{id}?taskId=15", TAG_ID))
+        this.mockMvc.perform(post("/api/tags/{id}?taskId=" + TASK_ID, TAG_ID))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -450,6 +425,35 @@ public class TagTest {
         JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, TagTaskKey.class);
 
         return objectMapper.readValue(response, type);
+    }
+
+    private Tag createTag(Long userId) {
+        Tag tag = new Tag("Home", userId, "ff");
+        tag.setId(TAG_ID);
+
+        return tag;
+    }
+
+    private TagInput getTagInput() {
+        return new TagInput("Job", "ff");
+    }
+
+    private Task createTask(String createdBy, TodoList todoList) {
+        Task task = Task.builder()
+                .body("task")
+                .todoList(todoList)
+                .createdBy(createdBy)
+                .build();
+        task.setId(TASK_ID);
+
+        return task;
+    }
+
+    private TodoList createTodoList(String createdBy) {
+        return TodoList.builder()
+                .todoListName("ff")
+                .createdBy(createdBy)
+                .build();
     }
 
     private List<Tag> getListOfTags() {
