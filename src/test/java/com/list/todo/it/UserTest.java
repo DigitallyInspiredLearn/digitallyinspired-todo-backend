@@ -77,6 +77,8 @@ public class UserTest {
 
     private Long currentUserId = 1L;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private HandlerMethodArgumentResolver putAuthenticationPrincipal = new HandlerMethodArgumentResolver() {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
@@ -188,12 +190,10 @@ public class UserTest {
 
         List<TodoList> returnedMyTodoLists = getTodoListsFromJsonResponse(
                 result.getResponse().getContentAsString(),
-                "myTodoLists",
-                todoLists1.size());
+                "myTodoLists");
         List<TodoList> returnedSharedTodoLists = getTodoListsFromJsonResponse(
                 result.getResponse().getContentAsString(),
-                "sharedTodoLists",
-                todoLists1.size());
+                "sharedTodoLists");
 
         IdComparator idComparator = new IdComparator();
         todoLists1.sort(idComparator);
@@ -220,7 +220,6 @@ public class UserTest {
                 userInput.getEmail(),
                 userInput.getPassword(),
                 "gravatarHash")));
-        ObjectMapper objectMapper = new ObjectMapper();
 
         //act, assert
         this.mockMvc.perform(put("/api/users/editProfile")
@@ -330,10 +329,8 @@ public class UserTest {
     public void getFollowers_OnExistentUser_ReturnsAListOfUserSummaries() throws Exception {
         //arrange
         List<UserSummary> userSummaries = new ArrayList<>();
-        UserSummary userSummary1 = new UserSummary(
-                "username1", "name1", "email1", "gravatarUrl");
-        UserSummary userSummary2 = new UserSummary(
-                "username2", "name2", "email2", "gravatarUrl");
+        UserSummary userSummary1 = createUserSummary(1);
+        UserSummary userSummary2 = createUserSummary(2);
         userSummaries.add(userSummary1);
         userSummaries.add(userSummary2);
 
@@ -357,10 +354,8 @@ public class UserTest {
     public void getFollowedUsers_OnExistentUser_ReturnsAListOfUserSummaries() throws Exception {
         //arrange
         List<UserSummary> userSummaries = new ArrayList<>();
-        UserSummary userSummary1 = new UserSummary(
-                "username1", "name1", "email1", "gravatarUrl");
-        UserSummary userSummary2 = new UserSummary(
-                "username2", "name2", "email2", "gravatarUrl");
+        UserSummary userSummary1 = createUserSummary(1);
+        UserSummary userSummary2 = createUserSummary(2);
         userSummaries.add(userSummary1);
         userSummaries.add(userSummary2);
 
@@ -383,12 +378,7 @@ public class UserTest {
     @Test
     public void getUserStatistics_OnExistentUser_ReturnsAnObjectOfUserStatistics() throws Exception {
         //arrange
-        UserStatistics userStatistics = new UserStatistics();
-        userStatistics.setTodoListsNumber(21L);
-        userStatistics.setTasksNumber(11L);
-        userStatistics.setCompletedTasksNumber(5L);
-        userStatistics.setFollowedUsersNumber(2);
-        userStatistics.setFollowersNumber(3);
+        UserStatistics userStatistics = createUserStatistics();
 
         when(userStatisticsService.getUserStatisticsByUserId(currentUserId)).thenReturn(userStatistics);
 
@@ -397,7 +387,7 @@ public class UserTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
-        ObjectMapper objectMapper = new ObjectMapper();
+
         UserStatistics returnedUserStatistics = objectMapper
                 .readValue(result.getResponse().getContentAsString(), UserStatistics.class);
 
@@ -420,7 +410,7 @@ public class UserTest {
         return todoLists;
     }
 
-    private List<TodoList> getTodoListsFromJsonResponse(String response,String arrayName, int numberOfTodoLists) throws JSONException, IOException {
+    private List<TodoList> getTodoListsFromJsonResponse(String response,String arrayName) throws JSONException, IOException {
         JSONObject jsonObject = new JSONObject(response);
         JSONObject myTodoListsPageJson = (JSONObject) jsonObject.get(arrayName);
         JSONArray myTodoListsJson = myTodoListsPageJson.getJSONArray("content");
@@ -440,4 +430,22 @@ public class UserTest {
         return objectMapper.readValue(response, type);
     }
 
+    private UserStatistics createUserStatistics() {
+        UserStatistics userStatistics = new UserStatistics();
+        userStatistics.setTodoListsNumber(21L);
+        userStatistics.setTasksNumber(11L);
+        userStatistics.setCompletedTasksNumber(5L);
+        userStatistics.setFollowedUsersNumber(2);
+        userStatistics.setFollowersNumber(3);
+
+        return userStatistics;
+    }
+
+    private UserSummary createUserSummary(int postfixNumber) {
+        return new UserSummary(
+                "username"+postfixNumber,
+                "name"+postfixNumber,
+                "email"+postfixNumber,
+                "gravatarUrl"+postfixNumber);
+    }
 }
