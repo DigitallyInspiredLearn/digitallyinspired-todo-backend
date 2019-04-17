@@ -30,6 +30,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
 
+    private static final Long CURRENT_USER_ID = 1L;
+
     @Mock
     private UserRepository userRepository;
 
@@ -51,19 +53,18 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private static final Long currentUserId = 1L;
 
     @Test
     public void getUserById_OnExistentUser_ReturnsOptionalOfUser() {
         //arrange
         User user = createUser(1);
-        when(userRepository.findById(currentUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(user));
 
         //act
-        Optional<User> returnedUser = userService.getUserById(currentUserId);
+        Optional<User> returnedUser = userService.getUserById(CURRENT_USER_ID);
 
         //assert
-        verify(userRepository).findById(currentUserId);
+        verify(userRepository).findById(CURRENT_USER_ID);
         Assert.assertEquals(user, returnedUser.get());
     }
 
@@ -91,7 +92,7 @@ public class UserServiceTest {
                 user.getEmail(),
                 user.getGravatarHash());
         UserPrincipal userPrincipal = new UserPrincipal(
-                currentUserId,
+                CURRENT_USER_ID,
                 user.getName(),
                 user.getUsername(),
                 user.getEmail(),
@@ -104,19 +105,17 @@ public class UserServiceTest {
 
         //assert
         verify(userRepository).findById(userPrincipal.getId());
-        Assert.assertEquals(userSummary.getName(), returnedUserSummary.getName());
-        Assert.assertEquals(userSummary.getEmail(), returnedUserSummary.getEmail());
-        Assert.assertEquals(userSummary.getUsername(), returnedUserSummary.getUsername());
+        Assert.assertEquals(userSummary, returnedUserSummary);
     }
 
     @Test
     public void getUserStats_OnExistentUser_ReturnsAnObjectOfUserStats() {
         //arrange
         UserPrincipal userPrincipal = new UserPrincipal(
-                currentUserId,
+                CURRENT_USER_ID,
                 "name",
                 "username",
-                "email",
+                "email@example.ua",
                 "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         List<Share> shares = new ArrayList<>();
@@ -184,12 +183,12 @@ public class UserServiceTest {
         userInput.setPassword(updatedUser.getPassword());
         user = spy(user);
 
-        when(userRepository.findById(currentUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(user));
         when(bCryptPasswordEncoder.encode(updatedUser.getPassword())).thenReturn(updatedUser.getPassword());
         when(userRepository.save(user)).thenReturn(updatedUser);
 
         //act
-        Optional<User> returnedUser = userService.updateUser(currentUserId, userInput);
+        Optional<User> returnedUser = userService.updateUser(CURRENT_USER_ID, userInput);
 
         //assert
         verify(user).setName(userInput.getName());
@@ -213,20 +212,20 @@ public class UserServiceTest {
         todoLists.add(new TodoList());
         todoLists.add(new TodoList());
 
-        when(userRepository.findById(currentUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(user));
         when(followerRepository.findByFollower(user)).thenReturn(followedUsers);
-        when(followerRepository.findByFollowedUserId(currentUserId)).thenReturn(followers);
+        when(followerRepository.findByFollowedUserId(CURRENT_USER_ID)).thenReturn(followers);
         when(todoListRepository.findByCreatedBy(user.getUsername())).thenReturn(todoLists);
 
         //act
-        userService.deleteUser(currentUserId);
+        userService.deleteUser(CURRENT_USER_ID);
 
         //assert
-        verify(userRepository).findById(currentUserId);
+        verify(userRepository).findById(CURRENT_USER_ID);
         verify(followerRepository).findByFollower(user);
-        verify(followerRepository).findByFollowedUserId(currentUserId);
+        verify(followerRepository).findByFollowedUserId(CURRENT_USER_ID);
         verify(todoListRepository).findByCreatedBy(user.getUsername());
-        verify(followerRepository, times(followedUsers.size()+followers.size())).delete(any(Follower.class));
+        verify(followerRepository, times(followedUsers.size() + followers.size())).delete(any(Follower.class));
         verify(todoListRepository, times(todoLists.size())).delete(any(TodoList.class));
     }
 
@@ -235,7 +234,7 @@ public class UserServiceTest {
         return new User(
                 "name" + postfixNumber,
                 "username" + postfixNumber,
-                "email" + postfixNumber,
+                "email@example.ua" + postfixNumber,
                 "password" + postfixNumber,
                 "gravatarHash" + postfixNumber);
     }

@@ -1,6 +1,5 @@
-package com.list.todo.utils;
+package com.list.todo.util;
 
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 

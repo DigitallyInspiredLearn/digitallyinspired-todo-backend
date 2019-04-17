@@ -101,11 +101,10 @@ public class TodoListService {
             if (shareService.isSharedTodoList(todoListId)) {
                 shareService.deleteShareBySharedTodoListId(tList.getId());
             } else {
+                userService.getUserById(currentUserId)
+                        .ifPresent(user -> notificationService.notifyAboutDeletingTodoList(user, todoList.get()));
                 todoListRepository.deleteById(tList.getId());
             }
-
-            userService.getUserById(currentUserId)
-                    .ifPresent(user -> notificationService.notifyAboutDeletingTodoList(user, todoList.get()));
         });
     }
 
