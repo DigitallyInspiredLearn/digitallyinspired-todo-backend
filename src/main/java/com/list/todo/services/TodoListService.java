@@ -69,7 +69,6 @@ public class TodoListService {
         todoListInput.getTasks().forEach(task -> task.setTodoList(newTodoList.get()));
         newTodoList.get().setTasks(todoListInput.getTasks());
 
-
         Optional<TodoList> updatedTodoList = Optional.of(todoListRepository.save(todoList));
 
         userService.getUserById(userId)
@@ -136,7 +135,7 @@ public class TodoListService {
         return apiResponse;
     }
 
-    public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable){
+    public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable) {
         return todoListRepository.findByTodoListNameLikeAndCreatedByEqualsAndTodoListStatus(todoListName, createdBy, TodoListStatus.ACTIVE, pageable);
     }
 }

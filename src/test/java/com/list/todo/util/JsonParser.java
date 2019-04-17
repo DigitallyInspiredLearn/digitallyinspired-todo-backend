@@ -1,34 +1,30 @@
 package com.list.todo.util;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.list.todo.entity.TodoList;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.list.todo.entity.BaseEntity;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class JsonParser {
+public class JsonParser<T extends BaseEntity> {
 
-    public static List<TodoList> getArrayOfTodoListsFromJsonResponse(String response, int numberOfTodoLists) throws JSONException, IOException {
-        List<TodoList> returnedTodoLists = new ArrayList<>();
-        JSONArray jsonArray = new JSONArray(response);
-        ObjectMapper objectMapper = new ObjectMapper();
+    private final Class<T> type;
 
-        for (int i=0; i<numberOfTodoLists; i++){
-            TodoList returnedTodoList = objectMapper
-                    .readValue(jsonArray.get(i).toString(), TodoList.class);
-            returnedTodoLists.add(returnedTodoList);
-        }
-        return returnedTodoLists;
+    public JsonParser(Class<T> type) {
+        this.type = type;
     }
 
-    public static TodoList getTodoListFromJsonResponse(String response) throws JSONException, IOException {
-        JSONObject jsonObject = new JSONObject(response);
+    public Class<T> getType() {
+        return type;
+    }
+
+    public List<T> getListOfObjectsFromJsonResponse(String response) throws IOException {
+
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return objectMapper.readValue(jsonObject.toString(), TodoList.class);
+        JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, this.getType());
+
+        return objectMapper.readValue(response, type);
     }
 }

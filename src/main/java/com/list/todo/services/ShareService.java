@@ -30,7 +30,6 @@ public class ShareService {
     }
 
     public boolean isSharedTodoListToUser(TodoList sharedTodoList, Long sharedUserId) {
-
         return sharesRepository.findBySharedUserId(sharedUserId)
                 .stream()
                 .anyMatch(share -> share.getSharedTodoList().hashCode() == sharedTodoList.hashCode());
