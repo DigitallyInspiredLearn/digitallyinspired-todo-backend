@@ -14,7 +14,8 @@ import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
 import com.list.todo.services.UserStatisticsService;
 import com.list.todo.util.IdComparator;
-import com.list.todo.utils.PageableStub;
+import com.list.todo.util.PageableStub;
+import com.list.todo.util.UserSummaryComparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +47,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import java.io.IOException;
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -57,6 +57,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class UserTest {
+
+    private static final Long CURRENT_USER_ID = 1L;
+    private static final String USERNAME = "anna";
+    private static final String PART_OF_USERNAME = "an";
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,9 +78,10 @@ public class UserTest {
     private UserStatisticsService userStatisticsService;
 
     private PageableStub pageable = new PageableStub();
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final Long currentUserId = 1L;
+    private UserSummaryComparator userSummaryComparator = new UserSummaryComparator();
 
 
     private HandlerMethodArgumentResolver putAuthenticationPrincipal = new HandlerMethodArgumentResolver() {
@@ -89,7 +94,7 @@ public class UserTest {
         public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
             UserPrincipal userPrincipal = new UserPrincipal();
-            userPrincipal.setId(currentUserId);
+            userPrincipal.setId(CURRENT_USER_ID);
             userPrincipal.setUsername("username");
             userPrincipal.setPassword(new BCryptPasswordEncoder().encode("password"));
 
@@ -131,26 +136,27 @@ public class UserTest {
     @Test
     public void userInfo_OnExistentUser_ReturnsAnObjectOfUserSummary() throws Exception {
         //arrange
-        when(userService.getUserInfo(any(UserPrincipal.class))).thenReturn(new UserSummary("stepanich", "Stepan Matveev", "stepa.matv72@gmail.com", null));
+        UserSummary userSummary = createUserSummary(1);
+        when(userService.getUserInfo(any(UserPrincipal.class))).thenReturn(userSummary);
 
         //act, assert
         this.mockMvc.perform(get("/api/users/me"))
                 .andDo(print())
-                .andExpect(jsonPath("name").value("Stepan Matveev"))
-                .andExpect(jsonPath("username").value("stepanich"))
-                .andExpect(jsonPath("email").value("stepa.matv72@gmail.com"))
+                .andExpect(jsonPath("name").value(userSummary.getName()))
+                .andExpect(jsonPath("username").value(userSummary.getUsername()))
+                .andExpect(jsonPath("email").value(userSummary.getEmail()))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void serchUsersByUsername_OnExistentUser_ReturnsASetOfStrings() throws Exception {
+    public void searchUsersByUsername_OnExistentUser_ReturnsASetOfStrings() throws Exception {
         //arrange
         Set usernames = new HashSet();
-        usernames.add("anna");
-        when(userService.searchUsersByPartOfUsername(anyString())).thenReturn(usernames);
+        usernames.add(USERNAME);
+        when(userService.searchUsersByPartOfUsername(PART_OF_USERNAME)).thenReturn(usernames);
 
         //act, assert
-        this.mockMvc.perform(get("/api/users/search?username={username}", "ann"))
+        this.mockMvc.perform(get("/api/users/search?username={username}", PART_OF_USERNAME))
                 .andDo(print())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(content().json("[\"anna\"]"))
@@ -162,10 +168,10 @@ public class UserTest {
     public void searchUsersByNonExistentUsername_ReturnsAnEmptySet() throws Exception {
         //arrange
         Set usernames = new HashSet();
-        when(userService.searchUsersByPartOfUsername(anyString())).thenReturn(usernames);
+        when(userService.searchUsersByPartOfUsername(PART_OF_USERNAME)).thenReturn(usernames);
 
         //act, assert
-        this.mockMvc.perform(get("/api/users/search?username={username}", "kkkkk"))
+        this.mockMvc.perform(get("/api/users/search?username={username}", PART_OF_USERNAME))
                 .andDo(print())
                 .andExpect(jsonPath("$").isEmpty())
                 .andExpect(status().isOk());
@@ -195,26 +201,20 @@ public class UserTest {
                 result.getResponse().getContentAsString(),
                 "sharedTodoLists");
 
-        IdComparator idComparator = new IdComparator();
-        todoLists1.sort(idComparator);
-        todoLists2.sort(idComparator);
-        returnedMyTodoLists.sort(idComparator);
-        returnedSharedTodoLists.sort(idComparator);
-
         //assert
-        Assert.assertEquals(todoLists1, returnedMyTodoLists);
-        Assert.assertEquals(todoLists2, returnedSharedTodoLists);
+        Assert.assertEquals(sortTodoListsById(todoLists1), sortTodoListsById(returnedMyTodoLists));
+        Assert.assertEquals(sortTodoListsById(todoLists2), sortTodoListsById(returnedSharedTodoLists));
     }
 
     @Test
     public void updateUser_OnExistentUser_ReturnsAnObjectOfUser() throws Exception {
         //arrange
         UpdatingUserInput userInput = new UpdatingUserInput();
-        userInput.setName("Stepa Baklagan");
-        userInput.setUsername("stepka");
-        userInput.setEmail("stepa.matv72@gmail.com");
-        userInput.setPassword("Secrett");
-        when(userService.updateUser(currentUserId, userInput)).thenReturn(Optional.of(new User(
+        userInput.setName("name");
+        userInput.setUsername("username");
+        userInput.setEmail("email@example.ua");
+        userInput.setPassword("password");
+        when(userService.updateUser(CURRENT_USER_ID, userInput)).thenReturn(Optional.of(new User(
                 userInput.getName(),
                 userInput.getUsername(),
                 userInput.getEmail(),
@@ -229,6 +229,8 @@ public class UserTest {
                 .andExpect(jsonPath("name").value(userInput.getName()))
                 .andExpect(jsonPath("username").value(userInput.getUsername()))
                 .andExpect(status().isOk());
+
+        verify(userService).updateUser(CURRENT_USER_ID, userInput);
     }
 
     @Test
@@ -239,90 +241,85 @@ public class UserTest {
                 .andExpect(status().isNoContent());
 
         //assert
-        verify(userService).deleteUser(currentUserId);
+        verify(userService).deleteUser(CURRENT_USER_ID);
     }
 
     @Test
     public void followUser_OnExistentUser_ReturnsStatusOk() throws Exception {
         //arrange
-        String followedUsername = "anna";
-        when(followerService.isAlreadyFollowed(currentUserId, followedUsername)).thenReturn(false);
-        when(followerService.followUser(currentUserId, followedUsername)).thenReturn(true);
+        when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
+        when(followerService.followUser(CURRENT_USER_ID, USERNAME)).thenReturn(true);
 
         //act
-        this.mockMvc.perform(post("/api/users/followUser?username={username}", followedUsername))
+        this.mockMvc.perform(post("/api/users/followUser?username={username}", USERNAME))
                 .andDo(print())
                 .andExpect(status().isOk());
 
         //assert
-        verify(followerService).isAlreadyFollowed(currentUserId, followedUsername);
-        verify(followerService).followUser(currentUserId, followedUsername);
+        verify(followerService).isAlreadyFollowed(CURRENT_USER_ID, USERNAME);
+        verify(followerService).followUser(CURRENT_USER_ID, USERNAME);
     }
 
     @Test
     public void follow_OnNonExistentUser_ReturnsStatusNotFound() throws Exception {
         //arrange
-        String followedUsername = "annaanna";
-        when(followerService.isAlreadyFollowed(currentUserId, followedUsername)).thenReturn(false);
-        when(followerService.followUser(currentUserId, followedUsername)).thenReturn(false);
+        when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
+        when(followerService.followUser(CURRENT_USER_ID, USERNAME)).thenReturn(false);
 
         //act
-        this.mockMvc.perform(post("/api/users/followUser?username={username}", followedUsername))
+        this.mockMvc.perform(post("/api/users/followUser?username={username}", USERNAME))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
         //assert
-        verify(followerService).isAlreadyFollowed(currentUserId, followedUsername);
-        verify(followerService).followUser(currentUserId, followedUsername);
+        verify(followerService).isAlreadyFollowed(CURRENT_USER_ID, USERNAME);
+        verify(followerService).followUser(CURRENT_USER_ID, USERNAME);
     }
 
     @Test
     public void followAlreadyFollowedUser_ReturnsStatusIsForbidden() throws Exception {
         //arrange
-        String followedUsername = "annaanna";
-        when(followerService.isAlreadyFollowed(currentUserId, followedUsername)).thenReturn(true);
+        when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(true);
 
         //act
-        this.mockMvc.perform(post("/api/users/followUser?username={username}", followedUsername))
+        this.mockMvc.perform(post("/api/users/followUser?username={username}", USERNAME))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
         //assert
-        verify(followerService).isAlreadyFollowed(currentUserId, followedUsername);
-        verify(followerService, times(0)).followUser(currentUserId, followedUsername);
+        verify(followerService).isAlreadyFollowed(CURRENT_USER_ID, USERNAME);
+        verify(followerService, times(0)).followUser(CURRENT_USER_ID, USERNAME);
     }
 
     @Test
     public void unfollowUser_OnExistentUser_ReturnsStatusOk() throws Exception {
         //arrange
-        String followedUsername = "anna";
-        when(followerService.isAlreadyFollowed(currentUserId, followedUsername)).thenReturn(true);
-        when(followerService.unfollowUser(currentUserId, followedUsername)).thenReturn(true);
+        when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(true);
+        when(followerService.unfollowUser(CURRENT_USER_ID, USERNAME)).thenReturn(true);
 
         //act
-        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", followedUsername))
+        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", USERNAME))
                 .andDo(print())
                 .andExpect(status().isOk());
 
         //assert
-        verify(followerService).isAlreadyFollowed(currentUserId, followedUsername);
-        verify(followerService).unfollowUser(currentUserId, followedUsername);
+        verify(followerService).isAlreadyFollowed(CURRENT_USER_ID, USERNAME);
+        verify(followerService).unfollowUser(CURRENT_USER_ID, USERNAME);
     }
 
     @Test
     public void unfollow_OnNonExistentUser_ReturnsStatusIsForbidden() throws Exception {
         //arrange
-        String followedUsername = "annaanna";
-        when(followerService.isAlreadyFollowed(currentUserId, followedUsername)).thenReturn(false);
+        when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
 
         //act
-        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", followedUsername))
+        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", USERNAME))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
         //assert
-        verify(followerService).isAlreadyFollowed(currentUserId, followedUsername);
-        verify(followerService, times(0)).unfollowUser(currentUserId, followedUsername);
+        verify(followerService).isAlreadyFollowed(CURRENT_USER_ID, USERNAME);
+        verify(followerService, times(0)).unfollowUser(CURRENT_USER_ID, USERNAME);
     }
 
     @Test
@@ -334,7 +331,7 @@ public class UserTest {
         userSummaries.add(userSummary1);
         userSummaries.add(userSummary2);
 
-        when(followerService.getFollowersUserSummariesByUserId(currentUserId)).thenReturn(userSummaries);
+        when(followerService.getFollowersUserSummariesByUserId(CURRENT_USER_ID)).thenReturn(userSummaries);
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/users/followers"))
@@ -343,8 +340,8 @@ public class UserTest {
                 .andReturn();
 
         List<UserSummary> returnedUserSummaries = getUserSummariesFromJsonResponse(result.getResponse().getContentAsString());
-        Collections.sort(userSummaries);
-        Collections.sort(returnedUserSummaries);
+        userSummaries.sort(userSummaryComparator);
+        returnedUserSummaries.sort(userSummaryComparator);
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
@@ -359,7 +356,7 @@ public class UserTest {
         userSummaries.add(userSummary1);
         userSummaries.add(userSummary2);
 
-        when(followerService.getFollowedUserSummariesByUserId(currentUserId)).thenReturn(userSummaries);
+        when(followerService.getFollowedUserSummariesByUserId(CURRENT_USER_ID)).thenReturn(userSummaries);
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/users/followed"))
@@ -368,8 +365,8 @@ public class UserTest {
                 .andReturn();
 
         List<UserSummary> returnedUserSummaries = getUserSummariesFromJsonResponse(result.getResponse().getContentAsString());
-        Collections.sort(userSummaries);
-        Collections.sort(returnedUserSummaries);
+        userSummaries.sort(userSummaryComparator);
+        returnedUserSummaries.sort(userSummaryComparator);
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
@@ -380,7 +377,7 @@ public class UserTest {
         //arrange
         UserStatistics userStatistics = createUserStatistics();
 
-        when(userStatisticsService.getUserStatisticsByUserId(currentUserId)).thenReturn(userStatistics);
+        when(userStatisticsService.getUserStatisticsByUserId(CURRENT_USER_ID)).thenReturn(userStatistics);
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/users/statistics"))
@@ -400,7 +397,7 @@ public class UserTest {
 
         for (long i = 0; i < countOfTodoLists; i++) {
             TodoList todoList = new TodoList();
-            todoList.setTodoListName("name"+i);
+            todoList.setTodoListName("name" + i);
             todoList.setCreatedBy(createdBy);
             todoList.setId(i);
 
@@ -410,7 +407,7 @@ public class UserTest {
         return todoLists;
     }
 
-    private List<TodoList> getTodoListsFromJsonResponse(String response,String arrayName) throws JSONException, IOException {
+    private List<TodoList> getTodoListsFromJsonResponse(String response, String arrayName) throws JSONException, IOException {
         JSONObject jsonObject = new JSONObject(response);
         JSONObject myTodoListsPageJson = (JSONObject) jsonObject.get(arrayName);
         JSONArray myTodoListsJson = myTodoListsPageJson.getJSONArray("content");
@@ -443,9 +440,16 @@ public class UserTest {
 
     private UserSummary createUserSummary(int postfixNumber) {
         return new UserSummary(
-                "username"+postfixNumber,
-                "name"+postfixNumber,
-                "email"+postfixNumber,
-                "gravatarUrl"+postfixNumber);
+                "username" + postfixNumber,
+                "name" + postfixNumber,
+                "email@example.ua" + postfixNumber,
+                "gravatarUrl" + postfixNumber);
+    }
+
+    private List<TodoList> sortTodoListsById(List<TodoList> todoLists) {
+        IdComparator idComparator = new IdComparator();
+        todoLists.sort(idComparator);
+
+        return todoLists;
     }
 }
