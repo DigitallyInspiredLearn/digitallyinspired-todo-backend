@@ -5,9 +5,13 @@ import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
 import com.list.todo.repositories.ShareRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +26,15 @@ public class ShareService {
                 .stream()
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
+    }
+
+    public Iterable<TodoList> getSharedTodoListsByUser(Long userId, Pageable pageable) {
+        Page<Share> sharesPage = sharesRepository.findBySharedUserId(userId, pageable);
+        List<TodoList> sharedTodoLists = sharesPage.getContent()
+                .stream()
+                .map(Share::getSharedTodoList)
+                .collect(Collectors.toList());
+        return new PageImpl<>(sharedTodoLists, pageable, sharesPage.getTotalElements());
     }
 
 
