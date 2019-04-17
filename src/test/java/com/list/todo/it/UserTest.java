@@ -79,6 +79,8 @@ public class UserTest {
     private static final Long currentUserId = 1L;
 
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private HandlerMethodArgumentResolver putAuthenticationPrincipal = new HandlerMethodArgumentResolver() {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
