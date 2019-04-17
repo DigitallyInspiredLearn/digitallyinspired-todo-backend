@@ -202,8 +202,8 @@ public class UserTest {
                 "sharedTodoLists");
 
         //assert
-        Assert.assertEquals(sortTodoListsById(todoLists1), sortTodoListsById(returnedMyTodoLists));
-        Assert.assertEquals(sortTodoListsById(todoLists2), sortTodoListsById(returnedSharedTodoLists));
+        assertEqualsTodoLists(todoLists1, returnedMyTodoLists);
+        assertEqualsTodoLists(todoLists2, returnedSharedTodoLists);
     }
 
     @Test
@@ -446,10 +446,11 @@ public class UserTest {
                 "gravatarUrl" + postfixNumber);
     }
 
-    private List<TodoList> sortTodoListsById(List<TodoList> todoLists) {
+    private void assertEqualsTodoLists(List<TodoList> todoLists1, List<TodoList> todoLists2) {
         IdComparator idComparator = new IdComparator();
-        todoLists.sort(idComparator);
+        todoLists1.sort(idComparator);
+        todoLists2.sort(idComparator);
 
-        return todoLists;
+        Assert.assertEquals(todoLists1, todoLists2);
     }
 }
