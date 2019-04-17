@@ -93,11 +93,6 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    public void saveUser(User user) {
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-    }
-
     public Optional<User> updateUser(Long userId, UpdatingUserInput userInput) {
         Optional<User> user = userRepository.findById(userId)
                 .map(u -> {
