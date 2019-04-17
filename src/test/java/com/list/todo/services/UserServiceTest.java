@@ -51,7 +51,7 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private Long currentUserId = 1L;
+    private static final Long currentUserId = 1L;
 
     @Test
     public void getUserById_OnExistentUser_ReturnsOptionalOfUser() {

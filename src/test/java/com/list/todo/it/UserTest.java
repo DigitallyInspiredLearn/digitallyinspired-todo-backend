@@ -74,8 +74,10 @@ public class UserTest {
     private UserStatisticsService userStatisticsService;
 
     private PageableStub pageable = new PageableStub();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    private Long currentUserId = 1L;
+    private static final Long currentUserId = 1L;
+
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
