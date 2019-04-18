@@ -41,9 +41,9 @@ public class TodoListController {
     }
 
     @GetMapping("/shared")
-    public ResponseEntity<Iterable<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<Iterable<TodoList>> getMySharedTodoLists(@AuthenticationPrincipal UserPrincipal currentUser, Pageable pageable) {
 
-        Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId());
+        Iterable<TodoList> sharedTodoLists = shareService.getSharedTodoListsByUser(currentUser.getId(), pageable);
 
         return new ResponseEntity<>(sharedTodoLists, HttpStatus.OK);
     }
