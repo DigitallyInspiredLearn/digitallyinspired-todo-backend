@@ -9,17 +9,16 @@ import com.list.todo.security.UserPrincipal;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +26,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class TagTaskKeyServiceTest {
+
+    private static final Long CURRENT_USER_ID = 1L;
+    private static final String CURRENT_USERNAME = "User";
 
     @Mock
     private TagTaskKeyRepository tagTaskKeyRepositoryMock;
@@ -68,23 +70,23 @@ public class TagTaskKeyServiceTest {
     @Test
     public void getMyTaggedTask_OnExistentTagsByUser_ReturnsAListOfTaggedTask() {
         //arrange
-        UserPrincipal currentUser = new UserPrincipal(1L, "V", "User", "c", "f", null);
+        UserPrincipal currentUser = new UserPrincipal(CURRENT_USER_ID, "V", CURRENT_USERNAME, "c", "f", null);
         List<Long> tagsIds = new ArrayList<Long>() {{
             add(6L);
         }};
 
-        Page<TodoList> todoListPage = new PageImpl<>(getTodoListByCreatedBy(), pageable, getTodoListByCreatedBy().size());
+        Page<TodoList> todoListPage = new PageImpl<>(createListOfTodoLists(CURRENT_USERNAME), pageable, createListOfTodoLists(CURRENT_USERNAME).size());
 
-        doReturn(getTask()).when(tagTaskKeyServiceMock).getTasksByTags(tagsIds, currentUser.getId());
+        doReturn(createSetOfTasks(CURRENT_USERNAME)).when(tagTaskKeyServiceMock).getTasksByTags(tagsIds, currentUser.getId());
         when(todoListRepositoryMock.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(), TodoListStatus.ACTIVE,
-                pageable, new ArrayList<>(getTask()))).thenReturn(todoListPage);
-        when(tagTaskKeyRepositoryMock.findByTaskId(any())).thenReturn(getListOfTaggedTask());
+                pageable, new ArrayList<>(createSetOfTasks(CURRENT_USERNAME)))).thenReturn(todoListPage);
+        when(tagTaskKeyRepositoryMock.findByTaskId(any())).thenReturn(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)));
 
         //act
         Set<TagTaskKey> taggedTasksFromService = tagTaskKeyServiceMock.getMyTaggedTask(currentUser, pageable, tagsIds);
 
         //assert
-        assertEquals(new HashSet<>(getListOfTaggedTask()), taggedTasksFromService);
+        assertEquals(createListOfTaggedTask(CURRENT_USER_ID), taggedTasksFromService);
     }
 
     @Test
@@ -94,19 +96,19 @@ public class TagTaskKeyServiceTest {
         List<Long> tagsIds = new ArrayList<Long>() {{
         }};
 
-        Page<TodoList> todoListPage = new PageImpl<>(getTodoListByCreatedBy(), pageable, getTodoListByCreatedBy().size());
+        Page<TodoList> todoListPage = new PageImpl<>(createListOfTodoLists(CURRENT_USERNAME), pageable, createListOfTodoLists(CURRENT_USERNAME).size());
 
         TagTaskKeyService tagTaskKeyService = mock(TagTaskKeyService.class);
 
         when(todoListRepositoryMock.findByCreatedBy(currentUser.getUsername(), pageable)).thenReturn(todoListPage);
         when(tagTaskKeyService.getTasksByTags(any(), any())).thenReturn(new HashSet<>());
-        when(tagTaskKeyRepositoryMock.findByTaskId(any())).thenReturn(getListOfTaggedTask());
+        when(tagTaskKeyRepositoryMock.findByTaskId(any())).thenReturn(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)));
 
         //act
         Set<TagTaskKey> taggedTasksFromService = tagTaskKeyServiceMock.getMyTaggedTask(currentUser, pageable, tagsIds);
 
         //assert
-        assertEquals(new HashSet<>(getListOfTaggedTask()), taggedTasksFromService);
+        assertEquals(createListOfTaggedTask(CURRENT_USER_ID), taggedTasksFromService);
     }
 
     @Test
@@ -119,13 +121,13 @@ public class TagTaskKeyServiceTest {
         Tag tag = new Tag(nameTag, ownerId, "ff");
         tag.setId(tagId);
 
-        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(getListOfTaggedTask());
+        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)));
 
         //act
         List<TagTaskKey> tagTaskKeysFromService = tagTaskKeyServiceMock.getTagTaskKeyByTag(tag);
 
         //assert
-        assertEquals(getListOfTaggedTask(), tagTaskKeysFromService);
+        assertEquals(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)), tagTaskKeysFromService);
     }
 
     @Test
@@ -163,14 +165,14 @@ public class TagTaskKeyServiceTest {
         tag.setId(6L);
 
         when(tagRepositoryMock.findById(6L)).thenReturn(Optional.of(tag));
-        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(getListOfTaggedTask());
+        when(tagTaskKeyRepositoryMock.findByTag(tag)).thenReturn(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)));
         when(taskRepositoryMock.getOne(3L)).thenReturn(task);
 
         //act
         Set<Task> tasksFromService = tagTaskKeyServiceMock.getTasksByTags(tagsIds, 1L);
 
         //assert
-        assertEquals(getTask(), tasksFromService);
+        assertEquals(createSetOfTasks(CURRENT_USERNAME), tasksFromService);
 
     }
 
@@ -237,80 +239,5 @@ public class TagTaskKeyServiceTest {
 
         //assert
         verify(tagTaskKeyRepositoryMock, times(1)).delete(tagTaskKey);
-    }
-
-    private List<TagTaskKey> getListOfTaggedTask() {
-        Long tagId = 6L;
-        String nameTag = "Home";
-        Long ownerId = 1L;
-
-        Tag tag = new Tag(nameTag, ownerId, "ff");
-        tag.setId(tagId);
-
-        Long taskId = 3L;
-
-        TagTaskKey tagTaskKey = new TagTaskKey(taskId, tag);
-        tagTaskKey.setId(7L);
-
-        return new ArrayList<TagTaskKey>() {{
-            add(new TagTaskKey(taskId, tag));
-        }};
-    }
-
-    private List<TodoList> getTodoListByCreatedBy() {
-        String currentUser = "User";
-
-        Task task1 = Task.builder()
-                .body("gg")
-                .isComplete(false)
-                .createdBy(currentUser)
-                .build();
-        task1.setId(3L);
-
-        Task task2 = Task.builder()
-                .body("f")
-                .isComplete(false)
-                .createdBy(currentUser)
-                .build();
-        task2.setId(4L);
-
-        Set<Task> tasks = new HashSet<Task>() {{
-            add(task1);
-            add(task2);
-        }};
-
-        TodoList todoList1 = TodoList.builder()
-                .todoListName("q")
-                .tasks(tasks)
-                .createdBy(currentUser)
-                .build();
-        todoList1.setId(1L);
-
-        TodoList todoList2 = TodoList.builder()
-                .todoListName("fga")
-                .createdBy(currentUser)
-                .tasks(tasks)
-                .build();
-        todoList2.setId(5L);
-
-        return new ArrayList<TodoList>() {{
-            add(todoList1);
-            add(todoList2);
-        }};
-    }
-
-    private Set<Task> getTask() {
-        String currentUser = "User";
-
-        Task task1 = Task.builder()
-                .body("gg")
-                .isComplete(false)
-                .createdBy(currentUser)
-                .build();
-        task1.setId(3L);
-
-        return new HashSet<Task>() {{
-            add(task1);
-        }};
     }
 }
