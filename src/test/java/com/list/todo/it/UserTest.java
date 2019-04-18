@@ -5,13 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.list.todo.controllers.UserController;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
-import com.list.todo.payload.UpdatingUserInput;
-import com.list.todo.payload.UserStatistics;
-import com.list.todo.payload.UserStats;
-import com.list.todo.payload.UserSummary;
+import com.list.todo.entity.UserSettings;
+import com.list.todo.payload.*;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.FollowerService;
 import com.list.todo.services.UserService;
+import com.list.todo.services.UserSettingsService;
 import com.list.todo.services.UserStatisticsService;
 import com.list.todo.util.IdComparator;
 import com.list.todo.util.PageableStub;
@@ -47,6 +46,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import java.io.IOException;
 import java.util.*;
 
+import static com.list.todo.util.ObjectsProvider.createUserStatistics;
+import static com.list.todo.util.ObjectsProvider.createUserSummary;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -70,6 +71,9 @@ public class UserTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private UserSettingsService settingsService;
 
     @Mock
     private FollowerService followerService;
@@ -146,6 +150,42 @@ public class UserTest {
                 .andExpect(jsonPath("username").value(userSummary.getUsername()))
                 .andExpect(jsonPath("email").value(userSummary.getEmail()))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getUserSettings_OnExistentUser_ReturnsAnObjectOfUserSettings() throws Exception {
+        //arrange
+        UserSettings userSettings = new UserSettings(true, true);
+        when(settingsService.getUserSettingsByUserId(CURRENT_USER_ID)).thenReturn(Optional.of(userSettings));
+
+        //act, assert
+        this.mockMvc.perform(get("/api/users/settings"))
+                .andDo(print())
+                .andExpect(jsonPath("isEnableEmailNotification").value(userSettings.getIsEnableEmailNotification()))
+                .andExpect(jsonPath("isEnableWebSocketNotification").value(userSettings.getIsEnableWebSocketNotification()))
+                .andExpect(status().isOk());
+        verify(settingsService).getUserSettingsByUserId(CURRENT_USER_ID);
+    }
+
+    @Test
+    public void updateUserSettings_OnExistentUser_ReturnsAnObjectOfUserSettings() throws Exception {
+        //arrange
+        UserSettings userSettings = new UserSettings(true, true);
+        UserSettingsInput userSettingsInput = new UserSettingsInput(
+                userSettings.getIsEnableEmailNotification(),
+                userSettings.getIsEnableWebSocketNotification()
+        );
+        when(settingsService.updateUserSettings(userSettingsInput, CURRENT_USER_ID)).thenReturn(Optional.of(userSettings));
+
+        //act, assert
+        this.mockMvc.perform(put("/api/users/settings")
+                .content(objectMapper.writeValueAsString(userSettingsInput))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andDo(print())
+                .andExpect(jsonPath("isEnableEmailNotification").value(userSettings.getIsEnableEmailNotification()))
+                .andExpect(jsonPath("isEnableWebSocketNotification").value(userSettings.getIsEnableWebSocketNotification()))
+                .andExpect(status().isOk());
+        verify(settingsService).updateUserSettings(userSettingsInput, CURRENT_USER_ID);
     }
 
     @Test
@@ -427,24 +467,6 @@ public class UserTest {
         return objectMapper.readValue(response, type);
     }
 
-    private UserStatistics createUserStatistics() {
-        UserStatistics userStatistics = new UserStatistics();
-        userStatistics.setTodoListsNumber(21L);
-        userStatistics.setTasksNumber(11L);
-        userStatistics.setCompletedTasksNumber(5L);
-        userStatistics.setFollowedUsersNumber(2);
-        userStatistics.setFollowersNumber(3);
-
-        return userStatistics;
-    }
-
-    private UserSummary createUserSummary(int postfixNumber) {
-        return new UserSummary(
-                "username" + postfixNumber,
-                "name" + postfixNumber,
-                "email@example.ua" + postfixNumber,
-                "gravatarUrl" + postfixNumber);
-    }
 
     private void assertEqualsTodoLists(List<TodoList> todoLists1, List<TodoList> todoLists2) {
         IdComparator idComparator = new IdComparator();

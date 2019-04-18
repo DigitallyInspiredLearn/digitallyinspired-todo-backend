@@ -24,6 +24,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.list.todo.util.ObjectsProvider.createTodoList;
+import static com.list.todo.util.ObjectsProvider.createUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -119,18 +121,16 @@ public class UserServiceTest {
                 "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         List<Share> shares = new ArrayList<>();
-        Share share1 = new Share(userPrincipal.getId(), new TodoList());
-        Share share2 = new Share(userPrincipal.getId(), new TodoList());
+        Share share1 = new Share(userPrincipal.getId(), createTodoList());
+        Share share2 = new Share(userPrincipal.getId(), createTodoList());
         shares.add(share1);
         shares.add(share2);
         List<TodoList> sharedTodoLists = shares.stream()
                 .map(Share::getSharedTodoList)
                 .collect(Collectors.toList());
         List<TodoList> myTodoLists = new ArrayList<>();
-        TodoList todoList1 = new TodoList();
-        TodoList todoList2 = new TodoList();
-        myTodoLists.add(todoList1);
-        myTodoLists.add(todoList2);
+        myTodoLists.add(createTodoList());
+        myTodoLists.add(createTodoList());
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoLists, pageable, sharedTodoLists.size());
         Page<TodoList> myTodoListsPage = new PageImpl<>(myTodoLists, pageable, myTodoLists.size());
@@ -209,8 +209,8 @@ public class UserServiceTest {
         followedUsers.add(new Follower());
         followedUsers.add(new Follower());
         List<TodoList> todoLists = new ArrayList<>();
-        todoLists.add(new TodoList());
-        todoLists.add(new TodoList());
+        todoLists.add(createTodoList());
+        todoLists.add(createTodoList());
 
         when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(user));
         when(followerRepository.findByFollower(user)).thenReturn(followedUsers);
@@ -229,13 +229,4 @@ public class UserServiceTest {
         verify(todoListRepository, times(todoLists.size())).delete(any(TodoList.class));
     }
 
-
-    private User createUser(int postfixNumber) {
-        return new User(
-                "name" + postfixNumber,
-                "username" + postfixNumber,
-                "email@example.ua" + postfixNumber,
-                "password" + postfixNumber,
-                "gravatarHash" + postfixNumber);
-    }
 }

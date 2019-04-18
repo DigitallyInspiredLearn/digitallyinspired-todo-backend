@@ -1,6 +1,8 @@
 package com.list.todo.util;
 
 import com.list.todo.entity.*;
+import com.list.todo.payload.UserStatistics;
+import com.list.todo.payload.UserSummary;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -52,6 +54,14 @@ public class ObjectsProvider {
         }};
     }
 
+    public static UserSummary createUserSummary(int postfixNumber) {
+        return new UserSummary(
+                "username" + postfixNumber,
+                "name" + postfixNumber,
+                "email@example.ua" + postfixNumber,
+                "gravatarUrl" + postfixNumber);
+    }
+
     public static Tag createTag() {
         return Tag.builder()
                 .tagName("tag")
@@ -65,5 +75,25 @@ public class ObjectsProvider {
             add(createTag());
             add(createTag());
         }};
+    }
+
+    public static UserStatistics createUserStatistics() {
+        UserStatistics userStatistics = new UserStatistics();
+        userStatistics.setTodoListsNumber(21L);
+        userStatistics.setTasksNumber(11L);
+        userStatistics.setCompletedTasksNumber(5L);
+        userStatistics.setFollowedUsersNumber(2);
+        userStatistics.setFollowersNumber(3);
+
+        return userStatistics;
+    }
+
+    public static User createUser(int postfixNumber) {
+        return new User(
+                "name" + postfixNumber,
+                "username" + postfixNumber,
+                "email@example.ua" + postfixNumber,
+                "password" + postfixNumber,
+                "gravatarHash" + postfixNumber);
     }
 }
