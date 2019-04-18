@@ -1,6 +1,5 @@
 package com.list.todo.it;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.list.todo.TodoListApplication;
 import com.list.todo.configurations.H2TestProfileJPAConfig;
@@ -8,12 +7,14 @@ import com.list.todo.controllers.TagController;
 import com.list.todo.entity.Tag;
 import com.list.todo.entity.TagTaskKey;
 import com.list.todo.entity.Task;
-import com.list.todo.entity.TodoList;
 import com.list.todo.payload.TagInput;
 import com.list.todo.security.UserPrincipal;
 import com.list.todo.services.TagService;
 import com.list.todo.services.TagTaskKeyService;
 import com.list.todo.services.TaskService;
+import com.list.todo.util.IdComparator;
+import com.list.todo.util.JsonParser;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,9 +38,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.io.IOException;
 import java.util.*;
 
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -122,8 +123,9 @@ public class TagTest {
 
     @Test
     public void getMyTags_ReturnsAListOfTags() throws Exception {
+        JsonParser<Tag> tagJsonParser = new JsonParser<>(Tag.class);
         //arrange
-        when(tagServiceMock.getTagsByOwnerId(CURRENT_USER_ID)).thenReturn(getListOfTags());
+        when(tagServiceMock.getTagsByOwnerId(CURRENT_USER_ID)).thenReturn(createListOfTags(CURRENT_USER_ID));
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/tags"))
@@ -131,7 +133,7 @@ public class TagTest {
                 .andExpect(status().isOk())
                 .andReturn();
         //assert
-        assertEquals(getTagsFromJsonResponse(result.getResponse().getContentAsString()), getListOfTags());
+        assertListsEqual(tagJsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString()), createListOfTags(CURRENT_USER_ID));
 
         verify(tagServiceMock, times(1)).getTagsByOwnerId(CURRENT_USER_ID);
 
@@ -139,13 +141,14 @@ public class TagTest {
 
     @Test
     public void getMyTagsWithTodoListId_OnExistentTagsIds_ReturnsAListOfTagTaskKeys() throws Exception {
+        JsonParser<TagTaskKey> tagTaskKeyJsonParser = new JsonParser<>(TagTaskKey.class);
         //arrange
         List<Long> tagsIds = new ArrayList<Long>() {{
             add(TAG_ID);
         }};
 
         when(tagTaskKeyServiceMock.getMyTaggedTask(any(UserPrincipal.class), any(Pageable.class), eq(tagsIds)))
-                .thenReturn(getListOfTaggedTask());
+                .thenReturn(createListOfTaggedTask(CURRENT_USER_ID));
 
         //act
         MvcResult result = this.mockMvc.perform(get("/api/tags/myTagTaskKeys?tagId=" + TAG_ID))
@@ -154,7 +157,9 @@ public class TagTest {
                 .andReturn();
 
         //assert
-        assertEquals(new HashSet<>(getTagTaskKeyFromJsonResponse(result.getResponse().getContentAsString())), getListOfTaggedTask());
+        assertEquals(
+                new HashSet<>(tagTaskKeyJsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString())),
+                createListOfTaggedTask(CURRENT_USER_ID));
 
         verify(tagTaskKeyServiceMock, times(1)).getMyTaggedTask(any(UserPrincipal.class), any(Pageable.class), eq(tagsIds));
     }
@@ -181,7 +186,7 @@ public class TagTest {
     @Test
     public void updateTag_OnExistentTag_ReturnsAObjectOfTag() throws Exception {
         //arrange
-        Tag tag = createTag(CURRENT_USER_ID);
+        Tag tag = createTag(CURRENT_USER_ID, TAG_ID);
 
         Tag updatedTag = new Tag("Job", CURRENT_USER_ID, "ff");
         updatedTag.setId(TAG_ID);
@@ -226,7 +231,7 @@ public class TagTest {
     @Test
     public void updateTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = createTag(ANOTHER_USER_ID);
+        Tag tag = createTag(ANOTHER_USER_ID, TAG_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -246,7 +251,7 @@ public class TagTest {
     @Test
     public void deleteTag_successfulDelete() throws Exception {
         //arrange
-        Tag tag = createTag(CURRENT_USER_ID);
+        Tag tag = createTag(CURRENT_USER_ID, TAG_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -276,7 +281,7 @@ public class TagTest {
     @Test
     public void deleteTag_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = createTag(ANOTHER_USER_ID);
+        Tag tag = createTag(ANOTHER_USER_ID, TAG_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -292,7 +297,7 @@ public class TagTest {
     @Test
     public void removeTagFromTheTask_OnExistentTag_SuccessfulDelete() throws Exception {
         //arrange
-        Tag tag = createTag(CURRENT_USER_ID);
+        Tag tag = createTag(CURRENT_USER_ID, TAG_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -322,7 +327,7 @@ public class TagTest {
     @Test
     public void removeTagFromTheTask_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = createTag(ANOTHER_USER_ID);
+        Tag tag = createTag(ANOTHER_USER_ID, TAG_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
 
@@ -338,9 +343,9 @@ public class TagTest {
     @Test
     public void addTagToTask_OnExistentTagAndTask_ReturnsAObjectOfTagTaskKey() throws Exception {
         //arrange
-        Tag tag = createTag(CURRENT_USER_ID);
+        Tag tag = createTag(CURRENT_USER_ID, TAG_ID);
 
-        Task task = createTask(CURRENT_USERNAME, createTodoList(CURRENT_USERNAME));
+        Task task = createTask(CURRENT_USERNAME, createTodoList(CURRENT_USERNAME), TASK_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
@@ -376,9 +381,9 @@ public class TagTest {
     @Test
     public void addTagToTask_OnNonExistentTodoList_ReturnsAIsNotFound() throws Exception {
         //arrange
-        Tag tag = createTag(CURRENT_USER_ID);
+        Tag tag = createTag(CURRENT_USER_ID, TAG_ID);
 
-        Task task = createTask(CURRENT_USERNAME, null);
+        Task task = createTask(CURRENT_USERNAME, null, TASK_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
@@ -396,9 +401,9 @@ public class TagTest {
     @Test
     public void addTagToTask_OnAnotherUser_ReturnsAIsForbidden() throws Exception {
         //arrange
-        Tag tag = createTag(ANOTHER_USER_ID);
+        Tag tag = createTag(ANOTHER_USER_ID, TAG_ID);
 
-        Task task = createTask(ANOTHER_USERNAME, createTodoList(ANOTHER_USERNAME));
+        Task task = createTask(ANOTHER_USERNAME, createTodoList(ANOTHER_USERNAME), TASK_ID);
 
         when(tagServiceMock.getTagById(TAG_ID)).thenReturn(Optional.of(tag));
         when(taskServiceMock.getTaskById(TASK_ID)).thenReturn(Optional.of(task));
@@ -414,88 +419,13 @@ public class TagTest {
 
     }
 
-    private List<Tag> getTagsFromJsonResponse(String response) throws IOException {
+    private void assertListsEqual(List<Tag> todoLists1, List<Tag> todoLists2) {
+        IdComparator idComparator = new IdComparator();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        todoLists1.sort(idComparator);
+        todoLists2.sort(idComparator);
 
-        JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, Tag.class);
-
-        return objectMapper.readValue(response, type);
+        // assert
+        Assert.assertEquals(todoLists1, todoLists2);
     }
-
-    private List<TagTaskKey> getTagTaskKeyFromJsonResponse(String response) throws IOException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, TagTaskKey.class);
-
-        return objectMapper.readValue(response, type);
-    }
-
-    private Tag createTag(Long userId) {
-        Tag tag = new Tag("Home", userId, "ff");
-        tag.setId(TAG_ID);
-
-        return tag;
-    }
-
-    private TagInput getTagInput() {
-        return new TagInput("Job", "ff");
-    }
-
-    private Task createTask(String createdBy, TodoList todoList) {
-        Task task = Task.builder()
-                .body("task")
-                .todoList(todoList)
-                .createdBy(createdBy)
-                .build();
-        task.setId(TASK_ID);
-
-        return task;
-    }
-
-    private TodoList createTodoList(String createdBy) {
-        return TodoList.builder()
-                .todoListName("ff")
-                .createdBy(createdBy)
-                .build();
-    }
-
-    private List<Tag> getListOfTags() {
-        Long tagId = 2L;
-        String nameTag = "Home";
-
-        Tag tag = new Tag(nameTag, CURRENT_USER_ID, "fg");
-        tag.setId(tagId);
-
-        Long tag2Id = 3L;
-        String name2Tag = "Home";
-
-        Tag tag2 = new Tag(name2Tag, CURRENT_USER_ID, "ff");
-        tag2.setId(tag2Id);
-
-        return new ArrayList<Tag>() {{
-            add(tag);
-            add(tag2);
-        }};
-    }
-
-    private Set<TagTaskKey> getListOfTaggedTask() {
-        Long tagId = 6L;
-        String nameTag = "";
-
-        Tag tag = new Tag(nameTag, CURRENT_USER_ID, "");
-        tag.setId(tagId);
-
-        Long taskId = 3L;
-
-        TagTaskKey tagTaskKey = new TagTaskKey(taskId, tag);
-        tagTaskKey.setId(7L);
-
-        return new HashSet<TagTaskKey>() {{
-            add(tagTaskKey);
-        }};
-    }
-
-
 }

@@ -16,11 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class TagServiceTest {
+
+    private static final Long CURRENT_USER_ID = 1L;
+    private static final Long TAG_ID = 6L;
+    private static final Long TASK_ID = 15L;
+    private static final Long ANOTHER_USER_ID = 1000L;
 
     @Mock
     private TagRepository tagRepositoryMock;
@@ -38,18 +44,16 @@ public class TagServiceTest {
     public void getTagById_OnExistentTag_ReturnsATag() {
 
         //arrange
-        Long tagId = 1L;
         String nameTag = "Home";
-        Long ownerId = 1L;
         String color = "#1234";
 
-        Tag tag = new Tag(nameTag, ownerId, color);
-        tag.setId(tagId);
+        Tag tag = new Tag(nameTag, CURRENT_USER_ID, color);
+        tag.setId(TAG_ID);
 
-        when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
+        when(tagRepositoryMock.findById(TAG_ID)).thenReturn(Optional.of(tag));
 
         //act
-        Optional<Tag> tagFromService = tagServiceMock.getTagById(tagId);
+        Optional<Tag> tagFromService = tagServiceMock.getTagById(TAG_ID);
 
         //assert
         assertEquals(Optional.of(tag), tagFromService);
@@ -60,12 +64,10 @@ public class TagServiceTest {
     @Test
     public void getTagById_OnNonExistentTag_ReturnsEmptyOptional() {
         //arrange
-        Long tagId = 1000L;
-
-        when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.empty());
+        when(tagRepositoryMock.findById(TAG_ID)).thenReturn(Optional.empty());
 
         //act
-        Optional<Tag> tagFromService = tagServiceMock.getTagById(tagId);
+        Optional<Tag> tagFromService = tagServiceMock.getTagById(TAG_ID);
 
         //assert
         assertEquals(Optional.empty(), tagFromService);
@@ -75,26 +77,22 @@ public class TagServiceTest {
     @Test
     public void getTagsByOwnerId_OnExistentOwnerId_ReturnsAListOfTags() {
         //arrange
-        Long ownerId = 1L;
-
-        when(tagRepositoryMock.getByOwnerId(ownerId)).thenReturn(getListOfTags());
+        when(tagRepositoryMock.getByOwnerId(CURRENT_USER_ID)).thenReturn(createListOfTags(CURRENT_USER_ID));
 
         //act
-        Iterable<Tag> tagsFromService = tagServiceMock.getTagsByOwnerId(ownerId);
+        Iterable<Tag> tagsFromService = tagServiceMock.getTagsByOwnerId(CURRENT_USER_ID);
 
         //assert
-        assertEquals(getListOfTags(), tagsFromService);
+        assertEquals(createListOfTags(CURRENT_USER_ID), tagsFromService);
     }
 
     @Test
     public void getTagsByOwnerId_OnNonExistentOwnerId_ReturnsNull() {
         //arrange
-        Long ownerId = 1000L;
-
-        when(tagRepositoryMock.getByOwnerId(ownerId)).thenReturn(new ArrayList<>());
+        when(tagRepositoryMock.getByOwnerId(ANOTHER_USER_ID)).thenReturn(new ArrayList<>());
 
         //act
-        Iterable<Tag> tagsFromService = tagServiceMock.getTagsByOwnerId(ownerId);
+        Iterable<Tag> tagsFromService = tagServiceMock.getTagsByOwnerId(ANOTHER_USER_ID);
 
         //assert
         assertEquals(new ArrayList<>(), tagsFromService);
@@ -103,15 +101,13 @@ public class TagServiceTest {
     @Test
     public void addTag_ReturnsAnObjectOfNewTag() {
         //arrange
-        Long currentUserId = 1L;
-
         when(tagRepositoryMock.save(any(Tag.class))).thenReturn(new Tag());
 
         TagInput tagInput = new TagInput("Home", "jg");
         Tag newTag = new Tag();
 
         //act
-        Optional<Tag> addedTag = tagServiceMock.addTag(tagInput, currentUserId);
+        Optional<Tag> addedTag = tagServiceMock.addTag(tagInput, CURRENT_USER_ID);
 
         //assert
         assertEquals(addedTag, Optional.of(newTag));
@@ -120,15 +116,14 @@ public class TagServiceTest {
     @Test
     public void addTagToTask_ReturnsAnObjectOfNewTagTaskKey() {
         //arrange
-        Long taskId = 1L;
-        Tag tag = new Tag("Home", 1L, "cc");
+        Tag tag = new Tag("Home", CURRENT_USER_ID, "cc");
 
         when(tagTaskKeyServiceMock.addTagTaskKey(any(TagTaskKey.class))).thenReturn(Optional.of(new TagTaskKey()));
 
         Optional<TagTaskKey> newTagTaskKey = Optional.of(new TagTaskKey());
 
         //act
-        Optional<TagTaskKey> addedTagTaskKey = tagServiceMock.addTagToTask(tag, taskId);
+        Optional<TagTaskKey> addedTagTaskKey = tagServiceMock.addTagToTask(tag, TASK_ID);
 
         //assert
         assertEquals(addedTagTaskKey, newTagTaskKey);
@@ -137,43 +132,40 @@ public class TagServiceTest {
     @Test
     public void removeTagFromTask_SuccessfulDelete() {
         //arrange
-        Long taskId = 1L;
-        Tag tag = new Tag("Home", 1L, "cc");
+        Tag tag = new Tag("Home", CURRENT_USER_ID, "cc");
 
         //act
-        tagServiceMock.removeTagFromTask(taskId, tag);
+        tagServiceMock.removeTagFromTask(TASK_ID, tag);
 
         //assert
-        verify(tagTaskKeyServiceMock).deleteTaggedTask(taskId, tag);
+        verify(tagTaskKeyServiceMock).deleteTaggedTask(TASK_ID, tag);
     }
 
     @Test
     public void updateTag_updateNonExistentTag_ReturnsAnEmptyOptional() {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
-        Long tagId = 1000L;
         TagInput tagInput = new TagInput("Home", "ff");
 
-        when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.empty());
+        when(tagRepositoryMock.findById(TAG_ID)).thenReturn(Optional.empty());
 
         //act
         tagServiceMock.updateTag(2L, tagInput);
 
         //assert
-        verify(tagRepositoryMock, times(0)).save(tag);
+        verify(tagRepositoryMock, never()).save(tag);
     }
 
     @Test
     public void updateTag_SuccessfulUpdate() {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
-        Long tagId = 1000L;
         TagInput tagInput = new TagInput("Home", "ff");
 
-        when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
+        when(tagRepositoryMock.findById(TAG_ID)).thenReturn(Optional.of(tag));
 
         //act
-        tagServiceMock.updateTag(tagId, tagInput);
+        tagServiceMock.updateTag(TAG_ID, tagInput);
 
         //assert
         verify(tag).setTagName(tagInput.getTagName());
@@ -185,71 +177,32 @@ public class TagServiceTest {
     public void deleteTag_deleteNonExistentTag_Void() {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
-        Long tagId = 1L;
 
         //act
-        tagServiceMock.deleteTag(tagId);
+        tagServiceMock.deleteTag(TAG_ID);
 
         //assert
-        verify(tagTaskKeyRepositoryMock, times(0)).findByTag(tag);
-        verify(tagRepositoryMock).deleteById(tagId);
+        verify(tagTaskKeyRepositoryMock, never()).findByTag(tag);
+        verify(tagRepositoryMock).deleteById(TAG_ID);
     }
 
     @Test
     public void deleteTag_deleteExistentTagAndTaggedTask_Void() {
         //arrange
         Tag tag = Mockito.mock(Tag.class);
-        Long tagId = 1L;
 
-        when(tagRepositoryMock.findById(tagId)).thenReturn(Optional.of(tag));
-        when(tagTaskKeyServiceMock.getTagTaskKeyByTag(tag)).thenReturn(getListOfTaggedTask());
+        when(tagRepositoryMock.findById(TAG_ID)).thenReturn(Optional.of(tag));
+        when(tagTaskKeyServiceMock.getTagTaskKeyByTag(tag)).thenReturn(new ArrayList<>(createListOfTaggedTask(CURRENT_USER_ID)));
 
         //act
-        tagServiceMock.deleteTag(tagId);
+        tagServiceMock.deleteTag(TAG_ID);
 
         //arrange
-        verify(tagRepositoryMock).findById(tagId);
+        verify(tagRepositoryMock).findById(TAG_ID);
         verify(tagTaskKeyServiceMock).getTagTaskKeyByTag(tag);
-        getListOfTaggedTask()
+        createListOfTaggedTask(CURRENT_USER_ID)
                 .forEach(taggedTask -> verify(tagTaskKeyServiceMock).deleteTaggedTask(taggedTask));
-        verify(tagRepositoryMock).deleteById(tagId);
+        verify(tagRepositoryMock).deleteById(TAG_ID);
 
-    }
-
-    private List<Tag> getListOfTags() {
-        Long tagId = 1L;
-        String nameTag = "Home";
-        Long ownerId = 1L;
-
-        Tag tag = new Tag(nameTag, ownerId, "fg");
-        tag.setId(tagId);
-
-        Long tag2Id = 2L;
-        String name2Tag = "Home";
-
-        Tag tag2 = new Tag(name2Tag, ownerId, "ff");
-        tag2.setId(tag2Id);
-
-        return new ArrayList<Tag>() {{
-            add(tag);
-            add(tag2);
-        }};
-    }
-
-    private List<TagTaskKey> getListOfTaggedTask() {
-        Long tagId = 1L;
-        String nameTag = "Home";
-        Long ownerId = 1L;
-
-        Tag tag = new Tag(nameTag, ownerId, "ff");
-        tag.setId(tagId);
-
-        Long taskId = 3L;
-        Long task2Id = 4L;
-
-        return new ArrayList<TagTaskKey>() {{
-            new TagTaskKey(taskId, tag);
-            new TagTaskKey(task2Id, tag);
-        }};
     }
 }
