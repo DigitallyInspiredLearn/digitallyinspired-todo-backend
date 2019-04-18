@@ -21,11 +21,11 @@ public class TaskService {
         return taskRepository.findById(currentTaskId);
     }
 
-    public Long countTasksByCreatedBy(String createdBy) {
+    Long countTasksByCreatedBy(String createdBy) {
         return taskRepository.countByCreatedBy(createdBy);
     }
 
-    public Long countTasksByCreatedByAndIsComplete(String createdBy, Boolean isComplete) {
+    Long countTasksByCreatedByAndIsComplete(String createdBy, Boolean isComplete) {
         return taskRepository.countByCreatedByAndIsComplete(createdBy, isComplete);
     }
 
@@ -55,7 +55,6 @@ public class TaskService {
             newTask = Optional.of(taskRepository.save(task));
 
         }
-
         return newTask;
     }
 
