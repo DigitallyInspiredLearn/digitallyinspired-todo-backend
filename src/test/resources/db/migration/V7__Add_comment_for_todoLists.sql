@@ -1,0 +1,1 @@
+alter table todo_list add column comment varchar(255) not null;

@@ -2,6 +2,8 @@ package com.list.todo.it;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.list.todo.TodoListApplication;
+import com.list.todo.configurations.H2TestProfileJPAConfig;
 import com.list.todo.controllers.UserController;
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
@@ -34,6 +36,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -55,7 +58,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {TodoListApplication.class, H2TestProfileJPAConfig.class})
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 public class UserTest {
 
@@ -96,7 +101,7 @@ public class UserTest {
 
         @Override
         public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
             UserPrincipal userPrincipal = new UserPrincipal();
             userPrincipal.setId(CURRENT_USER_ID);
             userPrincipal.setUsername("username");
@@ -110,11 +115,8 @@ public class UserTest {
         @Override
         public boolean supportsParameter(
                 MethodParameter parameter) {
-            if (parameter.getParameterType().equals(
-                    Pageable.class)) {
-                return true;
-            }
-            return false;
+            return parameter.getParameterType().equals(
+                    Pageable.class);
         }
 
         @Override
@@ -122,9 +124,9 @@ public class UserTest {
                 MethodParameter parameter,
                 ModelAndViewContainer mavContainer,
                 NativeWebRequest webRequest,
-                WebDataBinderFactory binderFactory) throws Exception {
+                WebDataBinderFactory binderFactory) {
 
-            return new PageRequest(0, 50);
+            return PageRequest.of(0, 50);
         }
     };
 

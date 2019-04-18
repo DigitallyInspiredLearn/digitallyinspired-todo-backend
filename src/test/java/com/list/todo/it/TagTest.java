@@ -2,6 +2,8 @@ package com.list.todo.it;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.list.todo.TodoListApplication;
+import com.list.todo.configurations.H2TestProfileJPAConfig;
 import com.list.todo.controllers.TagController;
 import com.list.todo.entity.Tag;
 import com.list.todo.entity.TagTaskKey;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -47,7 +50,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {TodoListApplication.class, H2TestProfileJPAConfig.class})
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 public class TagTest {
 
@@ -103,7 +108,7 @@ public class TagTest {
         @Override
         public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-            return new PageRequest(0, 50);
+            return PageRequest.of(0, 50);
         }
     };
 
