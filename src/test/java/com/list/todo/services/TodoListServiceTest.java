@@ -73,7 +73,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_Successful_ReturnsIterableOfTodolists() {
+    public void getTodoListsByUser_Successful_IterableOfTodoLists() {
         //arrange
         TodoList todoList1 = new TodoList();
         todoList1.setTodoListName(TODO_LIST_NAME);
@@ -94,7 +94,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void addTodoList_Successful_OptionalOfAddedTodolist() {
+    public void addTodoList_Successful_OptionalOfAddedTodoList() {
         //arrange
         TodoList todoList = new TodoList();
         todoList.setTodoListName(TODO_LIST_NAME);
@@ -112,7 +112,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void updateTodoList_Successful_ReturnsOptionalOfUpdatedTodolist() {
+    public void updateTodoList_Successful_OptionalOfUpdatedTodoList() {
         //arrange
         String newTodoListName = TODO_LIST_NAME_2;
         TodoList todoList = Mockito.mock(TodoList.class);
