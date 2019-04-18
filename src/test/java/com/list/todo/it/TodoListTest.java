@@ -13,7 +13,6 @@ import com.list.todo.services.UserService;
 import com.list.todo.util.IdComparator;
 import com.list.todo.util.JsonParser;
 import com.list.todo.util.ObjectsProvider;
-import com.sun.xml.internal.bind.v2.TODO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -71,8 +71,6 @@ public class TodoListTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private JsonParser<TodoList> jsonParser = new JsonParser<>(TodoList.class);
-
-    private IdComparator idComparator = new IdComparator();
 
     private static final Long USER_ID = 1L;
     private static final String USER_USERNAME = "username";
@@ -133,12 +131,14 @@ public class TodoListTest {
 
     @Test
     public void getTodoLists_getExistentTodoLists_OkStatus() throws Exception {
-        List<TodoList> todoLists = ObjectsProvider.createListOfTodoLists();
+        // arrange
+        List<TodoList> todoLists = createListOfTodoLists();
 
         when(todoListService.getTodoListsByUser(any(UserPrincipal.class), eq(TodoListStatus.ACTIVE), any(Pageable.class), eq(new ArrayList<>())))
                 .thenReturn(todoLists);
 
-        MvcResult result = this.mockMvc.perform(get("/api/todolists?status={status}&tagId=", "ACTIVE")
+        // act
+        MvcResult result = this.mockMvc.perform(get("/api/todolists?status={status}&tagId=", TodoListStatus.ACTIVE)
                 .with(user(USER_USERNAME))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
@@ -147,19 +147,20 @@ public class TodoListTest {
 
         List<TodoList> todoListsFromJsonResponse = jsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString());
 
-        todoLists.sort(idComparator);
-        todoListsFromJsonResponse.sort(idComparator);
-
-        Assert.assertEquals(todoLists, todoListsFromJsonResponse);
+        // assert
+        verify(todoListService, times(1)).getTodoListsByUser(any(UserPrincipal.class), eq(TodoListStatus.ACTIVE), any(Pageable.class), eq(new ArrayList<>()));
+        this.assertListsEqual(todoLists, todoListsFromJsonResponse);
     }
 
     @Test
     public void getMySharedTodoLists_getExistentTodoLists_OkStatus() throws Exception {
 
-        List<TodoList> todoLists = ObjectsProvider.createListOfTodoLists();
+        // arrange
+        List<TodoList> todoLists = createListOfTodoLists();
 
         when(shareService.getSharedTodoListsByUser(USER_ID)).thenReturn(todoLists);
 
+        // act
         MvcResult result = this.mockMvc.perform(get("/api/todolists/shared")
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
@@ -168,19 +169,20 @@ public class TodoListTest {
 
         List<TodoList> todoListsFromJsonResponse = jsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString());
 
-        todoLists.sort(idComparator);
-        todoListsFromJsonResponse.sort(idComparator);
-
-        Assert.assertEquals(todoLists, todoListsFromJsonResponse);
+        // assert
+        verify(shareService, times(1)).getSharedTodoListsByUser(USER_ID);
+        this.assertListsEqual(todoLists, todoListsFromJsonResponse);
     }
 
     @Test
     public void getTodoList_getExistentTodoList_OkStatus() throws Exception {
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
 
+        // act
         this.mockMvc.perform(get("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
@@ -194,67 +196,83 @@ public class TodoListTest {
                 .andExpect(jsonPath("$.tasks[0].priority").value("NOT_SPECIFIED"))
                 .andReturn();
 
-         verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
 
     }
 
     @Test
     public void getTodoList_getNonExistentTodoList_NotFoundStatus() throws Exception {
 
+        // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
+        // act
         this.mockMvc.perform(get("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        // assert
+        verify(todoListService).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
     public void getTodoList_getTodoListOfAnotherUser_ForbiddenStatus() throws Exception {
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setCreatedBy(SECOND_USER_USERNAME);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
 
+        // act
         this.mockMvc.perform(get("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
     public void addTodoList_addCorrectTodoList_OkStatus() throws Exception {
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         TodoListInput todoListInput = new TodoListInput(todoList.getTodoListName(), todoList.getComment(), todoList.getTasks());
 
         when(todoListService.addTodoList(todoListInput, USER_ID)).thenReturn(Optional.of(todoList));
 
+        // act
         this.mockMvc.perform(post("/api/todolists").content(objectMapper.writeValueAsString(todoListInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
 
+        // assert
         verify(todoListService, times(1)).addTodoList(todoListInput, USER_ID);
     }
 
     @Test
     public void updateTodoList_updateExistentTodoLists_OkStatus() throws Exception {
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
-        TodoList updatedTodoList = ObjectsProvider.createTodoList();
+        TodoList updatedTodoList = createTodoList();
         updatedTodoList.setId(TODO_LIST_ID);
         updatedTodoList.setTodoListName(TODO_LIST_NAME);
         updatedTodoList.setComment(TODO_LIST_COMMENT);
 
-        TodoListInput todoListInput = new TodoListInput(TODO_LIST_NAME, TODO_LIST_COMMENT, ObjectsProvider.createSetOfTasks());
+        TodoListInput todoListInput = new TodoListInput(TODO_LIST_NAME, TODO_LIST_COMMENT, createSetOfTasks());
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(todoListService.updateTodoList(TODO_LIST_ID, todoListInput, USER_ID)).thenReturn(Optional.of(updatedTodoList));
 
+        // act
         this.mockMvc.perform(put("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .content(objectMapper.writeValueAsString(todoListInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -266,249 +284,309 @@ public class TodoListTest {
                 .andExpect(jsonPath("$.tasks[0].priority").value("NOT_SPECIFIED"))
                 .andExpect(status().isOk());
 
-        verify(todoListService).updateTodoList(TODO_LIST_ID, todoListInput, USER_ID);
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
+        verify(todoListService, times(1)).updateTodoList(TODO_LIST_ID, todoListInput, USER_ID);
     }
 
     @Test
     public void updateTodoList_updateNonExistentTodoList_NotFoundStatus() throws Exception {
 
+        // arrange
         TodoListInput todoListInput = new TodoListInput();
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
+        // act
         this.mockMvc.perform(put("/api/todolists/{todoListId}", TODO_LIST_ID).content(objectMapper.writeValueAsString(todoListInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
     public void updateTodoList_updateTodoListOfAnotherUser_ForbiddenStatus() throws Exception {
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setCreatedBy(SECOND_USER_USERNAME);
 
         TodoListInput todoListInput = new TodoListInput();
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
 
+        // act
         this.mockMvc.perform(put("/api/todolists/{todoListId}", TODO_LIST_ID).content(objectMapper.writeValueAsString(todoListInput))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
     public void enableTodoList_enableExistentTodolist_OkStatus() throws Exception {
-        Optional<TodoList> todoList = Optional.of(ObjectsProvider.createTodoList());
+        // arrange
+        Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.INACTIVE);
-        Optional<TodoList> enabledTodoList = Optional.of(ObjectsProvider.createTodoList());
+        Optional<TodoList> enabledTodoList = Optional.of(createTodoList());
         enabledTodoList.get().setTodoListStatus(TodoListStatus.ACTIVE);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(todoList);
         when(todoListService.changeTodoListStatus(TODO_LIST_ID, TodoListStatus.ACTIVE)).thenReturn(enabledTodoList);
 
+        // act
         this.mockMvc.perform(put("/api/todolists/enable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(jsonPath("todoListName").value(TODO_LIST_NAME))
                 .andExpect(jsonPath("createdBy").value(USER_USERNAME))
                 .andExpect(status().isOk());
+
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
+        verify(todoListService, times(1)).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.ACTIVE);
     }
 
     @Test
     public void enableTodoList_enableTodoListOfAnotherUser_ForbiddenStatus() throws Exception {
-        Optional<TodoList> todoList = Optional.of(ObjectsProvider.createTodoList());
+        // arrange
+        Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.INACTIVE);
         todoList.get().setCreatedBy(SECOND_USER_USERNAME);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(todoList);
 
+        // act
         this.mockMvc.perform(put("/api/todolists/enable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.ACTIVE);
 
     }
 
     @Test
     public void enableTodoList_enableNonExistentTodoList_NotFoundStatus() throws Exception {
-
+        // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
+        // act
         this.mockMvc.perform(put("/api/todolists/enable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.ACTIVE);
     }
 
     @Test
     public void disableTodoList_disableExistentTodolist_OkStatus() throws Exception {
-        Optional<TodoList> todoList = Optional.of(ObjectsProvider.createTodoList());
+        // arrange
+        Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.ACTIVE);
-        Optional<TodoList> disabledTodoList = Optional.of(ObjectsProvider.createTodoList());
+        Optional<TodoList> disabledTodoList = Optional.of(createTodoList());
         disabledTodoList.get().setTodoListStatus(TodoListStatus.INACTIVE);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(todoList);
         when(todoListService.changeTodoListStatus(TODO_LIST_ID, TodoListStatus.INACTIVE)).thenReturn(disabledTodoList);
 
+        // act, assert
         this.mockMvc.perform(put("/api/todolists/disable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(jsonPath("todoListName").value(TODO_LIST_NAME))
                 .andExpect(jsonPath("createdBy").value(USER_USERNAME))
                 .andExpect(status().isOk());
+
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
+        verify(todoListService, times(1)).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.INACTIVE);
     }
 
     @Test
     public void disableTodoList_disableTodoListOfAnotherUser_ForbiddenStatus() throws Exception {
-        Optional<TodoList> todoList = Optional.of(ObjectsProvider.createTodoList());
+        // arrange
+        Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.ACTIVE);
         todoList.get().setCreatedBy(SECOND_USER_USERNAME);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(todoList);
 
+        // act
         this.mockMvc.perform(put("/api/todolists/disable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.INACTIVE);
 
     }
 
     @Test
     public void disableTodoList_disableNonExistentTodoList_NotFoundStatus() throws Exception {
-
+        // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
+        // act
         this.mockMvc.perform(put("/api/todolists/disable/{id}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).changeTodoListStatus(TODO_LIST_ID, TodoListStatus.INACTIVE);
     }
 
     @Test
     public void deleteTodoList_deleteExistentTodoList_OkStatus() throws Exception {
-
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
 
+        // act
         this.mockMvc.perform(delete("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService).deleteTodoList(TODO_LIST_ID, USER_ID);
     }
 
     @Test
     public void deleteTodoList_deleteNonExistentTodoList_NotFoundStatus() throws Exception {
-
+        // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
+        // act
         this.mockMvc.perform(delete("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
+        // assert
         verify(todoListService, never()).deleteTodoList(TODO_LIST_ID, USER_ID);
 
     }
 
     @Test
     public void deleteTodoList_deleteTodoListOfAnotherUser_ForbiddenStatus() throws Exception {
-
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setCreatedBy(SECOND_USER_USERNAME);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
 
-        this.mockMvc.perform(delete("/api/todolists/{todoListId}",  TODO_LIST_ID)
+        // act
+        this.mockMvc.perform(delete("/api/todolists/{todoListId}", TODO_LIST_ID)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).deleteTodoList(TODO_LIST_ID, USER_ID);
 
     }
 
     @Test
     public void shareTodoListToUser_shareExistentTodoListToUser_OkStatus() throws Exception {
-
+        // arrange
         User user = new User();
         user.setId(USER_ID);
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(SECOND_USER_USERNAME)).thenReturn(Optional.of(user));
         when(shareService.isSharedTodoListToUser(todoList, SECOND_USER_ID)).thenReturn(false);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, SECOND_USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isOk());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
+        verify(userService).getUserByUsername(SECOND_USER_USERNAME);
         verify(todoListService).shareTodoList(SECOND_USER_USERNAME, TODO_LIST_ID, USER_ID);
     }
 
     @Test
     public void shareTodoListToUser_shareNonExistentTodoListToUser_NotFoundStatus() throws Exception {
-
+        // arrange
         User user = new User();
         user.setId(USER_ID);
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
         when(userService.getUserByUsername(SECOND_USER_USERNAME)).thenReturn(Optional.of(user));
         when(shareService.isSharedTodoListToUser(todoList, SECOND_USER_ID)).thenReturn(false);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, SECOND_USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).shareTodoList(SECOND_USER_USERNAME, TODO_LIST_ID, USER_ID);
+        verify(userService, times(1)).getUserByUsername(SECOND_USER_USERNAME);
+
 
     }
 
     @Test
     public void shareTodoListToUser_shareTodoListToNonExistentUser_NotFoundStatus() throws Exception {
-
-        TodoList todoList = ObjectsProvider.createTodoList();
+        // arrange
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(SECOND_USER_USERNAME)).thenReturn(Optional.empty());
         when(shareService.isSharedTodoListToUser(todoList, SECOND_USER_ID)).thenReturn(false);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, SECOND_USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).shareTodoList(SECOND_USER_USERNAME, TODO_LIST_ID, USER_ID);
+        verify(userService, times(1)).getUserByUsername(SECOND_USER_USERNAME);
     }
 
     @Test
     public void shareTodoListToUser_shareMyTodoListToMyself_ForbiddenStatus() throws Exception {
+        // arrange
         User user = new User();
         user.setId(USER_ID);
         user.setUsername(USER_USERNAME);
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
         todoList.setCreatedBy(USER_USERNAME);
 
@@ -516,62 +594,80 @@ public class TodoListTest {
         when(userService.getUserByUsername(USER_USERNAME)).thenReturn(Optional.of(user));
         when(shareService.isSharedTodoListToUser(todoList, USER_ID)).thenReturn(false);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).shareTodoList(USER_USERNAME, TODO_LIST_ID, USER_ID);
+        verify(userService, times(1)).getUserByUsername(USER_USERNAME);
     }
 
     @Test
     public void shareTodoListToUser_shareTodoListToMyself_ForbiddenStatus() throws Exception {
+        // arrange
         User user = new User();
         user.setId(USER_ID);
         user.setUsername(USER_USERNAME);
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(USER_USERNAME)).thenReturn(Optional.of(user));
         when(shareService.isSharedTodoListToUser(todoList, USER_ID)).thenReturn(false);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).shareTodoList(USER_USERNAME, TODO_LIST_ID, USER_ID);
+        verify(userService, times(1)).getUserByUsername(USER_USERNAME);
     }
 
     @Test
     public void shareTodoListToUser_shareTodoListToAnotherUserMoreThanOneTime_ConflictStatus() throws Exception {
+        // arrange
         User user = new User();
         user.setId(SECOND_USER_ID);
 
-        TodoList todoList = ObjectsProvider.createTodoList();
+        TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
 
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(SECOND_USER_USERNAME)).thenReturn(Optional.of(user));
         when(shareService.isSharedTodoListToUser(todoList, SECOND_USER_ID)).thenReturn(true);
 
+        // act
         this.mockMvc.perform(post("/api/todolists/{todoListId}/share?username={username}", TODO_LIST_ID, SECOND_USER_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isConflict());
 
+        // assert
+        verify(todoListService, times(1)).getTodoListById(TODO_LIST_ID);
         verify(todoListService, never()).shareTodoList(SECOND_USER_USERNAME, TODO_LIST_ID, USER_ID);
+        verify(shareService, times(1)).isSharedTodoListToUser(todoList, SECOND_USER_ID);
+        verify(userService, times(1)).getUserByUsername(SECOND_USER_USERNAME);
+
     }
 
     @Test
     public void getTodoListsByName() throws Exception {
-        List<TodoList> todoLists = ObjectsProvider.createListOfTodoLists();
+        // arrange
+        List<TodoList> todoLists = createListOfTodoLists();
 
         when(todoListService.searchTodoListByName(eq(TODO_LIST_NAME + "%"), eq(USER_USERNAME), any(Pageable.class)))
                 .thenReturn(todoLists);
 
+        // act
         MvcResult result = this.mockMvc.perform(get("/api/todolists/search?name={todoListName}", TODO_LIST_NAME)
                 .with(user(USER_USERNAME))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -581,9 +677,18 @@ public class TodoListTest {
 
         List<TodoList> todoListsFromJsonResponse = jsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString());
 
-        todoLists.sort(idComparator);
-        todoListsFromJsonResponse.sort(idComparator);
+        // assert
+        verify(todoListService, times(1)).searchTodoListByName(eq(TODO_LIST_NAME + "%"), eq(USER_USERNAME), any(Pageable.class));
+        this.assertListsEqual(todoLists, todoListsFromJsonResponse);
+    }
 
-        Assert.assertEquals(todoLists, todoListsFromJsonResponse);
+    private void assertListsEqual(List<TodoList> todoLists1, List<TodoList> todoLists2) {
+        IdComparator idComparator = new IdComparator();
+
+        todoLists1.sort(idComparator);
+        todoLists2.sort(idComparator);
+
+        // assert
+        Assert.assertEquals(todoLists1, todoLists2);
     }
 }
