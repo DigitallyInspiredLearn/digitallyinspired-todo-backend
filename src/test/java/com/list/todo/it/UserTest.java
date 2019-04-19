@@ -65,6 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserTest {
 
     private static final Long CURRENT_USER_ID = 1L;
+    private static final String CURRENT_USER_USERNAME = "username";
     private static final String USERNAME = "anna";
     private static final String PART_OF_USERNAME = "an";
 
@@ -104,7 +105,7 @@ public class UserTest {
                                       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
             UserPrincipal userPrincipal = new UserPrincipal();
             userPrincipal.setId(CURRENT_USER_ID);
-            userPrincipal.setUsername("username");
+            userPrincipal.setUsername(CURRENT_USER_USERNAME);
             userPrincipal.setPassword(new BCryptPasswordEncoder().encode("password"));
 
             return userPrincipal;
@@ -207,7 +208,7 @@ public class UserTest {
     }
 
     @Test
-    public void searchUsersByNonExistentUsername_ReturnsAnEmptySet() throws Exception {
+    public void searchUsersByUsername_OnNonExistentUsername_ReturnsAnEmptySet() throws Exception {
         //arrange
         Set usernames = new HashSet();
         when(userService.searchUsersByPartOfUsername(PART_OF_USERNAME)).thenReturn(usernames);
@@ -303,7 +304,14 @@ public class UserTest {
     }
 
     @Test
-    public void follow_OnNonExistentUser_ReturnsStatusNotFound() throws Exception {
+    public void followUser_onFollowingMyself_ReturnsStatusForbidden() throws Exception {
+        this.mockMvc.perform(post("/api/users/followUser?username={username}", CURRENT_USER_USERNAME))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void followUser_OnNonExistentUser_ReturnsStatusNotFound() throws Exception {
         //arrange
         when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
         when(followerService.followUser(CURRENT_USER_ID, USERNAME)).thenReturn(false);
@@ -350,7 +358,14 @@ public class UserTest {
     }
 
     @Test
-    public void unfollow_OnNonExistentUser_ReturnsStatusIsForbidden() throws Exception {
+    public void unfollowUser_onUnfollowingMyself_ReturnsStatusForbidden() throws Exception {
+        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", CURRENT_USER_USERNAME))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void unfollowUser_OnNonExistentUser_ReturnsStatusForbidden() throws Exception {
         //arrange
         when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
 

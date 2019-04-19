@@ -2,6 +2,7 @@ package com.list.todo.util;
 
 import com.list.todo.entity.*;
 import com.list.todo.payload.TagInput;
+import com.list.todo.payload.TaskInput;
 import com.list.todo.payload.UserStatistics;
 import com.list.todo.payload.UserSummary;
 
@@ -168,7 +169,9 @@ public class ObjectsProvider {
                 "username" + postfixNumber,
                 "email@example.ua" + postfixNumber,
                 "password" + postfixNumber,
-                "gravatarHash" + postfixNumber);
+                RoleName.ROLE_USER,
+                "gravatarHash" + postfixNumber,
+                new UserSettings(true, true));
     }
 
     public static TagInput getTagInput() {
@@ -190,6 +193,10 @@ public class ObjectsProvider {
         return new HashSet<TagTaskKey>() {{
             add(tagTaskKey);
         }};
+    }
+
+    public static TaskInput createTaskInput(Long todolistId) {
+        return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
     }
 
 }
