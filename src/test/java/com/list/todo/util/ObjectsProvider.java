@@ -96,4 +96,14 @@ public class ObjectsProvider {
                 "password" + postfixNumber,
                 "gravatarHash" + postfixNumber);
     }
+
+    public static List<Share> createListOfShares() {
+        Share share = new Share();
+        share.setSharedTodoList(createTodoList());
+
+        List<Share> shareList = new ArrayList<>();
+        shareList.add(share);
+
+        return shareList;
+    }
 }

@@ -56,7 +56,7 @@ public class TodoListServiceTest {
     private static final Long TAG_ID_2 = 6L;
 
     @Test
-    public void getTodoListById_GetExistentTodoList_OptionalOfTodoList() {
+    public void getTodoListById_GetExistingTodoList_OptionalOfTodoList() {
         // arrange
         TodoList todoList = createTodoList();
         todoList.setTodoListName(TODO_LIST_NAME);
@@ -72,7 +72,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_WithNotEmptyTasksListAndTodoListStatusIsActive_IterableOfTodoLists() {
+    public void getTodoListsByUser_WithNotEmptyTasksListAndTodoListStatusIsACTIVE_IterableOfTodoLists() {
         //arrange
         List<TodoList> todoLists = createListOfTodoLists();
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
@@ -95,7 +95,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_WithNotEmptyTasksListAndTodoListStatusIsAll_IterableOfTodoLists() {
+    public void getTodoListsByUser_WithNotEmptyTasksListAndTodoListStatusIsALL_IterableOfTodoLists() {
         //arrange
         List<TodoList> todoLists = createListOfTodoLists();
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
@@ -118,7 +118,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_WithEmptyTasksListAndTodoListStatusIsAll_IterableOfTodoLists() {
+    public void getTodoListsByUser_WithEmptyTasksListAndTodoListStatusIsALL_IterableOfTodoLists() {
         //arrange
         List<TodoList> todoLists = createListOfTodoLists();
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
@@ -140,7 +140,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_WithEmptyTasksListAndTodoListStatusIsActive_IterableOfTodoLists() {
+    public void getTodoListsByUser_WithEmptyTasksListAndTodoListStatusIsACTIVE_IterableOfTodoLists() {
         //arrange
         List<TodoList> todoLists = createListOfTodoLists();
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
@@ -163,7 +163,7 @@ public class TodoListServiceTest {
 
 
     @Test
-    public void addTodoList_Successful_OptionalOfAddedTodoList() {
+    public void addTodoList_AddNewTodoList_OptionalOfAddedTodoList() {
         //arrange
         User user = new User();
         TodoList todoList = createTodoList();
@@ -185,7 +185,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void updateTodoList_Successful_OptionalOfUpdatedTodoList() {
+    public void updateTodoList_UpdateExistingTodoList_OptionalOfUpdatedTodoList() {
         //arrange
         User user = new User();
         Set<Task> tasks = createSetOfTasks();
@@ -207,7 +207,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void getTodoListsByUser_getAllTodoListsByExistentUser_ListOfTodoListsByUser() {
+    public void getTodoListsByUser_getALLTodoListsByExistingUser_ListOfTodoListsBelongingToUser() {
         // arrange
         String userName = USER_USERNAME;
         List<TodoList> todoLists = createListOfTodoLists();
@@ -234,7 +234,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void changeTodoListStatus_OnExistentTodoList_TodoList() {
+    public void changeTodoListStatus_OnExistingTodoList_ChangedTodoList() {
         // arrange
         TodoList todoList = Mockito.mock(TodoList.class);
 
@@ -250,7 +250,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void deleteTodoList_DeleteNotSharedTodoList_Void() {
+    public void deleteTodoList_DeleteNotSharedTodoList() {
         //arrange
         TodoList todoList = new TodoList();
         todoList.setId(TODO_LIST_ID);
@@ -272,7 +272,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void deleteTodoList_DeleteSharedTodoList_Void() {
+    public void deleteTodoList_DeleteSharedTodoList() {
         //arrange
         TodoList todoList = new TodoList();
         todoList.setId(TODO_LIST_ID);
@@ -293,7 +293,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void shareTodoList_ShareExistentTodoListToExistentUser_ApiResponseWithSuccess() {
+    public void shareTodoList_ShareExistingTodoListToExistingUser_ApiResponseWithSuccess() {
         //arrange
         ApiResponse apiResponse = new ApiResponse(true, "You shared your todoList to " + SECOND_USER_USERNAME + "!");
         User user = new User();
@@ -320,7 +320,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void shareTodoList_ShareNonExistentTodoListToExistentUser_ApiResponseWithFailure() {
+    public void shareTodoList_ShareNonExistingTodoListToExistingUser_ApiResponseWithFailure() {
         //arrange
         ApiResponse apiResponse = new ApiResponse(false, "Something went wrong!");
         User user = new User();
@@ -343,7 +343,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void shareTodoList_ShareExistentTodoListToNonExistentUser_ApiResponseWithFailure() {
+    public void shareTodoList_ShareExistingTodoListToNonExistingUser_ApiResponseWithFailure() {
         //arrange
         ApiResponse apiResponse = new ApiResponse(false, "Something went wrong!");
         User user = new User();
@@ -366,7 +366,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void changeTodoListStatus_OnNonExistentTodoList_Null() {
+    public void changeTodoListStatus_OnNonExistingTodoList_Null() {
         // arrange
         when(todoListRepository.findById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
@@ -381,7 +381,7 @@ public class TodoListServiceTest {
     }
 
     @Test
-    public void searchTodoListByName_GetExistentTodoLists_IterableOfTodoLists() {
+    public void searchTodoListByName_GetExistingTodoLists_IterableOfTodoLists() {
         // arrange
         List<TodoList> todoLists = createListOfTodoLists();
         Page<TodoList> todoListPage = new PageImpl<>(todoLists, pageable, todoLists.size());
