@@ -9,9 +9,11 @@ pipeline {
             }
             steps {
                 sh '''
-                   sed -i 's|localhost|database|' src/main/resources/application-dev.yml
-                   sed -i 's|useSSL=false|&\\&allowPublicKeyRetrieval=true|' src/main/resources/application-dev.yml
-                   sed -i 's|password: .*$|password: sandwich|' src/main/resources/application-dev.yml
+                   sed -i 's|localhost|database|' src/main/resources/application-dev.yml src/test/resources/application-test.yml
+                   sed -i 's|useSSL=false|&\\&allowPublicKeyRetrieval=true|' src/main/resources/application-dev.yml src/test/resources/application-test.yml
+                   sed -i 's|password: .*$|password: sandwich|' src/main/resources/application-dev.yml src/test/resources/application-test.yml
+                   sed -i 's|user: .*$|user: root|' src/test/resources/application-test.yml
+                   sed -i 's|localhost:3000|todo-front:7700|' src/main/java/com/list/todo/configurations/SecurityConfiguration.java
                    '''
                 sh 'mvn -B -DskipTests clean package'
                 archiveArtifacts 'target/*.jar'
