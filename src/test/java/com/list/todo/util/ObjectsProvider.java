@@ -1,9 +1,8 @@
 package com.list.todo.util;
 
 import com.list.todo.entity.*;
-import com.list.todo.payload.TagInput;
-import com.list.todo.payload.UserStatistics;
-import com.list.todo.payload.UserSummary;
+import com.list.todo.payload.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -192,4 +191,14 @@ public class ObjectsProvider {
         }};
     }
 
+    public static User createUser(UserInput userInput) {
+        return User.builder()
+                .name(userInput.getUsername())
+                .username(userInput.getUsername())
+                .email(userInput.getEmail())
+                .password(new BCryptPasswordEncoder().encode(userInput.getPassword()))
+                .gravatarHash("ffg")
+                .role(RoleName.ROLE_USER)
+                .build();
+    }
 }
