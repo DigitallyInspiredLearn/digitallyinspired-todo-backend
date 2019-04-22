@@ -39,7 +39,7 @@ public class FollowerServiceTest {
     private static final Long SECOND_USER_ID = 2L;
 
     @Test
-    public void getFollowersByUserId() {
+    public void getFollowersByUserId_GetUserFollowers_ListOfUserFollowers() {
         // arrange
         List<Follower> followerList = new ArrayList<>();
         List<User> userList = new ArrayList<>();
@@ -60,7 +60,7 @@ public class FollowerServiceTest {
     }
 
     @Test
-    public void getFollowedUserSummariesByUserId() {
+    public void getFollowedUserSummariesByUserId_GetUserSummariesOfUserFollowers_ListOfUserSummariesOfUserFollowers() {
         // arrange
         User user = new User();
         List<Follower> followers = createListOfFollowers();
@@ -79,7 +79,7 @@ public class FollowerServiceTest {
     }
 
     @Test
-    public void getFollowersUserSummariesByUserId() {
+    public void getFollowersUserSummariesByUserId_GetUserSummariesOfUserFollowers_ListOfUserSummariesOfUserFollowers() {
         // arrange
         List<UserSummary> userSummaries = createListOfUserSummaries();
         List<Follower> followers = createListOfFollowers();
@@ -95,7 +95,7 @@ public class FollowerServiceTest {
     }
 
     @Test
-    public void followUser() {
+    public void followUser_FollowUserByUserId_IsSuccess() {
         // arrange
         boolean isSuccess = true;
         User user = createUser(Math.toIntExact(USER_ID));
@@ -115,7 +115,7 @@ public class FollowerServiceTest {
     }
 
     @Test
-    public void unfollowUser() {
+    public void unfollowUser_UnfollowUserByUserId_IsSuccess() {
         // arrange
         boolean isSuccess = true;
         User user = createUser(Math.toIntExact(USER_ID));
@@ -138,7 +138,7 @@ public class FollowerServiceTest {
     }
 
     @Test
-    public void isAlreadyFollowed() {
+    public void isAlreadyFollowed_CheckIfTheUserIsFollowed_IsSuccess() {
         // arrange
         boolean isSuccess = true;
         User user = new User();
