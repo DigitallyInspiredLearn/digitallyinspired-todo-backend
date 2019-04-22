@@ -18,7 +18,7 @@ public class TokenController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateAccessToken(@AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<?> updateAccessToken() {
 
         return ResponseEntity.ok(authenticationService.updateAccessToken());
     }
