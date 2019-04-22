@@ -152,7 +152,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void searchUsersByPartOfUsername_OnExistentUser_ReturnsASetOfStrings() {
+    public void searchUsersByPartOfUsername_OnExistentUser_ReturnsASetOfUsernames() {
         //arrange
         String partOfUsername = "us";
         List<User> users = new ArrayList<>();
@@ -175,7 +175,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUser_OnExistentUser_ReturnsAnObjectOfUser() {
+    public void updateUser_OnExistentUser_ReturnsAnObjectOfUpdatedUser() {
         //arrange
         User user = createUser(1);
         User updatedUser = createUser(2);
@@ -202,7 +202,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void deleteUser_OnExistentUser_ReturnsVoid() {
+    public void deleteUser_OnExistentUser_SuccessfulDelete() {
         //arrange
         User user = createUser(1);
         List<Follower> followers = new ArrayList<>();

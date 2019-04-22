@@ -41,6 +41,7 @@ public class ObjectsProvider {
     public static List<Task> createListOfTasks() {
         return new ArrayList<Task>() {{
             add(createTask());
+            add(createTask());
         }};
     }
 

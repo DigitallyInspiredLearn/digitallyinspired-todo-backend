@@ -49,8 +49,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import java.io.IOException;
 import java.util.*;
 
-import static com.list.todo.util.ObjectsProvider.createUserStatistics;
-import static com.list.todo.util.ObjectsProvider.createUserSummary;
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -223,9 +222,8 @@ public class UserTest {
     @Test
     public void getUserStats_OnExistentUser_ReturnsAnObjectOfUserStats() throws Exception {
         //arrange
-        int numberOfTodoLists = 2;
-        List<TodoList> todoLists1 = this.createListOfTodoLists(numberOfTodoLists, "username1");
-        List<TodoList> todoLists2 = this.createListOfTodoLists(numberOfTodoLists, "username2");
+        List<TodoList> todoLists1 = createListOfTodoLists("username1");
+        List<TodoList> todoLists2 = createListOfTodoLists("username2");
         Page<TodoList> myTodoLists = new PageImpl<>(todoLists1, pageable, todoLists1.size());
         Page<TodoList> sharedTodoLists = new PageImpl<>(todoLists2, pageable, todoLists2.size());
         UserStats userStats = new UserStats(myTodoLists, sharedTodoLists);
@@ -250,7 +248,7 @@ public class UserTest {
     }
 
     @Test
-    public void updateUser_OnExistentUser_ReturnsAnObjectOfUser() throws Exception {
+    public void updateUser_OnExistentUser_ReturnsAnObjectOfUpdatedUser() throws Exception {
         //arrange
         UpdatingUserInput userInput = new UpdatingUserInput();
         userInput.setName("name");
@@ -447,21 +445,6 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userStatistics, returnedUserStatistics);
-    }
-
-    private List<TodoList> createListOfTodoLists(int countOfTodoLists, String createdBy) {
-        List<TodoList> todoLists = new ArrayList<>(countOfTodoLists);
-
-        for (long i = 0; i < countOfTodoLists; i++) {
-            TodoList todoList = new TodoList();
-            todoList.setTodoListName("name" + i);
-            todoList.setCreatedBy(createdBy);
-            todoList.setId(i);
-
-            todoLists.add(todoList);
-        }
-
-        return todoLists;
     }
 
     private List<TodoList> getTodoListsFromJsonResponse(String response, String arrayName) throws JSONException, IOException {
