@@ -67,10 +67,10 @@ public class TaskServiceTest {
     @Test
     public void countTasksByCreatedByAndIsComplete_ReturnsLong() {
         //arrange
-        when(taskRepository.countByCreatedBy(CREATED_BY)).thenReturn(NUMBER_OF_TASKS);
+        when(taskRepository.countByCreatedByAndIsComplete(CREATED_BY, true)).thenReturn(NUMBER_OF_TASKS);
 
         //act
-        Long returnedCount = taskService.countTasksByCreatedBy(CREATED_BY);
+        Long returnedCount = taskService.countTasksByCreatedByAndIsComplete(CREATED_BY, true);
 
         //assert
         assertEquals(NUMBER_OF_TASKS, returnedCount);

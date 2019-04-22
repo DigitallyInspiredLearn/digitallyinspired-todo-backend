@@ -200,4 +200,12 @@ public class ObjectsProvider {
         return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
     }
 
+    public static List<UserSummary> createListOfUserSummaries(int numberOfUserSummaries) {
+        List<UserSummary> userSummaries = new ArrayList<>();
+        for (int i=0; i<numberOfUserSummaries; i++){
+            userSummaries.add(createUserSummary(i));
+        }
+
+        return userSummaries;
+    }
 }
