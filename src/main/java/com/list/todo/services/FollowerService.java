@@ -9,8 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,37 +32,36 @@ public class FollowerService {
     }
 
     public List<UserSummary> getFollowedUserSummariesByUserId(Long userId) {
-        User currUser = userService.getUserById(userId).orElse(null);
-        List<UserSummary> followedUserSummaries = new ArrayList<>();
-        if (currUser != null) {
-            followedUserSummaries = followerRepository.findByFollower(currUser)
+        Optional<User> currUser = userService.getUserById(userId);
+        AtomicReference<List<UserSummary>> followedUserSummaries = new AtomicReference<>();
+
+        currUser.ifPresent(user -> {
+            followedUserSummaries.set(followerRepository.findByFollower(user)
                     .stream()
-                    .map(this::getFollowedUserSumm)
-                    .collect(Collectors.toList());
-        }
-        return followedUserSummaries;
+                    .map(this::getFollowedUserSummary)
+                    .collect(Collectors.toList()));
+        });
+        return followedUserSummaries.get();
     }
 
     public List<UserSummary> getFollowersUserSummariesByUserId(Long userId) {
         return followerRepository.findByFollowedUserId(userId)
                 .stream()
-                .map(this::getFollowerUserSumm)
+                .map(this::getFollowerUserSummary)
                 .collect(Collectors.toList());
     }
 
-    private UserSummary getFollowedUserSumm(Follower follower) {
-        User user = userService.getUserById(follower.getFollowedUserId()).orElse(null);
-        UserSummary userSummary = new UserSummary();
-        if (user != null){
-            userSummary.setUsername(user.getUsername());
-            userSummary.setName(user.getName());
-            userSummary.setEmail(user.getEmail());
-            userSummary.setGravatarUrl(gravatarURL + user.getGravatarHash());
-        }
-        return userSummary;
+    private UserSummary getFollowedUserSummary(Follower follower) {
+        Optional<User> user = userService.getUserById(follower.getFollowedUserId());
+        AtomicReference<UserSummary> userSummary = new AtomicReference<>();
+
+        user.ifPresent(u -> userSummary.set(new UserSummary(u.getUsername(), u.getName(),
+                u.getEmail(), gravatarURL + u.getGravatarHash())));
+
+        return userSummary.get();
     }
 
-    private UserSummary getFollowerUserSumm(Follower follower) {
+    private UserSummary getFollowerUserSummary(Follower follower) {
         User user = follower.getFollower();
         return new UserSummary(user.getUsername(), user.getName(), user.getEmail(), gravatarURL + user.getGravatarHash());
     }
