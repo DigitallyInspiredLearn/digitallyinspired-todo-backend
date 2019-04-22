@@ -103,6 +103,7 @@ public class UserServiceTest {
                 user.getEmail(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+
         when(userRepository.findById(userPrincipal.getId())).thenReturn(Optional.of(user));
 
         //act
@@ -137,6 +138,7 @@ public class UserServiceTest {
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoLists, pageable, sharedTodoLists.size());
         Page<TodoList> myTodoListsPage = new PageImpl<>(myTodoLists, pageable, myTodoLists.size());
+
         when(shareRepository.findBySharedUserId(userPrincipal.getId())).thenReturn(shares);
         when(todoListRepository.findByCreatedByAndTodoListStatus(userPrincipal.getUsername(), TodoListStatus.ACTIVE, pageable))
                 .thenReturn(myTodoListsPage);
@@ -175,7 +177,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUser_OnExistentUser_ReturnsAnObjectOfUpdatedUser() {
+    public void updateUser_OnExistentUser_ReturnsAnOptionalOfUpdatedUser() {
         //arrange
         User user = createUser(1);
         User updatedUser = createUser(2);
@@ -199,10 +201,12 @@ public class UserServiceTest {
         verify(user).setEmail(userInput.getEmail());
         verify(user).setPassword(userInput.getPassword());
         Assert.assertEquals(updatedUser, returnedUser.get());
+        verify(userRepository).findById(CURRENT_USER_ID);
+        verify(userRepository).save(user);
     }
 
     @Test
-    public void deleteUser_OnExistentUser_SuccessfulDelete() {
+    public void deleteUser_OnExistentUser_SuccessfulDeleting() {
         //arrange
         User user = createUser(1);
         List<Follower> followers = new ArrayList<>();
@@ -244,6 +248,7 @@ public class UserServiceTest {
 
         //assert
         Assert.assertEquals(userDetails, returnedUserDetails);
+        verify(userRepository).findByUsernameOrEmail(CURRENT_USER_USERNAME, CURRENT_USER_USERNAME);
     }
 
     @Test(expected = UsernameNotFoundException.class)
@@ -263,10 +268,15 @@ public class UserServiceTest {
 
         //assert
         Assert.assertEquals(userDetails, returnedUserDetails);
+        verify(userRepository).findById(CURRENT_USER_ID);
     }
 
     @Test(expected = UsernameNotFoundException.class)
     public void loadUserById__OnNonExistentUser_ReturnsAnObjectOfUserDetails() {
+        //act
         userService.loadUserById(CURRENT_USER_ID);
+
+        //assert
+        verify(userRepository).findById(CURRENT_USER_ID);
     }
 }

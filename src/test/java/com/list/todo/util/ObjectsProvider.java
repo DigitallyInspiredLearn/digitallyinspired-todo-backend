@@ -208,4 +208,8 @@ public class ObjectsProvider {
 
         return userSummaries;
     }
+
+    public static UserSettings createUserSettings() {
+        return new UserSettings(true, true);
+    }
 }

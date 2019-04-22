@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.list.todo.util.ObjectsProvider.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -62,6 +61,7 @@ public class TaskServiceTest {
 
         //assert
         assertEquals(NUMBER_OF_TASKS, returnedCount);
+        verify(taskRepository).countByCreatedBy(CREATED_BY);
     }
 
     @Test
@@ -74,6 +74,7 @@ public class TaskServiceTest {
 
         //assert
         assertEquals(NUMBER_OF_TASKS, returnedCount);
+        verify(taskRepository).countByCreatedByAndIsComplete(CREATED_BY, true);
     }
 
     @Test
@@ -99,8 +100,8 @@ public class TaskServiceTest {
 
         // assert
         assertEquals(tasks, tasksFromService);
+        verify(todoListService).getTodoListById(TODO_LIST_ID);
         verify(taskRepository).findTasksByTodoListIdOrderByPriority(TODO_LIST_ID);
-
     }
 
     @Test
@@ -113,10 +114,11 @@ public class TaskServiceTest {
 
         // assert
         assertNull(tasksFromService);
+        verify(todoListService).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
-    public void addTask_OnExistentTodoList_ReturnsAnObjectOfNewTask() {
+    public void addTask_OnExistentTodoList_ReturnsAnOptionalOfNewTask() {
         // arrange
         TaskInput taskInput = createTaskInput(TODO_LIST_ID);
         Optional<TodoList> todoList = Optional.of(createTodoList());
@@ -135,8 +137,8 @@ public class TaskServiceTest {
 
         // assert
         assertEquals(task, addedTask.get());
-        verify(taskRepository).save(task);
         verify(todoListService).getTodoListById(TODO_LIST_ID);
+        verify(taskRepository).save(task);
     }
 
     @Test
@@ -149,10 +151,11 @@ public class TaskServiceTest {
 
         // assert
         assertEquals(addedTask, Optional.empty());
+        verify(todoListService).getTodoListById(TODO_LIST_ID);
     }
 
     @Test
-    public void updateTask_OnExistentTask_ReturnsAnObjectOfUpdatedTask() {
+    public void updateTask_OnExistentTask_ReturnsAnOptionalOfUpdatedTask() {
         // arrange
         TaskInput taskInput = createTaskInput(TODO_LIST_ID);
         TodoList todoList = createTodoList();
@@ -171,6 +174,7 @@ public class TaskServiceTest {
 
         // assert
         assertEquals(updatedTask, taskFromService.get());
+        verify(taskRepository).findById(TASK_ID_1);
         verify(taskRepository).save(oldTask);
         verify(oldTask).setBody(taskInput.getBody());
         verify(oldTask).setIsComplete(taskInput.getIsComplete());
@@ -180,7 +184,7 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void updateTask_SetIsCompleteToTrue_ReturnsAnObjectOfUpdatedTask() {
+    public void updateTask_SetIsCompleteToTrue_ReturnsAnOptionalOfUpdatedTask() {
         // arrange
         TaskInput taskInput = createTaskInput(TODO_LIST_ID);
         taskInput.setIsComplete(true);
@@ -200,6 +204,7 @@ public class TaskServiceTest {
 
         // assert
         assertEquals(updatedTask, taskFromService.get());
+        verify(taskRepository).findById(TASK_ID_1);
         verify(taskRepository).save(oldTask);
         verify(oldTask).setBody(taskInput.getBody());
         verify(oldTask).setIsComplete(taskInput.getIsComplete());
@@ -217,9 +222,10 @@ public class TaskServiceTest {
         when(taskRepository.findById(TASK_ID_1)).thenReturn(Optional.empty());
 
         // act
-        taskService.updateTask(TASK_ID_2, taskInput);
+        Optional<Task> returnedTask = taskService.updateTask(TASK_ID_2, taskInput);
 
         // assert
+        assertTrue(!returnedTask.isPresent());
         verify(task, times(0)).setBody(taskInput.getBody());
         verify(task, times(0)).setIsComplete(taskInput.getIsComplete());
         verify(task, times(0)).setDurationTime(anyLong());
@@ -228,7 +234,7 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void deleteTask_OnExistentTask_SuccessfulDelete() {
+    public void deleteTask_OnExistentTask_SuccessfulDeleting() {
         // act
         taskService.deleteTask(TASK_ID_1);
 

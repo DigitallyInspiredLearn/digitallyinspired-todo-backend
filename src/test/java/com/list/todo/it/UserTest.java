@@ -152,6 +152,7 @@ public class UserTest {
                 .andExpect(jsonPath("username").value(userSummary.getUsername()))
                 .andExpect(jsonPath("email").value(userSummary.getEmail()))
                 .andExpect(status().isOk());
+        verify(userService).getUserInfo(any(UserPrincipal.class));
     }
 
     @Test
@@ -203,7 +204,7 @@ public class UserTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(content().json("[\"anna\"]"))
                 .andExpect(status().isOk());
-
+        verify(userService).searchUsersByPartOfUsername(PART_OF_USERNAME);
     }
 
     @Test
@@ -217,6 +218,7 @@ public class UserTest {
                 .andDo(print())
                 .andExpect(jsonPath("$").isEmpty())
                 .andExpect(status().isOk());
+        verify(userService).searchUsersByPartOfUsername(PART_OF_USERNAME);
     }
 
     @Test
@@ -245,6 +247,7 @@ public class UserTest {
         //assert
         assertEqualsTodoLists(todoLists1, returnedMyTodoLists);
         assertEqualsTodoLists(todoLists2, returnedSharedTodoLists);
+        verify(userService).getUserStats(any(UserPrincipal.class), any(Pageable.class));
     }
 
     @Test
@@ -303,9 +306,12 @@ public class UserTest {
 
     @Test
     public void followUser_onFollowingMyself_ReturnsStatusForbidden() throws Exception {
+        //act, assert
         this.mockMvc.perform(post("/api/users/followUser?username={username}", CURRENT_USER_USERNAME))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+        verify(followerService, times(0))
+                .followUser(CURRENT_USER_ID, CURRENT_USER_USERNAME);
     }
 
     @Test
@@ -400,6 +406,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
+        verify(followerService).getFollowersUserSummariesByUserId(CURRENT_USER_ID);
     }
 
     @Test
@@ -425,6 +432,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
+        verify(followerService).getFollowedUserSummariesByUserId(CURRENT_USER_ID);
     }
 
     @Test
@@ -445,6 +453,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userStatistics, returnedUserStatistics);
+        verify(userStatisticsService).getUserStatisticsByUserId(CURRENT_USER_ID);
     }
 
     private List<TodoList> getTodoListsFromJsonResponse(String response, String arrayName) throws JSONException, IOException {
