@@ -13,6 +13,8 @@ import java.util.Set;
 
 public class ObjectsProvider {
 
+    private static final Long USER_ID = 1L;
+
     public static Task createTask() {
         return Task.builder()
                 .body("task")
@@ -211,5 +213,57 @@ public class ObjectsProvider {
 
     public static UserSettings createUserSettings() {
         return new UserSettings(true, true);
+    }
+
+    public static List<Share> createListOfShares() {
+        Share share = new Share();
+        share.setSharedTodoList(createTodoList());
+
+        List<Share> shareList = new ArrayList<>();
+        shareList.add(share);
+
+        return shareList;
+    }
+
+    public static List<Follower> createListOfFollowers() {
+        return new ArrayList<Follower>(2) {{
+            add(new Follower(USER_ID, new User()));
+            add(new Follower(USER_ID, new User()));
+        }};
+
+
+    }
+
+    public static List<UserSummary> createListOfUserSummaries() {
+        return new ArrayList<UserSummary>(2) {{
+            add(new UserSummary());
+            add(new UserSummary());
+        }};
+    }
+
+    public static List<Share> createListOfShares() {
+        Share share = new Share();
+        share.setSharedTodoList(createTodoList());
+
+        List<Share> shareList = new ArrayList<>();
+        shareList.add(share);
+
+        return shareList;
+    }
+
+    public static List<Follower> createListOfFollowers() {
+        return new ArrayList<Follower>(2) {{
+            add(new Follower(USER_ID, new User()));
+            add(new Follower(USER_ID, new User()));
+        }};
+
+
+    }
+
+    public static List<UserSummary> createListOfUserSummaries() {
+        return new ArrayList<UserSummary>(2) {{
+            add(new UserSummary());
+            add(new UserSummary());
+        }};
     }
 }

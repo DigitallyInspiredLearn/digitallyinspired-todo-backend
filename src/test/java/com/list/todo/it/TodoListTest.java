@@ -135,7 +135,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void getTodoLists_getExistentTodoLists_OkStatus() throws Exception {
+    public void getTodoLists_getExistingTodoLists_OkStatus() throws Exception {
         // arrange
         List<TodoList> todoLists = createListOfTodoLists();
 
@@ -158,12 +158,12 @@ public class TodoListTest {
     }
 
     @Test
-    public void getMySharedTodoLists_getExistentTodoLists_OkStatus() throws Exception {
+    public void getMySharedTodoLists_getExistingTodoLists_OkStatus() throws Exception {
 
         // arrange
         List<TodoList> todoLists = createListOfTodoLists();
 
-        when(shareService.getSharedTodoListsByUser(USER_ID)).thenReturn(todoLists);
+        when(shareService.getSharedTodoListsByUser(eq(USER_ID), any(Pageable.class))).thenReturn(todoLists);
 
         // act
         MvcResult result = this.mockMvc.perform(get("/api/todolists/shared")
@@ -175,12 +175,12 @@ public class TodoListTest {
         List<TodoList> todoListsFromJsonResponse = jsonParser.getListOfObjectsFromJsonResponse(result.getResponse().getContentAsString());
 
         // assert
-        verify(shareService, times(1)).getSharedTodoListsByUser(USER_ID);
+        verify(shareService, times(1)).getSharedTodoListsByUser(eq(USER_ID), any(Pageable.class));
         this.assertListsEqual(todoLists, todoListsFromJsonResponse);
     }
 
     @Test
-    public void getTodoList_getExistentTodoList_OkStatus() throws Exception {
+    public void getTodoList_getExistingTodoList_OkStatus() throws Exception {
 
         // arrange
         TodoList todoList = createTodoList();
@@ -207,7 +207,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void getTodoList_getNonExistentTodoList_NotFoundStatus() throws Exception {
+    public void getTodoList_getNonExistingTodoList_NotFoundStatus() throws Exception {
 
         // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
@@ -261,7 +261,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void updateTodoList_updateExistentTodoLists_OkStatus() throws Exception {
+    public void updateTodoList_updateExistingTodoLists_OkStatus() throws Exception {
 
         // arrange
         TodoList todoList = createTodoList();
@@ -295,7 +295,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void updateTodoList_updateNonExistentTodoList_NotFoundStatus() throws Exception {
+    public void updateTodoList_updateNonExistingTodoList_NotFoundStatus() throws Exception {
 
         // arrange
         TodoListInput todoListInput = new TodoListInput();
@@ -334,7 +334,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void enableTodoList_enableExistentTodolist_OkStatus() throws Exception {
+    public void enableTodoList_enableExistingTodolist_OkStatus() throws Exception {
         // arrange
         Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.INACTIVE);
@@ -379,7 +379,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void enableTodoList_enableNonExistentTodoList_NotFoundStatus() throws Exception {
+    public void enableTodoList_enableNonExistingTodoList_NotFoundStatus() throws Exception {
         // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
@@ -395,7 +395,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void disableTodoList_disableExistentTodolist_OkStatus() throws Exception {
+    public void disableTodoList_disableExistingTodolist_OkStatus() throws Exception {
         // arrange
         Optional<TodoList> todoList = Optional.of(createTodoList());
         todoList.get().setTodoListStatus(TodoListStatus.ACTIVE);
@@ -440,7 +440,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void disableTodoList_disableNonExistentTodoList_NotFoundStatus() throws Exception {
+    public void disableTodoList_disableNonExistingTodoList_NotFoundStatus() throws Exception {
         // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
@@ -456,7 +456,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void deleteTodoList_deleteExistentTodoList_OkStatus() throws Exception {
+    public void deleteTodoList_deleteExistingTodoList_OkStatus() throws Exception {
         // arrange
         TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
@@ -475,7 +475,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void deleteTodoList_deleteNonExistentTodoList_NotFoundStatus() throws Exception {
+    public void deleteTodoList_deleteNonExistingTodoList_NotFoundStatus() throws Exception {
         // arrange
         when(todoListService.getTodoListById(TODO_LIST_ID)).thenReturn(Optional.empty());
 
@@ -511,7 +511,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void shareTodoListToUser_shareExistentTodoListToUser_OkStatus() throws Exception {
+    public void shareTodoListToUser_shareExistingTodoListToUser_OkStatus() throws Exception {
         // arrange
         User user = new User();
         user.setId(USER_ID);
@@ -536,7 +536,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void shareTodoListToUser_shareNonExistentTodoListToUser_NotFoundStatus() throws Exception {
+    public void shareTodoListToUser_shareNonExistingTodoListToUser_NotFoundStatus() throws Exception {
         // arrange
         User user = new User();
         user.setId(USER_ID);
@@ -563,7 +563,7 @@ public class TodoListTest {
     }
 
     @Test
-    public void shareTodoListToUser_shareTodoListToNonExistentUser_NotFoundStatus() throws Exception {
+    public void shareTodoListToUser_shareTodoListToNonExistingUser_NotFoundStatus() throws Exception {
         // arrange
         TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
