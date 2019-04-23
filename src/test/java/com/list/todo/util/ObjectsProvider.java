@@ -174,18 +174,14 @@ public class ObjectsProvider {
                 new UserSettings(true, true));
     }
 
-    public static User createUserWithUserSettings(int postfixNumber) {
-        UserSettings userSettings = UserSettings.builder()
-                .isEnableEmailNotification(true)
-                .isEnableWebSocketNotification(true)
-                .build();
-
+    public static User createUserWithUserSettings(int postfixNumber, UserSettings userSettings) {
         return User.builder()
                 .name("name" + postfixNumber)
                 .username("username" + postfixNumber)
                 .email("email" + postfixNumber)
                 .password("password" + postfixNumber)
                 .userSettings(userSettings)
+                .gravatarHash("gravatarHash" + postfixNumber)
                 .build();
     }
 
@@ -219,6 +215,17 @@ public class ObjectsProvider {
                 .gravatarHash("ffg")
                 .role(RoleName.ROLE_USER)
                 .build();
+    }
+
+    public static List<User> createListOfFollowers(UserSettings userSettings) {
+        User user1 = createUserWithUserSettings(1, userSettings);
+        User user2 = createUserWithUserSettings(2, userSettings);
+
+        return new ArrayList<User>() {{
+            add(user1);
+            add(user2);
+        }};
+
     }
     public static TaskInput createTaskInput(Long todolistId) {
         return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
