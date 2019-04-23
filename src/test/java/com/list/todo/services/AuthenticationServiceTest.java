@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import static com.list.todo.util.ObjectsProvider.createUser;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -120,10 +120,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByUsername(CURRENT_USERNAME)).thenReturn(true);
 
         //act
-        Boolean isUserExist = authenticationServiceMock.isUserExistByUserName(CURRENT_USERNAME);
+        boolean isUserExist = authenticationServiceMock.isUserExistByUserName(CURRENT_USERNAME);
 
         //assert
-        assertEquals(isUserExist, true);
+        assertTrue(isUserExist);
         verify(userRepositoryMock, times(1)).existsByUsername(CURRENT_USERNAME);
     }
 
@@ -133,10 +133,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByUsername(ANOTHER_USERNAME)).thenReturn(false);
 
         //act
-        Boolean isUserExist = authenticationServiceMock.isUserExistByUserName(ANOTHER_USERNAME);
+        boolean isUserExist = authenticationServiceMock.isUserExistByUserName(ANOTHER_USERNAME);
 
         //assert
-        assertEquals(isUserExist, false);
+        assertFalse(isUserExist);
         verify(userRepositoryMock, times(1)).existsByUsername(ANOTHER_USERNAME);
     }
 
@@ -146,10 +146,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByEmail(CURRENT_EMAIL)).thenReturn(true);
 
         //act
-        Boolean isUserExist = authenticationServiceMock.isUserExistByEmail(CURRENT_EMAIL);
+        boolean isUserExist = authenticationServiceMock.isUserExistByEmail(CURRENT_EMAIL);
 
         //assert
-        assertEquals(isUserExist, true);
+        assertTrue(isUserExist);
         verify(userRepositoryMock, times(1)).existsByEmail(CURRENT_EMAIL);
     }
 
@@ -159,10 +159,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByEmail(ANOTHER_EMAIL)).thenReturn(false);
 
         //act
-        Boolean isUserExist = authenticationServiceMock.isUserExistByEmail(ANOTHER_EMAIL);
+        boolean isUserExist = authenticationServiceMock.isUserExistByEmail(ANOTHER_EMAIL);
 
         //assert
-        assertEquals(isUserExist, false);
+        assertFalse(isUserExist);
         verify(userRepositoryMock, times(1)).existsByEmail(ANOTHER_EMAIL);
     }
 }

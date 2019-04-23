@@ -54,7 +54,7 @@ public class NotificationServiceTest {
         notificationServiceMock.notifyAboutSharingTodoList(ownerUser, targetUser, sharedTodoList);
 
         //assert
-        verify(emailServiceMock, times(1)).sendEmail(anyString(), anyString(), anyString());
+        verify(emailServiceMock, times(1)).sendEmail(eq(targetUser.getEmail()), anyString(), anyString());
         verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
     }
 
@@ -76,7 +76,7 @@ public class NotificationServiceTest {
         notificationServiceMock.notifyAboutSharingTodoList(ownerUser, targetUser, sharedTodoList);
 
         //assert
-        verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(emailServiceMock, never()).sendEmail(eq(targetUser.getEmail()), anyString(), anyString());
         verify(webSocketMock, times(1)).convertAndSend(anyString(), anyString());
     }
 
@@ -102,7 +102,7 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
             verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
@@ -129,8 +129,9 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
             verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
-            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
         });
 
     }
@@ -157,7 +158,7 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
             verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
@@ -184,8 +185,9 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
             verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
-            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
         });
     }
 
@@ -211,7 +213,7 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
             verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
@@ -238,8 +240,9 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
             verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
-            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
         });
     }
 }
