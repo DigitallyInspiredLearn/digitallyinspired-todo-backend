@@ -70,6 +70,11 @@ public class TagTaskKeyService {
                 .ifPresent(tagTaskKeyRepository::delete);
     }
 
+    void deleteTaggedTask(Long taskId) {
+        tagTaskKeyRepository.findByTaskId(taskId).forEach(this::deleteTaggedTask);
+
+    }
+
     void deleteTaggedTask(TagTaskKey tagTaskKey) {
         tagTaskKeyRepository.delete(tagTaskKey);
     }
