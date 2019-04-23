@@ -216,6 +216,7 @@ public class TaskServiceTest {
 
         // assert
         verify(tagTaskKeyService).deleteTaggedTask(TASK_ID_1);
+
         verify(taskRepository).deleteById(TASK_ID_1);
     }
 }
