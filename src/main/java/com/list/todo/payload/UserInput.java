@@ -1,10 +1,16 @@
 package com.list.todo.payload;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserInput {
     @NotBlank
     @Size(min = 4, max = 40)

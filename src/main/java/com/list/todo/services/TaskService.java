@@ -16,6 +16,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     private final TodoListService todoListService;
+    private final TagTaskKeyService tagTaskKeyService;
 
     public Optional<Task> getTaskById(Long currentTaskId) {
         return taskRepository.findById(currentTaskId);
@@ -74,6 +75,7 @@ public class TaskService {
     }
 
     public void deleteTask(Long taskId) {
+        tagTaskKeyService.deleteTaggedTask(taskId);
         taskRepository.deleteById(taskId);
     }
 

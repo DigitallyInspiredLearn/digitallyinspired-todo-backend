@@ -48,7 +48,6 @@ public class AuthenticationService {
         String jwt = tokenProvider.generateToken(authentication);
 
         return new JwtAuthenticationResponse(jwt);
-
     }
 
     public User createUserAccount(UserInput userInput) {

@@ -1,15 +1,10 @@
 package com.list.todo.util;
 
 import com.list.todo.entity.*;
-import com.list.todo.payload.TagInput;
-import com.list.todo.payload.TaskInput;
-import com.list.todo.payload.UserStatistics;
-import com.list.todo.payload.UserSummary;
+import com.list.todo.payload.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ObjectsProvider {
 
@@ -35,15 +30,11 @@ public class ObjectsProvider {
     }
 
     public static Set<Task> createSetOfTasks() {
-        return new HashSet<Task>() {{
-            add(createTask());
-        }};
+        return Set.of(createTask());
     }
 
     public static List<Task> createListOfTasks() {
-        return new ArrayList<Task>() {{
-            add(createTask());
-        }};
+        return Collections.singletonList(createTask());
     }
 
     public static Set<Task> createSetOfTasks(String currentUser) {
@@ -54,9 +45,7 @@ public class ObjectsProvider {
                 .build();
         task1.setId(3L);
 
-        return new HashSet<Task>() {{
-            add(task1);
-        }};
+        return Set.of(task1);
     }
 
     public static TodoList createTodoList() {
@@ -91,10 +80,7 @@ public class ObjectsProvider {
         TodoList todoList2 = createTodoList();
         todoList2.setId(2L);
 
-        return new ArrayList<TodoList>() {{
-            add(todoList1);
-            add(todoList2);
-        }};
+        return Arrays.asList(todoList1, todoList2);
     }
 
     public static List<TodoList> createListOfTodoLists(String currentUser) {
@@ -103,10 +89,7 @@ public class ObjectsProvider {
 
         Task task2 = createTask(currentUser, null, 4L);
 
-        Set<Task> tasks = new HashSet<Task>() {{
-            add(task1);
-            add(task2);
-        }};
+        Set<Task> tasks = Set.of(task1, task2);
 
         TodoList todoList1 = createTodoListWithTasks(currentUser, tasks);
         todoList1.setId(1L);
@@ -114,10 +97,7 @@ public class ObjectsProvider {
         TodoList todoList2 = createTodoListWithTasks(currentUser, tasks);
         todoList2.setId(5L);
 
-        return new ArrayList<TodoList>() {{
-            add(todoList1);
-            add(todoList2);
-        }};
+        return Arrays.asList(todoList1, todoList2);
     }
 
     public static UserSummary createUserSummary(int postfixNumber) {
@@ -148,10 +128,7 @@ public class ObjectsProvider {
         Tag tag2 = new Tag(name2Tag, ownerId, "ff");
         tag2.setId(tag2Id);
 
-        return new ArrayList<Tag>() {{
-            add(tag);
-            add(tag2);
-        }};
+        return Arrays.asList(tag, tag2);
     }
 
     public static UserStatistics createUserStatistics() {
@@ -176,6 +153,17 @@ public class ObjectsProvider {
                 new UserSettings(true, true));
     }
 
+    public static User createUserWithUserSettings(int postfixNumber, UserSettings userSettings) {
+        return User.builder()
+                .name("name" + postfixNumber)
+                .username("username" + postfixNumber)
+                .email("email" + postfixNumber)
+                .password("password" + postfixNumber)
+                .userSettings(userSettings)
+                .gravatarHash("gravatarHash" + postfixNumber)
+                .build();
+    }
+
     public static TagInput getTagInput() {
         return new TagInput("Job", "ff");
     }
@@ -192,21 +180,35 @@ public class ObjectsProvider {
         TagTaskKey tagTaskKey = new TagTaskKey(taskId, tag);
         tagTaskKey.setId(7L);
 
-        return new HashSet<TagTaskKey>() {{
-            add(tagTaskKey);
-        }};
+        return Set.of(tagTaskKey);
     }
 
+    public static User createUser(UserInput userInput) {
+        return User.builder()
+                .name(userInput.getUsername())
+                .username(userInput.getUsername())
+                .email(userInput.getEmail())
+                .password(new BCryptPasswordEncoder().encode(userInput.getPassword()))
+                .gravatarHash("ffg")
+                .role(RoleName.ROLE_USER)
+                .build();
+    }
+
+    public static List<User> createListOfFollowers(UserSettings userSettings) {
+        User user1 = createUserWithUserSettings(1, userSettings);
+        User user2 = createUserWithUserSettings(2, userSettings);
+
+        return Arrays.asList(user1, user2);
+    }
     public static TaskInput createTaskInput(Long todolistId) {
         return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
     }
 
     public static List<UserSummary> createListOfUserSummaries(int numberOfUserSummaries) {
         List<UserSummary> userSummaries = new ArrayList<>();
-        for (int i=0; i<numberOfUserSummaries; i++){
+        for (int i = 0; i < numberOfUserSummaries; i++) {
             userSummaries.add(createUserSummary(i));
         }
-
         return userSummaries;
     }
 
@@ -216,12 +218,7 @@ public class ObjectsProvider {
 
 
     public static List<Follower> createListOfFollowers() {
-        return new ArrayList<Follower>(2) {{
-            add(new Follower(USER_ID, new User()));
-            add(new Follower(USER_ID, new User()));
-        }};
-
-
+        return Arrays.asList(new Follower(USER_ID, new User()), new Follower(USER_ID, new User()));
     }
 
     public static List<Share> createListOfShares() {
@@ -236,9 +233,6 @@ public class ObjectsProvider {
 
 
     public static List<UserSummary> createListOfUserSummaries() {
-        return new ArrayList<UserSummary>(2) {{
-            add(new UserSummary());
-            add(new UserSummary());
-        }};
+        return Arrays.asList(new UserSummary(), new UserSummary());
     }
 }
