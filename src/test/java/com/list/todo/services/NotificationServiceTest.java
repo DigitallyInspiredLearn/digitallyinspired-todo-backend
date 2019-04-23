@@ -110,14 +110,146 @@ public class NotificationServiceTest {
             verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
             verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
         });
+    }
+
+    @Test
+    public void notifyAboutAddingTodoList_IfEnableWebSocketNotification_SuccessfulNotify() {
+        //arrange
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(false)
+                .isEnableWebSocketNotification(true)
+                .build();
+
+        List<User> followers = ObjectsProvider.createListOfFollowers(userSettings);
+
+        User ownerUser = createUserWithUserSettings(3, userSettings);
+        TodoList addedTodoList = createTodoList(ownerUser.getUsername());
+
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
+
+        //act
+        notificationServiceMock.notifyAboutAddingTodoList(ownerUser, addedTodoList);
+
+        //assert
+        followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
+            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+        });
 
     }
 
     @Test
-    public void notifyAboutUpdatingTodoList() {
+    public void notifyAboutUpdatingTodoList_IfEnableEmailNotification_SuccessfulNotify() {
+        //arrange
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(true)
+                .isEnableWebSocketNotification(false)
+                .build();
+
+        List<User> followers = ObjectsProvider.createListOfFollowers(userSettings);
+
+        User ownerUser = createUserWithUserSettings(3, userSettings);
+        TodoList addedTodoList = createTodoList(ownerUser.getUsername());
+
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
+
+        //act
+        notificationServiceMock.notifyAboutUpdatingTodoList(ownerUser, addedTodoList);
+
+        //assert
+        followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
+            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
+            verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+        });
     }
 
     @Test
-    public void notifyAboutDeletingTodoList() {
+    public void notifyAboutUpdatingTodoList_IfEnableWebSocketNotification_SuccessfulNotify() {
+        //arrange
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(false)
+                .isEnableWebSocketNotification(true)
+                .build();
+
+        List<User> followers = ObjectsProvider.createListOfFollowers(userSettings);
+
+        User ownerUser = createUserWithUserSettings(3, userSettings);
+        TodoList addedTodoList = createTodoList(ownerUser.getUsername());
+
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
+
+        //act
+        notificationServiceMock.notifyAboutUpdatingTodoList(ownerUser, addedTodoList);
+
+        //assert
+        followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
+            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+        });
+    }
+
+    @Test
+    public void notifyAboutDeletingTodoList_IfEnableEmailNotification_SuccessfulNotify() {
+        //arrange
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(true)
+                .isEnableWebSocketNotification(false)
+                .build();
+
+        List<User> followers = ObjectsProvider.createListOfFollowers(userSettings);
+
+        User ownerUser = createUserWithUserSettings(3, userSettings);
+        TodoList addedTodoList = createTodoList(ownerUser.getUsername());
+
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
+
+        //act
+        notificationServiceMock.notifyAboutDeletingTodoList(ownerUser, addedTodoList);
+
+        //assert
+        followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
+            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
+            verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+        });
+    }
+
+    @Test
+    public void notifyAboutDeletingTodoList_IfEnableWebSocketNotification_SuccessfulNotify() {
+        //arrange
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(false)
+                .isEnableWebSocketNotification(true)
+                .build();
+
+        List<User> followers = ObjectsProvider.createListOfFollowers(userSettings);
+
+        User ownerUser = createUserWithUserSettings(3, userSettings);
+        TodoList addedTodoList = createTodoList(ownerUser.getUsername());
+
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
+        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
+
+        //act
+        notificationServiceMock.notifyAboutDeletingTodoList(ownerUser, addedTodoList);
+
+        //assert
+        followers.forEach(follower -> {
+            String channel = "/" + follower.getName();
+            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
+            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+        });
     }
 }
