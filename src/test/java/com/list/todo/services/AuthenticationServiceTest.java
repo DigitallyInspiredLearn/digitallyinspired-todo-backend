@@ -120,9 +120,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByUsername(CURRENT_USERNAME)).thenReturn(true);
 
         //act
-        authenticationServiceMock.isUserExistByUserName(CURRENT_USERNAME);
+        Boolean isUserExist = authenticationServiceMock.isUserExistByUserName(CURRENT_USERNAME);
 
         //assert
+        assertEquals(isUserExist, true);
         verify(userRepositoryMock, times(1)).existsByUsername(CURRENT_USERNAME);
     }
 
@@ -132,9 +133,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByUsername(ANOTHER_USERNAME)).thenReturn(false);
 
         //act
-        authenticationServiceMock.isUserExistByUserName(ANOTHER_USERNAME);
+        Boolean isUserExist = authenticationServiceMock.isUserExistByUserName(ANOTHER_USERNAME);
 
         //assert
+        assertEquals(isUserExist, false);
         verify(userRepositoryMock, times(1)).existsByUsername(ANOTHER_USERNAME);
     }
 
@@ -144,9 +146,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByEmail(CURRENT_EMAIL)).thenReturn(true);
 
         //act
-        authenticationServiceMock.isUserExistByEmail(CURRENT_EMAIL);
+        Boolean isUserExist = authenticationServiceMock.isUserExistByEmail(CURRENT_EMAIL);
 
         //assert
+        assertEquals(isUserExist, true);
         verify(userRepositoryMock, times(1)).existsByEmail(CURRENT_EMAIL);
     }
 
@@ -156,9 +159,10 @@ public class AuthenticationServiceTest {
         when(userRepositoryMock.existsByEmail(ANOTHER_EMAIL)).thenReturn(false);
 
         //act
-        authenticationServiceMock.isUserExistByEmail(ANOTHER_EMAIL);
+        Boolean isUserExist = authenticationServiceMock.isUserExistByEmail(ANOTHER_EMAIL);
 
         //assert
+        assertEquals(isUserExist, false);
         verify(userRepositoryMock, times(1)).existsByEmail(ANOTHER_EMAIL);
     }
 }

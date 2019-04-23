@@ -48,16 +48,14 @@ public class NotificationServiceTest {
         User targetUser = createUserWithUserSettings(2, userSettings);
         TodoList sharedTodoList = createTodoList(ownerUser.getUsername());
 
-        String channel = "/" + targetUser.getName();
-
         when(userSettingsServiceMock.getUserSettingsByUserId(targetUser.getId())).thenReturn(Optional.of(targetUser.getUserSettings()));
 
         //act
         notificationServiceMock.notifyAboutSharingTodoList(ownerUser, targetUser, sharedTodoList);
 
         //assert
-        verify(emailServiceMock, times(1)).sendEmail(eq(targetUser.getEmail()), anyString(), anyString());
-        verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+        verify(emailServiceMock, times(1)).sendEmail(anyString(), anyString(), anyString());
+        verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
     }
 
     @Test
@@ -72,16 +70,14 @@ public class NotificationServiceTest {
         User targetUser = createUserWithUserSettings(2, userSettings);
         TodoList sharedTodoList = createTodoList(ownerUser.getUsername());
 
-        String channel = "/" + targetUser.getName();
-
         when(userSettingsServiceMock.getUserSettingsByUserId(targetUser.getId())).thenReturn(Optional.of(targetUser.getUserSettings()));
 
         //act
         notificationServiceMock.notifyAboutSharingTodoList(ownerUser, targetUser, sharedTodoList);
 
         //assert
-        verify(emailServiceMock, never()).sendEmail(eq(targetUser.getEmail()), anyString(), anyString());
-        verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+        verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(webSocketMock, times(1)).convertAndSend(anyString(), anyString());
     }
 
     @Test
@@ -97,8 +93,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -106,9 +102,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
 
@@ -125,8 +120,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -134,9 +129,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
         });
 
     }
@@ -154,8 +148,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -163,9 +157,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
 
@@ -182,8 +175,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -191,9 +184,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
         });
     }
 
@@ -210,8 +202,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -219,9 +211,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, times(1)).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, never()).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, times(followers.size())).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, never()).convertAndSend(anyString(), anyString());
         });
     }
 
@@ -238,8 +229,8 @@ public class NotificationServiceTest {
         User ownerUser = createUserWithUserSettings(3, userSettings);
         TodoList addedTodoList = createTodoList(ownerUser.getUsername());
 
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(0).getId())).thenReturn(Optional.of(followers.get(0).getUserSettings()));
-        when(userSettingsServiceMock.getUserSettingsByUserId(followers.get(1).getId())).thenReturn(Optional.of(followers.get(1).getUserSettings()));
+        followers.forEach(follower -> when(userSettingsServiceMock
+                .getUserSettingsByUserId(follower.getId())).thenReturn(Optional.of(follower.getUserSettings())));
         when(followerServiceMock.getFollowersByUserId(ownerUser.getId())).thenReturn(followers);
 
         //act
@@ -247,9 +238,8 @@ public class NotificationServiceTest {
 
         //assert
         followers.forEach(follower -> {
-            String channel = "/" + follower.getName();
-            verify(emailServiceMock, never()).sendEmail(eq(follower.getEmail()), anyString(), anyString());
-            verify(webSocketMock, times(1)).convertAndSend(eq(channel), anyString());
+            verify(emailServiceMock, never()).sendEmail(anyString(), anyString(), anyString());
+            verify(webSocketMock, times(followers.size())).convertAndSend(anyString(), anyString());
         });
     }
 }
