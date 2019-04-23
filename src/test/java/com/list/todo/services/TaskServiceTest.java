@@ -191,7 +191,6 @@ public class TaskServiceTest {
         TodoList todoList = createTodoList();
         todoList.setId(TODO_LIST_ID);
         Task oldTask = mock(Task.class);
-        oldTask.setId(TASK_ID_1);
         todoList.getTasks().add(oldTask);
         Task updatedTask = createTask();
         updatedTask.setId(TASK_ID_1);
@@ -205,32 +204,12 @@ public class TaskServiceTest {
         // assert
         assertEquals(updatedTask, taskFromService.get());
         verify(taskRepository).findById(TASK_ID_1);
-        verify(taskRepository).save(oldTask);
         verify(oldTask).setBody(taskInput.getBody());
         verify(oldTask).setIsComplete(taskInput.getIsComplete());
         verify(oldTask).setPriority(taskInput.getPriority());
         verify(oldTask).setDurationTime(taskInput.getDurationTime());
         verify(oldTask).setCompletedDate(anyLong());
-    }
-
-    @Test
-    public void updateTask_OnNonExistentTask_ReturnsAnEmptyOptional() {
-        // arrange
-        Task task = Mockito.mock(Task.class);
-        TaskInput taskInput = createTaskInput(TODO_LIST_ID);
-
-        when(taskRepository.findById(TASK_ID_1)).thenReturn(Optional.empty());
-
-        // act
-        Optional<Task> returnedTask = taskService.updateTask(TASK_ID_2, taskInput);
-
-        // assert
-        assertTrue(!returnedTask.isPresent());
-        verify(task, times(0)).setBody(taskInput.getBody());
-        verify(task, times(0)).setIsComplete(taskInput.getIsComplete());
-        verify(task, times(0)).setDurationTime(anyLong());
-        verify(task, times(0)).setCompletedDate(anyLong());
-        verify(taskRepository, times(0)).save(task);
+        verify(taskRepository).save(oldTask);
     }
 
     @Test
