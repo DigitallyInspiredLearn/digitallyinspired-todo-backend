@@ -4,10 +4,7 @@ import com.list.todo.entity.*;
 import com.list.todo.payload.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ObjectsProvider {
 
@@ -217,10 +214,6 @@ public class ObjectsProvider {
         User user1 = createUserWithUserSettings(1, userSettings);
         User user2 = createUserWithUserSettings(2, userSettings);
 
-        return new ArrayList<User>() {{
-            add(user1);
-            add(user2);
-        }};
-
+        return Arrays.asList(user1, user2);
     }
 }
