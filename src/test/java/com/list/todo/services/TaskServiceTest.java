@@ -14,6 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.list.todo.util.ObjectsProvider.*;
 import static org.junit.Assert.*;
@@ -33,6 +34,9 @@ public class TaskServiceTest {
 
     @Mock
     private TodoListService todoListService;
+
+    @Mock
+    private TagTaskKeyService tagTaskKeyService;
 
     @InjectMocks
     private TaskService taskService;
@@ -86,8 +90,7 @@ public class TaskServiceTest {
         Task task2 = createTask();
         task1.setId(TASK_ID_1);
         task2.setId(TASK_ID_2);
-        todoList.getTasks().add(task1);
-        todoList.getTasks().add(task2);
+        todoList.setTasks(Set.of(task1, task2));
         List<Task> tasks = new ArrayList<>();
         tasks.add(task1);
         tasks.add(task2);
@@ -158,11 +161,8 @@ public class TaskServiceTest {
     public void updateTask_OnExistentTask_ReturnsAnOptionalOfUpdatedTask() {
         // arrange
         TaskInput taskInput = createTaskInput(TODO_LIST_ID);
-        TodoList todoList = createTodoList();
-        todoList.setId(TODO_LIST_ID);
         Task oldTask = mock(Task.class);
         oldTask.setId(TASK_ID_1);
-        todoList.getTasks().add(oldTask);
         Task updatedTask = createTask();
         updatedTask.setId(TASK_ID_1);
 
@@ -188,10 +188,7 @@ public class TaskServiceTest {
         // arrange
         TaskInput taskInput = createTaskInput(TODO_LIST_ID);
         taskInput.setIsComplete(true);
-        TodoList todoList = createTodoList();
-        todoList.setId(TODO_LIST_ID);
         Task oldTask = mock(Task.class);
-        todoList.getTasks().add(oldTask);
         Task updatedTask = createTask();
         updatedTask.setId(TASK_ID_1);
 
@@ -218,6 +215,7 @@ public class TaskServiceTest {
         taskService.deleteTask(TASK_ID_1);
 
         // assert
+        verify(tagTaskKeyService).deleteTaggedTask(TASK_ID_1);
         verify(taskRepository).deleteById(TASK_ID_1);
     }
 }

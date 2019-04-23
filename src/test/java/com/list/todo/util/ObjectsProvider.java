@@ -199,16 +199,16 @@ public class ObjectsProvider {
 
         return Arrays.asList(user1, user2);
     }
+
     public static TaskInput createTaskInput(Long todolistId) {
         return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
     }
 
     public static List<UserSummary> createListOfUserSummaries(int numberOfUserSummaries) {
         List<UserSummary> userSummaries = new ArrayList<>();
-        for (int i=0; i<numberOfUserSummaries; i++){
+        for (int i = 0; i < numberOfUserSummaries; i++) {
             userSummaries.add(createUserSummary(i));
         }
-
         return userSummaries;
     }
 
@@ -218,12 +218,7 @@ public class ObjectsProvider {
 
 
     public static List<Follower> createListOfFollowers() {
-        return new ArrayList<Follower>(2) {{
-            add(new Follower(USER_ID, new User()));
-            add(new Follower(USER_ID, new User()));
-        }};
-
-
+        return Arrays.asList(new Follower(USER_ID, new User()), new Follower(USER_ID, new User()));
     }
 
     public static List<Share> createListOfShares() {
@@ -238,9 +233,6 @@ public class ObjectsProvider {
 
 
     public static List<UserSummary> createListOfUserSummaries() {
-        return new ArrayList<UserSummary>(2) {{
-            add(new UserSummary());
-            add(new UserSummary());
-        }};
+        return Arrays.asList(new UserSummary(), new UserSummary());
     }
 }

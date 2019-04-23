@@ -143,7 +143,13 @@
             <artifactId>spring-security-messaging</artifactId>
             <version>${spring-security.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.3</version>
+        </dependency>
     </dependencies>
+
 
     <build>
         <plugins>
@@ -155,14 +161,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>0.8.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -184,7 +190,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <jjwt.version>0.9.0</jjwt.version>
         <swagger.version>2.9.2</swagger.version>
         <graphql-spring-boot.version>5.0.2</graphql-spring-boot.version>
