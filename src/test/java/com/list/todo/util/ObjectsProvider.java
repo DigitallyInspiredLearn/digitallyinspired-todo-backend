@@ -240,4 +240,30 @@ public class ObjectsProvider {
             add(new UserSummary());
         }};
     }
+
+    public static List<Share> createListOfShares() {
+        Share share = new Share();
+        share.setSharedTodoList(createTodoList());
+
+        List<Share> shareList = new ArrayList<>();
+        shareList.add(share);
+
+        return shareList;
+    }
+
+    public static List<Follower> createListOfFollowers() {
+        return new ArrayList<Follower>(2) {{
+            add(new Follower(USER_ID, new User()));
+            add(new Follower(USER_ID, new User()));
+        }};
+
+
+    }
+
+    public static List<UserSummary> createListOfUserSummaries() {
+        return new ArrayList<UserSummary>(2) {{
+            add(new UserSummary());
+            add(new UserSummary());
+        }};
+    }
 }
