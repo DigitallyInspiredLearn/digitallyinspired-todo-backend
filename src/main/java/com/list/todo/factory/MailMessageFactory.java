@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MailMessageFactory {
-    public MailMessage getMailMessage() {
+    public MailMessage createNewMailMessage() {
         return new SimpleMailMessage();
     }
 }

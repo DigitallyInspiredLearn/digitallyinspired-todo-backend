@@ -61,6 +61,9 @@ public class AuthenticationTest {
     @Mock
     private AuthenticationService authenticationServiceMock;
 
+    @Mock
+    private UserSettingsService userSettingsServiceMock;
+
     @InjectMocks
     private AuthenticationController authenticationControllerMock;
 

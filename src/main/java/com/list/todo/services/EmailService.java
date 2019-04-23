@@ -21,7 +21,7 @@ public class EmailService{
 
     @Async
     public void sendEmail(String emailTo, String subject, String text){
-        MailMessage mailMessage = mailMessageFactory.getMailMessage();
+        MailMessage mailMessage = mailMessageFactory.createNewMailMessage();
 
         mailMessage.setFrom(username);
         mailMessage.setTo(emailTo);

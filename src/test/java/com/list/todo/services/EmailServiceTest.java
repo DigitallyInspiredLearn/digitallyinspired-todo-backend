@@ -11,7 +11,6 @@ import org.springframework.mail.MailMessage;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -38,7 +37,7 @@ public class EmailServiceTest {
 
         MailMessage mailMessage = mock(SimpleMailMessage.class);
 
-        when(messageFactoryMock.getMailMessage()).thenReturn(mailMessage);
+        when(messageFactoryMock.createNewMailMessage()).thenReturn(mailMessage);
 
         //act
         emailServiceMock.sendEmail(emailTo, subject, text);

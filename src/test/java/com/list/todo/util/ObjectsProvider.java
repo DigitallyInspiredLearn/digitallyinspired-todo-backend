@@ -28,15 +28,11 @@ public class ObjectsProvider {
     }
 
     public static Set<Task> createSetOfTasks() {
-        return new HashSet<Task>() {{
-            add(createTask());
-        }};
+        return Set.of(createTask());
     }
 
     public static List<Task> createListOfTasks() {
-        return new ArrayList<Task>() {{
-            add(createTask());
-        }};
+        return Collections.singletonList(createTask());
     }
 
     public static Set<Task> createSetOfTasks(String currentUser) {
@@ -47,9 +43,7 @@ public class ObjectsProvider {
                 .build();
         task1.setId(3L);
 
-        return new HashSet<Task>() {{
-            add(task1);
-        }};
+        return Set.of(task1);
     }
 
     public static TodoList createTodoList() {
@@ -84,22 +78,15 @@ public class ObjectsProvider {
         TodoList todoList2 = createTodoList();
         todoList2.setId(2L);
 
-        return new ArrayList<TodoList>() {{
-            add(todoList1);
-            add(todoList2);
-        }};
+        return Arrays.asList(todoList1, todoList2);
     }
 
     public static List<TodoList> createListOfTodoLists(String currentUser) {
 
         Task task1 = createTask(currentUser, null, 3L);
-
         Task task2 = createTask(currentUser, null, 4L);
 
-        Set<Task> tasks = new HashSet<Task>() {{
-            add(task1);
-            add(task2);
-        }};
+        Set<Task> tasks = Set.of(task1, task2);
 
         TodoList todoList1 = createTodoListWithTasks(currentUser, tasks);
         todoList1.setId(1L);
@@ -107,10 +94,7 @@ public class ObjectsProvider {
         TodoList todoList2 = createTodoListWithTasks(currentUser, tasks);
         todoList2.setId(5L);
 
-        return new ArrayList<TodoList>() {{
-            add(todoList1);
-            add(todoList2);
-        }};
+        return Arrays.asList(todoList1, todoList2);
     }
 
     public static UserSummary createUserSummary(int postfixNumber) {
@@ -141,10 +125,7 @@ public class ObjectsProvider {
         Tag tag2 = new Tag(name2Tag, ownerId, "ff");
         tag2.setId(tag2Id);
 
-        return new ArrayList<Tag>() {{
-            add(tag);
-            add(tag2);
-        }};
+        return Arrays.asList(tag, tag2);
     }
 
     public static UserStatistics createUserStatistics() {
@@ -194,9 +175,7 @@ public class ObjectsProvider {
         TagTaskKey tagTaskKey = new TagTaskKey(taskId, tag);
         tagTaskKey.setId(7L);
 
-        return new HashSet<TagTaskKey>() {{
-            add(tagTaskKey);
-        }};
+        return Set.of(tagTaskKey);
     }
 
     public static User createUser(UserInput userInput) {
