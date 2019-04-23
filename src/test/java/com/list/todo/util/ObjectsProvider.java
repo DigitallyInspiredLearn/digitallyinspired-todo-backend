@@ -170,6 +170,21 @@ public class ObjectsProvider {
                 "gravatarHash" + postfixNumber);
     }
 
+    public static User createUserWithUserSettings(int postfixNumber) {
+        UserSettings userSettings = UserSettings.builder()
+                .isEnableEmailNotification(true)
+                .isEnableWebSocketNotification(true)
+                .build();
+
+        return User.builder()
+                .name("name" + postfixNumber)
+                .username("username" + postfixNumber)
+                .email("email" + postfixNumber)
+                .password("password" + postfixNumber)
+                .userSettings(userSettings)
+                .build();
+    }
+
     public static TagInput getTagInput() {
         return new TagInput("Job", "ff");
     }
