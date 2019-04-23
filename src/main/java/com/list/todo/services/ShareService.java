@@ -2,7 +2,6 @@ package com.list.todo.services;
 
 import com.list.todo.entity.Share;
 import com.list.todo.entity.TodoList;
-import com.list.todo.entity.User;
 import com.list.todo.repositories.ShareRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,6 +44,7 @@ public class ShareService {
     public boolean isSharedTodoListToUser(TodoList sharedTodoList, Long sharedUserId) {
         return sharesRepository.findBySharedUserId(sharedUserId)
                 .stream()
+                // TODO: replace to comparator
                 .anyMatch(share -> share.getSharedTodoList().hashCode() == sharedTodoList.hashCode());
     }
 

@@ -19,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.*;
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.*;
 public class UserServiceTest {
 
     private static final Long CURRENT_USER_ID = 1L;
+    private static final String CURRENT_USER_USERNAME = "username";
 
     @Mock
     private UserRepository userRepository;
@@ -100,6 +103,7 @@ public class UserServiceTest {
                 user.getEmail(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+
         when(userRepository.findById(userPrincipal.getId())).thenReturn(Optional.of(user));
 
         //act
@@ -134,6 +138,7 @@ public class UserServiceTest {
 
         Page<TodoList> sharedTodoListsPage = new PageImpl<>(sharedTodoLists, pageable, sharedTodoLists.size());
         Page<TodoList> myTodoListsPage = new PageImpl<>(myTodoLists, pageable, myTodoLists.size());
+
         when(shareRepository.findBySharedUserId(userPrincipal.getId())).thenReturn(shares);
         when(todoListRepository.findByCreatedByAndTodoListStatus(userPrincipal.getUsername(), TodoListStatus.ACTIVE, pageable))
                 .thenReturn(myTodoListsPage);
@@ -149,7 +154,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void searchUsersByPartOfUsername_OnExistentUser_ReturnsASetOfStrings() {
+    public void searchUsersByPartOfUsername_OnExistentUser_ReturnsASetOfUsernames() {
         //arrange
         String partOfUsername = "us";
         List<User> users = new ArrayList<>();
@@ -172,7 +177,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUser_OnExistentUser_ReturnsAnObjectOfUser() {
+    public void updateUser_OnExistentUser_ReturnsAnOptionalOfUpdatedUser() {
         //arrange
         User user = createUser(1);
         User updatedUser = createUser(2);
@@ -196,10 +201,12 @@ public class UserServiceTest {
         verify(user).setEmail(userInput.getEmail());
         verify(user).setPassword(userInput.getPassword());
         Assert.assertEquals(updatedUser, returnedUser.get());
+        verify(userRepository).findById(CURRENT_USER_ID);
+        verify(userRepository).save(user);
     }
 
     @Test
-    public void deleteUser_OnExistentUser_ReturnsVoid() {
+    public void deleteUser_OnExistentUser_SuccessfulDeleting() {
         //arrange
         User user = createUser(1);
         List<Follower> followers = new ArrayList<>();
@@ -229,4 +236,47 @@ public class UserServiceTest {
         verify(todoListRepository, times(todoLists.size())).delete(any(TodoList.class));
     }
 
+    @Test
+    public void loadUserByUsername__OnExistentUser_ReturnsAnObjectOfUserDetails() {
+        //arrange
+        User user = createUser(1);
+        UserDetails userDetails = UserPrincipal.create(user);
+        when(userRepository.findByUsernameOrEmail(CURRENT_USER_USERNAME, CURRENT_USER_USERNAME)).thenReturn(Optional.of(user));
+
+        //act
+        UserDetails returnedUserDetails = userService.loadUserByUsername(CURRENT_USER_USERNAME);
+
+        //assert
+        Assert.assertEquals(userDetails, returnedUserDetails);
+        verify(userRepository).findByUsernameOrEmail(CURRENT_USER_USERNAME, CURRENT_USER_USERNAME);
+    }
+
+    @Test(expected = UsernameNotFoundException.class)
+    public void loadUserByUsername__OnNonExistentUser_ReturnsAnObjectOfUserDetails() {
+        userService.loadUserByUsername(CURRENT_USER_USERNAME);
+    }
+
+    @Test
+    public void loadUserById__OnExistentUser_ReturnsAnObjectOfUserDetails() {
+        //arrange
+        User user = createUser(1);
+        UserDetails userDetails = UserPrincipal.create(user);
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(user));
+
+        //act
+        UserDetails returnedUserDetails = userService.loadUserById(CURRENT_USER_ID);
+
+        //assert
+        Assert.assertEquals(userDetails, returnedUserDetails);
+        verify(userRepository).findById(CURRENT_USER_ID);
+    }
+
+    @Test(expected = UsernameNotFoundException.class)
+    public void loadUserById__OnNonExistentUser_ReturnsAnObjectOfUserDetails() {
+        //act
+        userService.loadUserById(CURRENT_USER_ID);
+
+        //assert
+        verify(userRepository).findById(CURRENT_USER_ID);
+    }
 }

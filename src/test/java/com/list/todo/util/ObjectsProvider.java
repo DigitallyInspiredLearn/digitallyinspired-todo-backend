@@ -2,6 +2,7 @@ package com.list.todo.util;
 
 import com.list.todo.entity.*;
 import com.list.todo.payload.TagInput;
+import com.list.todo.payload.TaskInput;
 import com.list.todo.payload.UserStatistics;
 import com.list.todo.payload.UserSummary;
 
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 
 public class ObjectsProvider {
+
+    private static final Long USER_ID = 1L;
 
     public static Task createTask() {
         return Task.builder()
@@ -39,6 +42,7 @@ public class ObjectsProvider {
 
     public static List<Task> createListOfTasks() {
         return new ArrayList<Task>() {{
+            add(createTask());
             add(createTask());
         }};
     }
@@ -168,7 +172,9 @@ public class ObjectsProvider {
                 "username" + postfixNumber,
                 "email@example.ua" + postfixNumber,
                 "password" + postfixNumber,
-                "gravatarHash" + postfixNumber);
+                RoleName.ROLE_USER,
+                "gravatarHash" + postfixNumber,
+                new UserSettings(true, true));
     }
 
     public static TagInput getTagInput() {
@@ -192,4 +198,46 @@ public class ObjectsProvider {
         }};
     }
 
+    public static TaskInput createTaskInput(Long todolistId) {
+        return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
+    }
+
+    public static List<UserSummary> createListOfUserSummaries(int numberOfUserSummaries) {
+        List<UserSummary> userSummaries = new ArrayList<>();
+        for (int i=0; i<numberOfUserSummaries; i++){
+            userSummaries.add(createUserSummary(i));
+        }
+
+        return userSummaries;
+    }
+
+    public static UserSettings createUserSettings() {
+        return new UserSettings(true, true);
+    }
+
+    public static List<Share> createListOfShares() {
+        Share share = new Share();
+        share.setSharedTodoList(createTodoList());
+
+        List<Share> shareList = new ArrayList<>();
+        shareList.add(share);
+
+        return shareList;
+    }
+
+    public static List<Follower> createListOfFollowers() {
+        return new ArrayList<Follower>(2) {{
+            add(new Follower(USER_ID, new User()));
+            add(new Follower(USER_ID, new User()));
+        }};
+
+
+    }
+
+    public static List<UserSummary> createListOfUserSummaries() {
+        return new ArrayList<UserSummary>(2) {{
+            add(new UserSummary());
+            add(new UserSummary());
+        }};
+    }
 }
