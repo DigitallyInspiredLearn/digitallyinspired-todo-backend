@@ -86,6 +86,7 @@ public class ObjectsProvider {
     public static List<TodoList> createListOfTodoLists(String currentUser) {
 
         Task task1 = createTask(currentUser, null, 3L);
+
         Task task2 = createTask(currentUser, null, 4L);
 
         Set<Task> tasks = Set.of(task1, task2);
@@ -199,7 +200,6 @@ public class ObjectsProvider {
 
         return Arrays.asList(user1, user2);
     }
-
     public static TaskInput createTaskInput(Long todolistId) {
         return new TaskInput("task", false, 100L, Priority.NOT_SPECIFIED, todolistId);
     }
