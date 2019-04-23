@@ -49,8 +49,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import java.io.IOException;
 import java.util.*;
 
-import static com.list.todo.util.ObjectsProvider.createUserStatistics;
-import static com.list.todo.util.ObjectsProvider.createUserSummary;
+import static com.list.todo.util.ObjectsProvider.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -65,6 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserTest {
 
     private static final Long CURRENT_USER_ID = 1L;
+    private static final String CURRENT_USER_USERNAME = "username";
     private static final String USERNAME = "anna";
     private static final String PART_OF_USERNAME = "an";
 
@@ -104,7 +104,7 @@ public class UserTest {
                                       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
             UserPrincipal userPrincipal = new UserPrincipal();
             userPrincipal.setId(CURRENT_USER_ID);
-            userPrincipal.setUsername("username");
+            userPrincipal.setUsername(CURRENT_USER_USERNAME);
             userPrincipal.setPassword(new BCryptPasswordEncoder().encode("password"));
 
             return userPrincipal;
@@ -152,6 +152,7 @@ public class UserTest {
                 .andExpect(jsonPath("username").value(userSummary.getUsername()))
                 .andExpect(jsonPath("email").value(userSummary.getEmail()))
                 .andExpect(status().isOk());
+        verify(userService).getUserInfo(any(UserPrincipal.class));
     }
 
     @Test
@@ -203,11 +204,11 @@ public class UserTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(content().json("[\"anna\"]"))
                 .andExpect(status().isOk());
-
+        verify(userService).searchUsersByPartOfUsername(PART_OF_USERNAME);
     }
 
     @Test
-    public void searchUsersByNonExistentUsername_ReturnsAnEmptySet() throws Exception {
+    public void searchUsersByUsername_OnNonExistentUsername_ReturnsAnEmptySet() throws Exception {
         //arrange
         Set usernames = new HashSet();
         when(userService.searchUsersByPartOfUsername(PART_OF_USERNAME)).thenReturn(usernames);
@@ -217,14 +218,14 @@ public class UserTest {
                 .andDo(print())
                 .andExpect(jsonPath("$").isEmpty())
                 .andExpect(status().isOk());
+        verify(userService).searchUsersByPartOfUsername(PART_OF_USERNAME);
     }
 
     @Test
     public void getUserStats_OnExistentUser_ReturnsAnObjectOfUserStats() throws Exception {
         //arrange
-        int numberOfTodoLists = 2;
-        List<TodoList> todoLists1 = this.createListOfTodoLists(numberOfTodoLists, "username1");
-        List<TodoList> todoLists2 = this.createListOfTodoLists(numberOfTodoLists, "username2");
+        List<TodoList> todoLists1 = createListOfTodoLists("username1");
+        List<TodoList> todoLists2 = createListOfTodoLists("username2");
         Page<TodoList> myTodoLists = new PageImpl<>(todoLists1, pageable, todoLists1.size());
         Page<TodoList> sharedTodoLists = new PageImpl<>(todoLists2, pageable, todoLists2.size());
         UserStats userStats = new UserStats(myTodoLists, sharedTodoLists);
@@ -246,10 +247,11 @@ public class UserTest {
         //assert
         assertEqualsTodoLists(todoLists1, returnedMyTodoLists);
         assertEqualsTodoLists(todoLists2, returnedSharedTodoLists);
+        verify(userService).getUserStats(any(UserPrincipal.class), any(Pageable.class));
     }
 
     @Test
-    public void updateUser_OnExistentUser_ReturnsAnObjectOfUser() throws Exception {
+    public void updateUser_OnExistentUser_ReturnsAnObjectOfUpdatedUser() throws Exception {
         //arrange
         UpdatingUserInput userInput = new UpdatingUserInput();
         userInput.setName("name");
@@ -303,7 +305,17 @@ public class UserTest {
     }
 
     @Test
-    public void follow_OnNonExistentUser_ReturnsStatusNotFound() throws Exception {
+    public void followUser_onFollowingMyself_ReturnsStatusForbidden() throws Exception {
+        //act, assert
+        this.mockMvc.perform(post("/api/users/followUser?username={username}", CURRENT_USER_USERNAME))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+        verify(followerService, times(0))
+                .followUser(CURRENT_USER_ID, CURRENT_USER_USERNAME);
+    }
+
+    @Test
+    public void followUser_OnNonExistentUser_ReturnsStatusNotFound() throws Exception {
         //arrange
         when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
         when(followerService.followUser(CURRENT_USER_ID, USERNAME)).thenReturn(false);
@@ -350,7 +362,14 @@ public class UserTest {
     }
 
     @Test
-    public void unfollow_OnNonExistentUser_ReturnsStatusIsForbidden() throws Exception {
+    public void unfollowUser_onUnfollowingMyself_ReturnsStatusForbidden() throws Exception {
+        this.mockMvc.perform(post("/api/users/unfollowUser?username={username}", CURRENT_USER_USERNAME))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void unfollowUser_OnNonExistentUser_ReturnsStatusForbidden() throws Exception {
         //arrange
         when(followerService.isAlreadyFollowed(CURRENT_USER_ID, USERNAME)).thenReturn(false);
 
@@ -387,6 +406,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
+        verify(followerService).getFollowersUserSummariesByUserId(CURRENT_USER_ID);
     }
 
     @Test
@@ -412,6 +432,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userSummaries, returnedUserSummaries);
+        verify(followerService).getFollowedUserSummariesByUserId(CURRENT_USER_ID);
     }
 
     @Test
@@ -432,21 +453,7 @@ public class UserTest {
 
         //assert
         Assert.assertEquals(userStatistics, returnedUserStatistics);
-    }
-
-    private List<TodoList> createListOfTodoLists(int countOfTodoLists, String createdBy) {
-        List<TodoList> todoLists = new ArrayList<>(countOfTodoLists);
-
-        for (long i = 0; i < countOfTodoLists; i++) {
-            TodoList todoList = new TodoList();
-            todoList.setTodoListName("name" + i);
-            todoList.setCreatedBy(createdBy);
-            todoList.setId(i);
-
-            todoLists.add(todoList);
-        }
-
-        return todoLists;
+        verify(userStatisticsService).getUserStatisticsByUserId(CURRENT_USER_ID);
     }
 
     private List<TodoList> getTodoListsFromJsonResponse(String response, String arrayName) throws JSONException, IOException {
