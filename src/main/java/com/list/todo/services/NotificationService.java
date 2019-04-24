@@ -2,6 +2,7 @@ package com.list.todo.services;
 
 import com.list.todo.entity.TodoList;
 import com.list.todo.entity.User;
+import com.list.todo.entity.UserSettings;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class NotificationService implements Notifiable {
     public void notifyAboutUpdatingTodoList(User ownerUser, TodoList todoList) {
         List<User> followers = followerService.getFollowersByUserId(ownerUser.getId());
 
-        for (User follower : followers){
+        for (User follower : followers) {
             String subject = "Todo list was updated!";
 
             String channel = "/" + follower.getName();
@@ -83,7 +84,7 @@ public class NotificationService implements Notifiable {
     public void notifyAboutDeletingTodoList(User ownerUser, TodoList todoList) {
         List<User> followers = followerService.getFollowersByUserId(ownerUser.getId());
 
-        for (User follower : followers){
+        for (User follower : followers) {
             String subject = "Todo list was deleted!";
 
             String channel = "/" + follower.getName();
@@ -101,11 +102,18 @@ public class NotificationService implements Notifiable {
     }
 
     private void sendNotification(User targetUser, String subject, String channel, String message) {
-        if (userSettingsService.getUserSettingsByUserId(targetUser.getId()).get().getIsEnableEmailNotification()){
-            emailService.sendEmail(targetUser.getEmail(), subject, message);
-        }
-        if (userSettingsService.getUserSettingsByUserId(targetUser.getId()).get().getIsEnableWebSocketNotification()) {
-            webSocket.convertAndSend(channel, message);
-        }
+        userSettingsService.getUserSettingsByUserId(targetUser.getId())
+                .ifPresent(userSettings -> {
+                    if (userSettings.getIsEnableEmailNotification()) {
+                        emailService.sendEmail(targetUser.getEmail(), subject, message);
+                    }
+                });
+
+        userSettingsService.getUserSettingsByUserId(targetUser.getId())
+                .ifPresent(userSettings -> {
+                    if (userSettings.getIsEnableWebSocketNotification()) {
+                        webSocket.convertAndSend(channel, message);
+                    }
+                });
     }
 }

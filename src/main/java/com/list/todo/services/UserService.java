@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,40 +95,35 @@ public class UserService implements UserDetailsService {
     }
 
     public Optional<User> updateUser(Long userId, UpdatingUserInput userInput) {
-        Optional<User> user = userRepository.findById(userId)
-                .map(u -> {
+        AtomicReference<User> updatedUser = new AtomicReference<>();
+
+        userRepository.findById(userId)
+                .map(user -> {
                     if (userInput.getName() != null) {
-                        u.setName(userInput.getName());
+                        user.setName(userInput.getName());
                     }
                     if (userInput.getUsername() != null) {
-                        u.setUsername(userInput.getUsername());
+                        user.setUsername(userInput.getUsername());
                     }
                     if (userInput.getEmail() != null) {
-                        u.setEmail(userInput.getEmail());
+                        user.setEmail(userInput.getEmail());
                     }
                     if (userInput.getPassword() != null) {
-                        u.setPassword(bCryptPasswordEncoder.encode(userInput.getPassword()));
+                        user.setPassword(bCryptPasswordEncoder.encode(userInput.getPassword()));
                     }
-                    return u;
-                });
+                    return user;
+                }).ifPresent(user -> updatedUser.set(userRepository.save(user)));
 
-        User updatedUser = null;
-
-        if (user.isPresent()) {
-            updatedUser = userRepository.save(user.get());
-        }
-
-        return Optional.ofNullable(updatedUser);
+        return Optional.ofNullable(updatedUser.get());
     }
 
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user != null){
+        userRepository.findById(id).ifPresent(user -> {
             followerRepository.findByFollower(user).forEach(followerRepository::delete);
             followerRepository.findByFollowedUserId(id).forEach(followerRepository::delete);
             todoListRepository.findByCreatedBy(user.getUsername()).forEach(todoListRepository::delete);
             userRepository.deleteById(id);
-        }
+        });
     }
 
     public UserPrincipal getCurrentUser() {
@@ -136,8 +132,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String usernameOrEmail)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found with username or email : " + usernameOrEmail)

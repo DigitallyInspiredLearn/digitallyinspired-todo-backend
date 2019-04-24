@@ -350,16 +350,15 @@ public class TodoListServiceTest {
         TodoList todoList = new TodoList();
         todoList.setTodoListName(TODO_LIST_NAME);
 
-        when(todoListRepository.findById(TODO_LIST_ID)).thenReturn(Optional.of(todoList));
         when(userService.getUserByUsername(SECOND_USER_USERNAME)).thenReturn(Optional.empty());
-
+        
         //act
         ApiResponse result = todoListService.shareTodoList(SECOND_USER_USERNAME, TODO_LIST_ID, USER_ID);
 
         //assert
         Assert.assertEquals(apiResponse, result);
-        verify(todoListRepository, times(1)).findById(TODO_LIST_ID);
         verify(userService, times(1)).getUserByUsername(SECOND_USER_USERNAME);
+        verify(todoListRepository, times(0)).findById(TODO_LIST_ID);
         verify(shareService, never()).addShare(any(Share.class));
         verify(userService, never()).getUserById(USER_ID);
         verify(notificationService, never()).notifyAboutSharingTodoList(eq(user), any(User.class), eq(todoList));

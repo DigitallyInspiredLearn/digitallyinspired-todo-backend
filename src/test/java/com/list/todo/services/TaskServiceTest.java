@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -17,7 +16,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.list.todo.util.ObjectsProvider.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -116,7 +116,7 @@ public class TaskServiceTest {
         Iterable<Task> tasksFromService = taskService.getAllTasksOnTodoList(TODO_LIST_ID);
 
         // assert
-        assertNull(tasksFromService);
+        assertEquals(tasksFromService, new ArrayList<>());
         verify(todoListService).getTodoListById(TODO_LIST_ID);
     }
 

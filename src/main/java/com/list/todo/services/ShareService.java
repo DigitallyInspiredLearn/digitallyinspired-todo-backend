@@ -20,7 +20,6 @@ public class ShareService {
     private final ShareRepository sharesRepository;
 
     public Iterable<TodoList> getSharedTodoListsByUser(Long userId) {
-
         return sharesRepository.findBySharedUserId(userId)
                 .stream()
                 .map(Share::getSharedTodoList)

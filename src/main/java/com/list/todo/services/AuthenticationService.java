@@ -53,11 +53,15 @@ public class AuthenticationService {
     public User createUserAccount(UserInput userInput) {
         String gravatarHash = MD5Util.md5Hex(userInput.getEmail());
 
-        User user = new User(userInput.getName(), userInput.getUsername(),
-                userInput.getEmail(), userInput.getPassword(), gravatarHash);
+        User user = User.builder()
+                .name(userInput.getName())
+                .username(userInput.getUsername())
+                .email(userInput.getEmail())
+                .gravatarHash(gravatarHash)
+                .password(passwordEncoder.encode(userInput.getPassword()))
+                .role(RoleName.ROLE_USER)
+                .build();
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(RoleName.ROLE_USER);
         return userRepository.save(user);
     }
 

@@ -1,9 +1,6 @@
 package com.list.todo.payload;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
@@ -11,6 +8,7 @@ import java.util.Comparator;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @EqualsAndHashCode(exclude = "gravatarUrl")
 public class UserSummary {
     private String username;
