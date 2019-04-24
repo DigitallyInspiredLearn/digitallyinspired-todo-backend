@@ -39,11 +39,14 @@ public class TodoListService {
         List<Task> tasks = new ArrayList<>(tagTaskKeyService.getTasksByTags(tagsId, currentUser.getId()));
         Page<TodoList> todoLists;
 
-        if (todoListStatus == TodoListStatus.ALL){
-            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
-        }
-        else {
+        if (!tasks.isEmpty() && todoListStatus != TodoListStatus.ALL) {
             todoLists = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(), todoListStatus, pageable, tasks);
+        } else if (!tasks.isEmpty()) {
+            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
+        } else if (todoListStatus == TodoListStatus.ALL) {
+            todoLists = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
+        } else {
+            todoLists = todoListRepository.findByCreatedByAndTodoListStatus(currentUser.getUsername(), todoListStatus, pageable);
         }
 
         return todoLists;
