@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'openjdk:8-jdk-alpine'
+                    image 'maven:3.6.1-jdk-11-slim'
                     args '-v /root/.m2:/root/.m2'
                 }
             }
@@ -17,8 +17,7 @@ pipeline {
                    sed -i 's|.allowedOrigins("http://localhost:3000")||' src/main/java/com/list/todo/configurations/SecurityConfiguration.java
                    sed -i 's|localhost|todo-front|' src/main/java/com/list/todo/configurations/WebSocketConfig.java
                    '''
-                sh 'chmod +x mvnw'
-                sh './mvnw -B -DskipTests clean package'
+                sh 'mvn -B -DskipTests clean package'
                 archiveArtifacts 'target/*.jar'
             }
         }
