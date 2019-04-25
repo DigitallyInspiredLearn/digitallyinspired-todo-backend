@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
 @Component
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_USER')")
@@ -24,7 +26,7 @@ public class TodoListQuery implements GraphQLQueryResolver {
 	public Iterable<TodoList> getMyTodoLists() {
 		UserPrincipal currentUser = userService.getCurrentUser();
     
-		return todoListService.getTodoListsByUser(currentUser, TodoListStatus.ACTIVE, Pageable.unpaged(), null);
+		return todoListService.getTodoListsByUser(currentUser, TodoListStatus.ACTIVE, Pageable.unpaged(), new ArrayList<>(), null);
 	}
 
     public Iterable<TodoList> getMySharedTodoLists() {

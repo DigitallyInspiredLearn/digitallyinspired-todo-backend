@@ -33,9 +33,10 @@ public class TodoListController {
     public ResponseEntity<Iterable<TodoList>> getTodoLists(@AuthenticationPrincipal UserPrincipal currentUser,
                                                            @RequestParam("status") TodoListStatus status,
                                                            @RequestParam("tagId") List<Long> tagsIds,
+                                                           @RequestParam("searchQuery") String todoListName,
                                                            Pageable pageable) {
 
-        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, status, pageable, tagsIds);
+        Iterable<TodoList> myTodoLists = todoListService.getTodoListsByUser(currentUser, status, pageable, tagsIds, todoListName);
 
         return new ResponseEntity<>(myTodoLists, HttpStatus.OK);
     }
@@ -168,14 +169,5 @@ public class TodoListController {
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         }
         return responseEntity;
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<Iterable<TodoList>> getTodoListsByName(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                                 @RequestParam("name") String partOfTodoListName,
-                                                                 Pageable pageable) {
-        Iterable<TodoList> todoLists = todoListService.searchTodoListByName(partOfTodoListName + "%", currentUser.getUsername(), pageable);
-
-        return new ResponseEntity<>(todoLists, HttpStatus.OK);
     }
 }

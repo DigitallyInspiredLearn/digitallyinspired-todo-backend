@@ -26,7 +26,7 @@ public class TagTaskKeyService {
         return Optional.of(tagTaskKeyRepository.save(tagTaskKey));
     }
 
-    public Set<TagTaskKey> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId) {
+    public Set<TagTaskKey> getMyTaggedTask(UserPrincipal currentUser, Pageable pageable, List<Long> tagsId, String todoListName) {
         Set<TagTaskKey> myTagTaskKey = new HashSet<>();
 
         Iterable<TodoList> todoListsByCreatedBy = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
@@ -34,8 +34,8 @@ public class TagTaskKeyService {
         List<Task> tasks = new ArrayList<>(getTasksByTags(tagsId, currentUser.getId()));
 
         if (!tagsId.isEmpty() && !tasks.isEmpty()) {
-            todoListsByCreatedBy = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(),
-                    TodoListStatus.ACTIVE, pageable, tasks);
+            todoListsByCreatedBy = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksInAndTodoListNameLike(currentUser.getUsername(),
+                    TodoListStatus.ACTIVE, pageable, tasks, todoListName + "%");
         }
 
         todoListsByCreatedBy

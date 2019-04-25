@@ -10,6 +10,7 @@ import com.list.todo.repositories.TodoListRepository;
 import com.list.todo.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -34,19 +35,27 @@ public class TodoListService {
     }
 
 
-    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, TodoListStatus todoListStatus, Pageable pageable, List<Long> tagsId) {
+    public Iterable<TodoList> getTodoListsByUser(UserPrincipal currentUser, TodoListStatus todoListStatus, Pageable pageable,
+                                                 List<Long> tagsId, String todoListName) {
 
         List<Task> tasks = new ArrayList<>(tagTaskKeyService.getTasksByTags(tagsId, currentUser.getId()));
+
         Page<TodoList> todoLists;
+        todoListName += "%";
 
         if (!tasks.isEmpty() && todoListStatus != TodoListStatus.ALL) {
-            todoLists = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksIn(currentUser.getUsername(), todoListStatus, pageable, tasks);
+            todoLists = todoListRepository.findDistinctByCreatedByAndTodoListStatusAndTasksInAndTodoListNameLike(currentUser.getUsername(),
+                    todoListStatus, pageable, tasks, todoListName);
         } else if (!tasks.isEmpty()) {
-            todoLists = todoListRepository.findDistinctByCreatedByAndTasksIn(currentUser.getUsername(), pageable, tasks);
+            todoLists = todoListRepository.findDistinctByCreatedByAndTasksInAndTodoListNameLike(currentUser.getUsername(),
+                    pageable, tasks, todoListName);
+        } else if (!tagsId.isEmpty()) {
+            todoLists = new PageImpl<>(new ArrayList<>());
         } else if (todoListStatus == TodoListStatus.ALL) {
-            todoLists = todoListRepository.findByCreatedBy(currentUser.getUsername(), pageable);
+            todoLists = todoListRepository.findByCreatedByAndTodoListNameLike(currentUser.getUsername(), pageable, todoListName);
         } else {
-            todoLists = todoListRepository.findByCreatedByAndTodoListStatus(currentUser.getUsername(), todoListStatus, pageable);
+            todoLists = todoListRepository.findByCreatedByAndTodoListStatusAndTodoListNameLike(currentUser.getUsername(),
+                    todoListStatus, pageable, todoListName);
         }
 
         return todoLists;
@@ -126,10 +135,5 @@ public class TodoListService {
                 }));
 
         return apiResponse.get();
-    }
-
-    public Iterable<TodoList> searchTodoListByName(String todoListName, String createdBy, Pageable pageable) {
-        return todoListRepository.
-                findByTodoListNameLikeAndCreatedByEqualsAndTodoListStatus(todoListName, createdBy, TodoListStatus.ACTIVE, pageable);
     }
 }
