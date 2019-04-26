@@ -13,7 +13,7 @@ import javax.validation.constraints.*;
 @NoArgsConstructor
 public class UserInput {
     @NotBlank
-    @Size(min = 4, max = 40)
+    @Size(min = 2, max = 40)
     private String name;
 
     @NotBlank
